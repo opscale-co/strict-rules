@@ -1,0 +1,26 @@
+services:
+    # SOLID Principles Rules
+    - 
+        class: Opscale\Rules\SOLID\DIP\DisallowInstantiationRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\SOLID\ISP\EnforceImplementationRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\SOLID\LSP\AbstractionInjectionRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\SOLID\OCP\ConditionalOverrideRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\SOLID\SRP\MaxLinesRule
+        tags:
+            - phpstan.rules.rule

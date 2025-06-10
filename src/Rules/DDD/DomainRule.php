@@ -1,0 +1,70 @@
+<?php
+
+namespace Opscale\Rules\DDD;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProvider;
+use Opscale\Rules\BaseRule;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Base rule that ensures processing only for Model classes
+ */
+abstract class DomainRule extends BaseRule
+{
+    /**
+     * Target namespace for Eloquent models
+     */
+    protected const MODELS_NAMESPACE = 'Models';
+
+    /**
+     * Target namespace for Domain models
+     */
+    protected const DOMAIN_NAMESPACE = 'Domain';
+
+    /**
+     * @param ReflectionProvider $reflectionProvider
+     */
+    public function __construct(ReflectionProvider $reflectionProvider)
+    {
+        parent::__construct($reflectionProvider);
+    }
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        if(parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        // Check if the class is in the Models or Domain namespace
+        $className = $this->getRootNode($node)->namespacedName->toString();
+        $modelsPattern = '/^(\w+\\\\){1,2}(' . self::MODELS_NAMESPACE . ')/';
+        $domainPattern = '/^(\w+\\\\){1,2}(' . self::DOMAIN_NAMESPACE . ')/';
+
+        if (preg_match($modelsPattern, $className) === false &&
+            preg_match($domainPattern, $className) === false) {
+            return false;
+        }  
+        
+        return true;
+    }
+    
+    /**
+     * Check if the class extends Eloquent Model
+     */
+    protected function isEloquentModel(FileNode|string $class): bool
+    {
+        $classReflection = is_string($class) ?
+            $this->reflectionProvider->getClass($class) : 
+            $this->getClassReflection($class);
+        if (! $classReflection) {
+            return false;
+        }
+
+        return $classReflection->getName() === Model::class
+            || $classReflection->isSubclassOf(Model::class);
+    }
+}

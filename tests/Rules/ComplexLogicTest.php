@@ -1,0 +1,31 @@
+<?php
+
+namespace Opscale\Tests\Rules;
+
+use PHPStan\Rules\Rule;
+use Opscale\Rules\DDD\DomainServices\ComplexLogicRule;
+use PHPStan\Testing\RuleTestCase;
+
+class ComplexLogicTest extends RuleTestCase
+{
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+        return new ComplexLogicRule($broker);
+    }
+
+    public function testRule(): void
+    {
+        $this->analyse(
+            [
+                __DIR__ . '/../app/Models/Repositories/UserRepository.php',
+                __DIR__ . '/../app/Services/BatchingService.php'
+            ], [
+                [
+                    'Class "Opscale\Models\Repositories\UserRepository" is importing 2 Eloquent models, and it should not import more than 1. ' .
+                    'Consider moving complex logic involving multiple models to a Service class in the Services namespace.',
+                    8,
+                ],
+            ]);
+    }
+}

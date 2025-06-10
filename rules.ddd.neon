@@ -1,0 +1,51 @@
+services:
+    # DDD Rules
+    - 
+        class: Opscale\Rules\DDD\Aggregates\ModelValidationRule
+        tags:
+            - phpstan.rules.rule
+
+    - 
+        class: Opscale\Rules\DDD\Aggregates\ParentChildTransactionRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\Domain\NoStatementsLogicRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\DomainServices\ComplexLogicRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\Entities\EnforceUlidsRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\Repositories\EloquentRestrictionRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\Subdomains\BaseNamespaceRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\Subdomains\EntityCountRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\ValueObjects\EnforceCastRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\DDD\ValueObjects\NoAccesorMutatorRule
+        tags:
+            - phpstan.rules.rule

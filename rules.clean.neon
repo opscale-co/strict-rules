@@ -1,0 +1,26 @@
+services:
+    # CLEAN Architecture Rules
+    - 
+        class: Opscale\Rules\CLEAN\Communication\CommunicationLayerRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\CLEAN\Interaction\InteractionLayerRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\CLEAN\Orchestration\OrchestrationLayerRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\CLEAN\Representation\RepresentationLayerRule
+        tags:
+            - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\CLEAN\Transformation\TransformationLayerRule
+        tags:
+            - phpstan.rules.rule
