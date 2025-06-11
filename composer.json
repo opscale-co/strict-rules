@@ -2,6 +2,7 @@
     "name": "opscale-co/strict-rules",
     "description": "Opinionated Opscale rules for enforcing software architecture guidelines",
     "type": "phpstan-extension",
+    "version": 1.0,
     "repositories": [
         {
             "type": "composer",
@@ -27,7 +28,10 @@
     "extra": {
 		"phpstan": {
 			"includes": [
-				"extension.neon"
+				"rules.clean.neon",
+                "rules.ddd.neon",
+                "rules.smells.neon",
+                "rules.solid.neon"
 			]
 		}
 	},
