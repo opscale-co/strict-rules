@@ -64,6 +64,8 @@ jobs:
   release:
     needs: [test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout code
@@ -94,6 +96,8 @@ jobs:
           # Get the next version from conventionals commits
           NEXT_VERSION=$(npx semantic-release --dry-run | grep "next release version" | awk '{print $NF}')
           if [ ! -z "$NEXT_VERSION" ]; then
+            echo "Updating version to: $NEXT_VERSION"
+            
             # Update version in composer.json
             jq --arg version "$NEXT_VERSION" '.version = $version' composer.json > tmp.json
             mv tmp.json composer.json
@@ -111,6 +115,8 @@ jobs:
     needs: [release]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
@@ -144,4 +150,4 @@ jobs:
         run: |
           curl -XPOST -H'content-type:application/json' \
           "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
-          -d'{"repository":{"url":"https://github.com/${{ github.repositoryUrl }}"}}'
+          -d'{"repository":{"url":"https://github.com/${{ github.repository }}"}}'
