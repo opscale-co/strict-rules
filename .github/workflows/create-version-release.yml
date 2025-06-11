@@ -24,6 +24,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
           
+      - name: Initialize package.json if not exists
+        run: |
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
+          
       - name: Install semantic-release
         run: |
           npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
