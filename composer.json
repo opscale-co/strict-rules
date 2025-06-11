@@ -1,47 +1,47 @@
 {
-    "name": "opscale-co/strict-rules",
-    "description": "Opinionated Opscale rules for enforcing software architecture guidelines",
-    "type": "phpstan-extension",
-    "version": "1.0.0",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://nova.laravel.com"
-        }
-    ],
-    "require": {
-        "php": "^8.2",
-        "nunomaduro/larastan": "^3.4"
-    },
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Opscale\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Opscale\\": "tests/app",
-            "Opscale\\Tests\\": "tests"
-        }
-    },
-    "extra": {
-		"phpstan": {
-			"includes": [
-				"rules.clean.neon",
-                "rules.ddd.neon",
-                "rules.smells.neon",
-                "rules.solid.neon"
-			]
-		}
-	},
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require-dev": {
-        "laravel/laravel": "^11",
-        "phpunit/phpunit": "^11.5",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "lorisleiva/laravel-actions": "^2.9",
-        "laravel/nova": "^5.7"
+  "name": "opscale-co/strict-rules",
+  "description": "Opinionated Opscale rules for enforcing software architecture guidelines",
+  "type": "phpstan-extension",
+  "version": "1.0.0",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://nova.laravel.com"
     }
+  ],
+  "require": {
+    "php": "^8.2",
+    "nunomaduro/larastan": "^3.4"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Opscale\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Opscale\\": "tests/app",
+      "Opscale\\Tests\\": "tests"
+    }
+  },
+  "extra": {
+    "phpstan": {
+      "includes": [
+        "rules.clean.neon",
+        "rules.ddd.neon",
+        "rules.smells.neon",
+        "rules.solid.neon"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "laravel/laravel": "^11",
+    "phpunit/phpunit": "^11.5",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "lorisleiva/laravel-actions": "^2.9",
+    "laravel/nova": "^5.7"
+  }
 }
