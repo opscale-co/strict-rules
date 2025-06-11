@@ -97,21 +97,25 @@ jobs:
         run: |
           # Get the next version from conventionals commits
           NEXT_VERSION=$(npx semantic-release --dry-run | grep "next release version" | awk '{print $NF}')
-          if [ ! -z "$NEXT_VERSION" ]; then
-            echo "Updating version to: $NEXT_VERSION"
-            
-            # Update version in composer.json
-            jq --arg version "$NEXT_VERSION" '.version = $version' composer.json > tmp.json
-            mv tmp.json composer.json
-            
-            # Commit and tag
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git add composer.json
-            git commit -m "chore: bump version to $NEXT_VERSION" || exit 0
-            git tag "v$NEXT_VERSION"
-            git push origin main --tags
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "ERROR: No next version could be determined from commits"
+            echo "Make sure your commits follow conventional commit format"
+            exit 1
           fi
+          
+          echo "Updating version to: $NEXT_VERSION"
+          
+          # Update version in composer.json
+          jq --arg version "$NEXT_VERSION" '.version = $version' composer.json > tmp.json
+          mv tmp.json composer.json
+          
+          # Commit and tag
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add composer.json
+          git commit -m "chore: bump version to $NEXT_VERSION" || exit 0
+          git tag "v$NEXT_VERSION"
+          git push origin main --tags
 
   update-develop:
     needs: [release]
