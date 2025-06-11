@@ -24,7 +24,7 @@ jobs:
         extensions: mbstring, pdo, pdo_mysql
 
     - name: Configure Nova
-      run: composer config http-basic.nova.laravel.com "${NOVA_USERNAME}" "${NOVA_LICENSE_KEY}"
+      run: composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
 
     - name: Install PHP dependencies
       run: composer install --prefer-dist --no-progress --no-suggest
