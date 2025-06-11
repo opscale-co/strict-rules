@@ -17,18 +17,18 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Initialize package.json if not exists
+        run: |
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          
-      - name: Initialize package.json if not exists
-        run: |
-          if [ ! -f package.json ]; then
-            npm init -y
-          fi
           
       - name: Install semantic-release
         run: |
