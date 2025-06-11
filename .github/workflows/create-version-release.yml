@@ -22,6 +22,7 @@ jobs:
         run: |
           if [ ! -f package.json ]; then
             npm init -y
+            npm i --package-lock-only
           fi
           
       - name: Setup Node.js
