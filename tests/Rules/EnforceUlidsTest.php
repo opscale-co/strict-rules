@@ -2,19 +2,17 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\Entities\EnforceUlidsRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(EnforceUlidsRule::class)]
 class EnforceUlidsTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new EnforceUlidsRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([__DIR__ . '/../app/Models/User.php'], [
             [
@@ -23,5 +21,12 @@ class EnforceUlidsTest extends RuleTestCase
                 11,
             ],
         ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new EnforceUlidsRule($broker);
     }
 }

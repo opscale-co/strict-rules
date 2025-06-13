@@ -2,13 +2,12 @@
 
 namespace Opscale\Rules\DDD;
 
+use Illuminate\Database\Eloquent\Model;
+use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use Opscale\Rules\BaseRule;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Base rule that ensures processing only for Model classes
@@ -25,9 +24,6 @@ abstract class DomainRule extends BaseRule
      */
     protected const DOMAIN_NAMESPACE = 'Domain';
 
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
@@ -35,7 +31,9 @@ abstract class DomainRule extends BaseRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        if(parent::shouldProcess($node, $scope) === false) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
@@ -47,18 +45,18 @@ abstract class DomainRule extends BaseRule
         if (preg_match($modelsPattern, $className) === false &&
             preg_match($domainPattern, $className) === false) {
             return false;
-        }  
-        
+        }
+
         return true;
     }
-    
+
     /**
      * Check if the class extends Eloquent Model
      */
     protected function isEloquentModel(FileNode|string $class): bool
     {
         $classReflection = is_string($class) ?
-            $this->reflectionProvider->getClass($class) : 
+            $this->reflectionProvider->getClass($class) :
             $this->getClassReflection($class);
         if (! $classReflection) {
             return false;

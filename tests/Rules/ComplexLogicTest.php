@@ -2,24 +2,22 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\DomainServices\ComplexLogicRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(ComplexLogicRule::class)]
 class ComplexLogicTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new ComplexLogicRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse(
             [
                 __DIR__ . '/../app/Models/Repositories/UserRepository.php',
-                __DIR__ . '/../app/Services/BatchingService.php'
+                __DIR__ . '/../app/Services/BatchingService.php',
             ], [
                 [
                     'Class "Opscale\Models\Repositories\UserRepository" is importing 2 Eloquent models, and it should not import more than 1. ' .
@@ -27,5 +25,12 @@ class ComplexLogicTest extends RuleTestCase
                     8,
                 ],
             ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new ComplexLogicRule($broker);
     }
 }

@@ -5,6 +5,7 @@ namespace Opscale\Rules\DDD\Subdomains;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -13,22 +14,15 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class EntityCountRule extends DomainRule
 {
+    private static int $processedModels = 0;
+
     /**
      * Default maximum number of classes in a subdomain
      */
     private const DEFAULT_MAX_CLASSES = 10;
-    
-    /**
-     * @var int
-     */
+
     private int $maxClasses;
 
-    private static int $processedModels = 0;
-
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     * @param int $maxClasses
-     */
     public function __construct(
         ReflectionProvider $reflectionProvider,
         int $maxClasses = self::DEFAULT_MAX_CLASSES
@@ -39,8 +33,10 @@ class EntityCountRule extends DomainRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->isEloquentModel($node)) {
-            return [];
+        // @phpstan-ignore-next-line
+        if (! ($node instanceof FileNode) ||
+            ! $this->isEloquentModel($node)) {
+            return []; // Skip if not a model class
         }
 
         // Check if the class is in the root\Models namespace
@@ -49,7 +45,7 @@ class EntityCountRule extends DomainRule
         if (preg_match($pattern, $namespace)) {
             self::$processedModels++;
         }
-        
+
         // Check if the count exceeds the limit
         $errors = [];
         if (self::$processedModels > $this->maxClasses) {
@@ -60,11 +56,13 @@ class EntityCountRule extends DomainRule
                 $this->maxClasses
             );
 
+            $namespaceNode = $this->getNamespaceNode($node);
             $errors[] = RuleErrorBuilder::message($error)
-                ->line($this->getNamespaceNode($node)->getLine())
+                ->line($namespaceNode ? $namespaceNode->getLine() : 1)
+                ->identifier('ddd.subdomains.entityCount')
                 ->build();
         }
-        
+
         return $errors;
     }
 }

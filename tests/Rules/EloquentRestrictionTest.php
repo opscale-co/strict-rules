@@ -2,24 +2,22 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\Repositories\EloquentRestrictionRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(EloquentRestrictionRule::class)]
 class EloquentRestrictionTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new EloquentRestrictionRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([
-                __DIR__ . '/../app/Models/Repositories/UserRepository.php',
-                __DIR__ . '/../app/Models/Product.php',
-            ], 
+            __DIR__ . '/../app/Models/Repositories/UserRepository.php',
+            __DIR__ . '/../app/Models/Product.php',
+        ],
             [
                 [
                     'Eloquent calls are only allowed within ' .
@@ -32,5 +30,12 @@ class EloquentRestrictionTest extends RuleTestCase
                     19,
                 ],
             ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new EloquentRestrictionRule($broker);
     }
 }

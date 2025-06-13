@@ -2,29 +2,34 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\Smells\NoDummyCatchesRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(NoDummyCatchesRule::class)]
 class NoDummyCatchesTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new NoDummyCatchesRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([
-                __DIR__ . '/../app/Jobs/CleanOldProducts.php',
-            ], 
+            __DIR__ . '/../app/Jobs/CleanOldProducts.php',
+        ],
             [
                 [
                     'Empty catch block for exception type(s) "Exception". ' .
                     'Either handle the exception properly or remove the try-catch block.',
                     25,
-                ]
+                ],
             ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new NoDummyCatchesRule($broker);
     }
 }

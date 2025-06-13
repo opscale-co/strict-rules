@@ -3,17 +3,19 @@
 namespace Opscale\Rules;
 
 use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\ParserFactory;
 use PhpParser\PhpVersion;
+use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Rules\Rule;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
+use Throwable;
 
 /**
  * Base rule with support methods
@@ -25,9 +27,6 @@ abstract class BaseRule implements Rule
      */
     protected $reflectionProvider;
 
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         $this->reflectionProvider = $reflectionProvider;
@@ -38,25 +37,30 @@ abstract class BaseRule implements Rule
         return FileNode::class;
     }
 
+    /**
+     * Check if the rule should process the given FileNode
+     */
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
+        // @phpstan-ignore-next-line
+        if (! ($node instanceof FileNode)) {
+            return false;
+        }
+
         $classReflection = $this->getClassReflection($node);
-        if (!$classReflection ||
-            $classReflection->isAnonymous() || 
+        if (! $classReflection ||
+            $classReflection->isAnonymous() ||
             $classReflection->isInterface()) {
             return false;
         }
-        
+
         return true;
     }
 
     /**
      * Resolve the root Class_ node from the file
-     *
-     * @param FileNode $node
-     * @return bool
      */
-    protected function getRootNode(FileNode|array $node): mixed
+    protected function getRootNode(FileNode|array $node): Class_|Trait_|null
     {
         $rootNode = null;
         $namespace = $this->getNamespaceNode($node);
@@ -64,6 +68,7 @@ abstract class BaseRule implements Rule
             if ($stmt instanceof Class_ ||
                 $stmt instanceof Trait_) {
                 $rootNode = $stmt;
+                break;
             }
         }
 
@@ -71,27 +76,30 @@ abstract class BaseRule implements Rule
     }
 
     /**
-     * Resolve a ClassReflection for the root Class_ node 
-     *
-     * @param FileNode $node
-     * @return ClassReflection|null
+     * Resolve a ClassReflection for the root Class_ node
      */
     protected function getClassReflection(FileNode $node): ?ClassReflection
     {
         $classNode = $this->getRootNode($node);
+        if ($classNode === null) {
+            return null;
+        }
+
         $fqcn = $classNode->namespacedName->toString();
         if (! $this->reflectionProvider->hasClass($fqcn)) {
             return null;
         }
+
         return $this->reflectionProvider->getClass($fqcn);
     }
 
     /**
      * Get the namespace name
      */
-    protected function getNamespace(FileNode $fileNode): string
+    protected function getNamespace(FileNode $node): string
     {
-        $namespace = $this->getNamespaceNode($fileNode);
+        $namespace = $this->getNamespaceNode($node);
+
         return $namespace !== null && $namespace->name !== null
             ? $namespace->name->toString()
             : '';
@@ -108,13 +116,13 @@ abstract class BaseRule implements Rule
                 return $node;
             }
         }
+
         return null;
     }
 
     /**
      * Get all class declarations within the namespace
      *
-     * @param FileNode $node
      * @return Class_[]
      */
     protected function getClassNodes(FileNode $node): array
@@ -129,14 +137,12 @@ abstract class BaseRule implements Rule
                 $classes[] = $stmt;
             }
         }
+
         return $classes;
     }
 
     /**
      * Get all use statements within the namespace
-     *
-     * @param FileNode $node
-     * @return string[] Fully qualified names
      */
     protected function getUseStatements(FileNode $node): array
     {
@@ -152,14 +158,12 @@ abstract class BaseRule implements Rule
                 }
             }
         }
+
         return $uses;
     }
 
     /**
      * Get the parent class
-     *
-     * @param FileNode $classNode
-     * @return string Parent class name
      */
     protected function getParentNode(FileNode $node): string
     {
@@ -171,20 +175,21 @@ abstract class BaseRule implements Rule
 
     /**
      * Get all methods from a class node
-     *
-     * @param Node $rootNode
-     * @return \PhpParser\Node\Stmt\ClassMethod[]
      */
-    protected function getMethodNodes(Node $rootNode): array
+    protected function getMethodNodes(Class_|Trait_ $rootNode): array
     {
-        return $rootNode->getMethods();
+        $methods = [];
+        foreach ($rootNode->stmts as $stmt) {
+            if ($stmt instanceof ClassMethod) {
+                $methods[] = $stmt;
+            }
+        }
+
+        return $methods;
     }
 
     /**
      * Get all used traits in a class
-     *
-     * @param Class_ $classNode
-     * @return \PhpParser\Node\Stmt\TraitUse[]
      */
     protected function getTraitNodes(Class_ $classNode): array
     {
@@ -194,21 +199,22 @@ abstract class BaseRule implements Rule
                 $traits[] = $stmt;
             }
         }
+
         return $traits;
     }
 
     /**
      * Get all interface implementations in a class
-     *
-     * @param Node $rootNode
-     * @return string[] Interface names
      */
-    protected function getInterfaceNodes(Node $rootNode): array
+    protected function getInterfaceNodes(Class_ $rootNode): array
     {
         $interfaces = [];
-        foreach ($rootNode->implements as $interface) {
-            $interfaces[] = $interface->toString();
+        if ($rootNode->implements) {
+            foreach ($rootNode->implements as $interface) {
+                $interfaces[] = $interface->toString();
+            }
         }
+
         return $interfaces;
     }
 
@@ -226,12 +232,12 @@ abstract class BaseRule implements Rule
                     return true;
                 }
             }
-            // Absolute namespace 
-            else if (str_starts_with($namespace, $allowedNamespace)) {
+            // Absolute namespace
+            elseif (str_starts_with($namespace, $allowedNamespace)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -240,29 +246,29 @@ abstract class BaseRule implements Rule
      */
     protected function getASTForClass(string $className): ?Node
     {
-        if (!$this->reflectionProvider->hasClass($className)) {
+        if (! $this->reflectionProvider->hasClass($className)) {
             return null;
         }
 
         $classReflection = $this->reflectionProvider->getClass($className);
         $filename = $classReflection->getFileName();
-        
-        if (!$filename) {
+
+        if (! $filename) {
             return null;
         }
 
         try {
             // Parse the model's source file to analyze its AST
-            $parser = new ParserFactory();
+            $parser = new ParserFactory;
             $phpParser = $parser->createForVersion(PhpVersion::fromString('8.2'));
             $sourceCode = file_get_contents($filename);
             $ast = $phpParser->parse($sourceCode);
-            
+
             // Find the class node in the AST
             $classNode = $this->getRootNode($ast);
-            
+
             return $classNode;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // If we can't parse the file, fall back to false
             return null;
         }

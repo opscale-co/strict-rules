@@ -2,14 +2,15 @@
 
 namespace Opscale\Rules\CLEAN;
 
+use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\UseItem;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use Opscale\Rules\BaseRule;
+use Throwable;
 
 /**
  * Abstract rule that enforces Clean Architecture layer dependencies
@@ -36,7 +37,7 @@ abstract class CleanRule extends BaseRule
         ],
         4 => [ // Orchestration Layer
             '\\Jobs\\',
-            '\\Listeners\\', 
+            '\\Listeners\\',
             '\\Notifications\\',
         ],
         5 => [ // Interaction Layer
@@ -100,21 +101,14 @@ abstract class CleanRule extends BaseRule
             'URL',
             'Validator',
             'View',
-            'Vite'
-        ]
+            'Vite',
+        ],
     ];
 
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
     }
-
-    protected abstract function processingLayer(): int;
-
-    protected abstract function getAllowedBaseClasses(): array;
 
     /**
      * Check if the use statement is allowed for the processing
@@ -132,26 +126,20 @@ abstract class CleanRule extends BaseRule
                 return true; // Class is allowed in this layer
             }
         }
+
         return false; // Class is not allowed in this layer
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        if (parent::shouldProcess($node, $scope) === false) {
-            return false;
-        }
-
-        // Only process for processing layer
-        $rootNode = $this->getRootNode($node);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className); 
-
-        return $classLayer !== null && $classLayer == $this->processingLayer();
-    }
-
+    /*
+     * @param FileNode $node
+     * @param Scope $scope
+     * @return IdentifierRuleError[]
+     */
     public function processNode(Node $node, Scope $scope): array
     {
-        if(!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return []; // Skip if not a model class
         }
 
@@ -159,14 +147,14 @@ abstract class CleanRule extends BaseRule
         $uses = $this->getUseStatements($node);
         $rootNode = $this->getRootNode($node);
         $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className); 
-        
-        foreach ($uses as $useNode) { 
+        $classLayer = $this->getClassLayer($className);
+
+        foreach ($uses as $useNode) {
             $usedClass = $useNode->name->toString();
             $usedLayer = $this->getClassLayer($usedClass);
 
             $error = null;
-            if ($usedLayer != null && !$this->isAllowedLayer($node, $useNode)) {
+            if ($usedLayer != null && ! $this->isAllowedLayer($node, $useNode)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s" from layer %d. ' .
                     'Layers can only use equal or lower layers and communicate via events upwards.',
@@ -175,8 +163,7 @@ abstract class CleanRule extends BaseRule
                     $usedClass,
                     $usedLayer
                 );
-            }
-            else if ($usedLayer == null && !$this->allowUse($useNode) && !$this->isAllowedFacade($node, $useNode)) {
+            } elseif ($usedLayer == null && ! $this->allowUse($useNode) && ! $this->isAllowedFacade($node, $useNode)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s". ' .
                     'This class is not allowed in this layer, it does not comply with the layer purpose.',
@@ -185,15 +172,53 @@ abstract class CleanRule extends BaseRule
                     $usedClass
                 );
             }
-            
-            if($error != null) {
+
+            if ($error != null) {
                 $errors[] = RuleErrorBuilder::message($error)
                     ->line($useNode->getLine())
+                    ->identifier('clean.layer' . $classLayer . '.importNotAllowed')
                     ->build();
             }
         }
 
         return $errors;
+    }
+
+    /**
+     * Check if the class is a Facade and if it is allowed in the current layer
+     */
+    public function isAllowedFacade(FileNode $node, UseItem $useNode): bool
+    {
+        $rootNode = $this->getRootNode($node);
+        $className = $rootNode->namespacedName->toString();
+        $classLayer = $this->getClassLayer($className);
+        $allowedFacades = self::FACADES[$classLayer] ?? [];
+        $usedClass = $useNode->name->toString();
+
+        $isFacade = str_starts_with($usedClass, 'Illuminate\\Support\\Facades\\');
+        $facade = substr($usedClass, strlen('Illuminate\\Support\\Facades\\'));
+
+        return $isFacade && in_array($facade, $allowedFacades);
+    }
+
+    abstract protected function processingLayer(): int;
+
+    abstract protected function getAllowedBaseClasses(): array;
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        // Only process for processing layer
+        $rootNode = $this->getRootNode($node);
+        $className = $rootNode->namespacedName->toString();
+        $classLayer = $this->getClassLayer($className);
+
+        return $classLayer !== null && $classLayer == $this->processingLayer();
     }
 
     /**
@@ -211,7 +236,7 @@ abstract class CleanRule extends BaseRule
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
 
-        return $usedLayer === null || $usedLayer <= $classLayer;
+        return $usedLayer != null && $usedLayer <= $classLayer;
     }
 
     /**
@@ -223,12 +248,12 @@ abstract class CleanRule extends BaseRule
             foreach ($folders as $folder) {
                 $pattern = '/^(\w+)(\\\w+)*(' . preg_quote($folder) . ')/';
                 if (preg_match($pattern, $className)
-                    && !str_starts_with($className, 'Illuminate\\')) {
+                    && ! str_starts_with($className, 'Illuminate\\')) {
                     return $layerNumber;
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -239,38 +264,22 @@ abstract class CleanRule extends BaseRule
     protected function getRootParentNamespace(string $className): ?string
     {
         try {
-            if (!$this->reflectionProvider->hasClass($className)) {
+            if (! $this->reflectionProvider->hasClass($className)) {
                 return null;
             }
-            
+
             $classReflection = $this->reflectionProvider->getClass($className);
             $currentClass = $classReflection;
-            
+
             // Traverse up the inheritance chain
             while ($parentClass = $currentClass->getParentClass()) {
                 $currentClass = $parentClass;
             }
 
-            return  $currentClass->getDisplayName();
-            
-        } catch (\Throwable $e) {
+            return $currentClass->getDisplayName();
+
+        } catch (Throwable $e) {
             return null;
         }
-    }
-
-    /**
-     * Check if the class is a Facade and if it is allowed in the current layer
-     */
-    public function isAllowedFacade(FileNode $node, UseItem $useNode): bool
-    {
-        $rootNode = $this->getRootNode($node);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className); 
-        $allowedFacades = self::FACADES[$classLayer] ?? [];
-        $usedClass = $useNode->name->toString();
-
-        $isFacade = str_starts_with($usedClass, 'Illuminate\\Support\\Facades\\');
-        $facade = substr($usedClass, strlen('Illuminate\\Support\\Facades\\'));
-        return $isFacade && in_array($facade, $allowedFacades);
     }
 }

@@ -4,13 +4,10 @@ namespace Opscale\Rules\Smells;
 
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
-use PhpParser\NodeFinder;
 use PhpParser\Node\Stmt\Catch_;
-use PhpParser\Node\Stmt\Return_;
-use PhpParser\Node\Stmt\Throw_;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -18,26 +15,17 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class EnforceLogicHandlingRule extends BaseRule
 {
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        $namespace = $this->getNamespace($node);
-        if (parent::shouldProcess($node, $scope) === false ||
-            $this->isInNamespaces($namespace, ['\\Services'])) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
         $errors = [];
         $rootNode = $this->getRootNode($node);
-        $nodeFinder = new NodeFinder();
+        $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 
         // Traverse all nodes in the class to find catch statements
@@ -52,10 +40,27 @@ class EnforceLogicHandlingRule extends BaseRule
 
                 $errors[] = RuleErrorBuilder::message($error)
                     ->line($expr->getLine())
+                    ->identifier('smells.enforceLogicHandling')
                     ->build();
             }
         }
 
         return $errors;
+    }
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode) {
+            return false;
+        }
+
+        $namespace = $this->getNamespace($node);
+        if (parent::shouldProcess($node, $scope) === false ||
+            $this->isInNamespaces($namespace, ['\\Services'])) {
+            return false;
+        }
+
+        return true;
     }
 }

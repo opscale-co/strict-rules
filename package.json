@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint": "vendor/bin/duster lint --dirty",
+    "fix": "vendor/bin/duster fix",
+    "test": "vendor/bin/phpunit tests"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@commitlint/cz-commitlint": "^19.4.0",
+    "@commitlint/prompt": "^19.4.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.8"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}

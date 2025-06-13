@@ -2,23 +2,21 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\ValueObjects\EnforceCastRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(EnforceCastRule::class)]
 class EnforceCastTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new EnforceCastRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([
-                __DIR__ . '/../app/Models/ValueObjects/Address.php',
-            ], 
+            __DIR__ . '/../app/Models/ValueObjects/Address.php',
+        ],
             [
                 [
                     'ValueObject class "Opscale\Models\ValueObjects\Address" must implement "Illuminate\Contracts\Database\Eloquent\CastsAttributes" interface. ' .
@@ -26,5 +24,12 @@ class EnforceCastTest extends RuleTestCase
                     9,
                 ],
             ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new EnforceCastRule($broker);
     }
 }

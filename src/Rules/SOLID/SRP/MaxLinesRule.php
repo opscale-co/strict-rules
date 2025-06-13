@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -21,14 +20,10 @@ class MaxLinesRule extends BaseRule
      */
     private const MAX_LINES = 500;
 
-    /**
-     * @var int
-     */
     private int $maxLines;
 
     /**
-     * @param ReflectionProvider $reflectionProvider
-     * @param int $maxLines Maximum allowed lines (default: 500)
+     * @param  int  $maxLines  Maximum allowed lines (default: 500)
      */
     public function __construct(
         ReflectionProvider $reflectionProvider,
@@ -40,7 +35,9 @@ class MaxLinesRule extends BaseRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -62,7 +59,8 @@ class MaxLinesRule extends BaseRule
             );
 
             $errors[] = RuleErrorBuilder::message($error)
-                ->line($startLine)
+                ->line($endLine)
+                ->identifier('solid.srp.maxLines')
                 ->build();
         }
 

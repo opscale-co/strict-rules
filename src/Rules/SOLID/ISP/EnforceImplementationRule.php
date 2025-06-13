@@ -7,14 +7,19 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Throw_;
-use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Scalar;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Reflection\ReflectionProvider;
+use Throwable;
 
 /**
  * Rule that ensures classes properly implement interface methods
@@ -22,9 +27,6 @@ use PHPStan\Reflection\ReflectionProvider;
  */
 class EnforceImplementationRule extends BaseRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
@@ -32,7 +34,9 @@ class EnforceImplementationRule extends BaseRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -44,21 +48,21 @@ class EnforceImplementationRule extends BaseRule
 
         $errors = [];
         $classReflection = $this->getClassReflection($node);
-        
+
         // Get all interface methods that need to be implemented
         $interfaceMethods = $this->getInterfaceMethods($implementedInterfaces);
-        
+
         foreach ($this->getMethodNodes($rootNode) as $method) {
             $methodName = $method->name->toString();
-            
+
             // Check if this method implements an interface method
-            if (!in_array($methodName, $interfaceMethods)) {
+            if (! in_array($methodName, $interfaceMethods)) {
                 continue;
             }
 
             // Check for improper implementations
             $error = $this->validateMethodImplementation(
-                $method, 
+                $method,
                 $classReflection->getName());
             if ($error !== null) {
                 $errors[] = $error;
@@ -74,25 +78,25 @@ class EnforceImplementationRule extends BaseRule
     private function getInterfaceMethods(array $interfaces): array
     {
         $methods = [];
-        
+
         foreach ($interfaces as $interfaceName) {
             try {
                 if ($this->reflectionProvider->hasClass($interfaceName)) {
                     $interfaceReflection = $this->reflectionProvider->getClass($interfaceName);
                     $interfaceReflection = $interfaceReflection->getNativeReflection();
-                    
+
                     foreach ($interfaceReflection->getMethods() as $method) {
                         if ($method->isPublic()) {
                             $methods[] = $method->getName();
                         }
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Skip if we can't reflect the interface
                 continue;
             }
         }
-        
+
         return array_unique($methods);
     }
 
@@ -105,46 +109,55 @@ class EnforceImplementationRule extends BaseRule
 
         // Skip abstract methods
         if ($method->isAbstract()) {
-            return $errors;
+            return null;
         }
 
         // Check if method body is empty
         if (empty($method->stmts)) {
-            return RuleErrorBuilder::message(
-                sprintf(
-                    'Method "%s::%s()" implements an interface but has an empty body. ' .
-                    'Provide a proper implementation instead.',
-                    $className,
-                    $methodName
-                )
-            )->line($method->getLine())->build();
+            $error = sprintf(
+                'Method "%s::%s()" implements an interface but has an empty body. ' .
+                'Provide a proper implementation instead.',
+                $className,
+                $methodName
+            );
+
+            return RuleErrorBuilder::message($error)
+                ->line($method->getLine())
+                ->identifier('solid.isp.enforceImplementation')
+                ->build();
         }
 
         // Check if it's a short implementation (few statements and lines)
         if ($this->isShortImplementation($method)) {
             $stmt = $method->stmts[0];
-            
+
             // Single throw statement
-            if ($stmt->expr instanceof Throw_) {
-                return RuleErrorBuilder::message(
-                    sprintf(
-                        'Method "%s::%s()" implements an interface but only throws an exception. ' .
-                        'Provide a proper implementation instead.',
-                        $className,
-                        $methodName
-                    )
-                )->line($method->getLine())->build();
+            if ($stmt instanceof Expression && $stmt->expr instanceof Throw_) {
+                $error = sprintf(
+                    'Method "%s::%s()" implements an interface but only throws an exception. ' .
+                    'Provide a proper implementation instead.',
+                    $className,
+                    $methodName
+                );
+
+                return RuleErrorBuilder::message($error)
+                    ->line($method->getLine())
+                    ->identifier('solid.isp.enforceImplementation')
+                    ->build();
             }
             // Single return with default value
             elseif ($stmt instanceof Return_ && $this->isDefaultValueReturn($stmt)) {
-                return RuleErrorBuilder::message(
-                    sprintf(
-                        'Method "%s::%s()" implements an interface but only returns a default value. ' .
-                        'Provide a proper implementation instead.',
-                        $className,
-                        $methodName
-                    )
-                )->line($method->getLine())->build();
+                $error = sprintf(
+                    'Method "%s::%s()" implements an interface but only returns a default value. ' .
+                    'Provide a proper implementation instead.',
+                    $className,
+                    $methodName
+                );
+
+                return RuleErrorBuilder::message($error)
+                    ->line($method->getLine())
+                    ->identifier('solid.isp.enforceImplementation')
+                    ->build();
             }
         }
 
@@ -161,12 +174,12 @@ class EnforceImplementationRule extends BaseRule
         if ($stmtCount > 2) {
             return false;
         }
-        
+
         // Check line count (method should span few lines)
         $startLine = $method->getStartLine();
         $endLine = $method->getEndLine();
         $lineCount = $endLine - $startLine + 1;
-        
+
         return $stmtCount <= 2 && $lineCount <= 5;
     }
 
@@ -184,13 +197,13 @@ class EnforceImplementationRule extends BaseRule
         // Check for scalar default values
         if ($expr instanceof Scalar) {
             // Empty string, zero, false, null
-            if ($expr instanceof Scalar\String_ && $expr->value === '') {
+            if ($expr instanceof String_ && $expr->value === '') {
                 return true;
             }
-            if ($expr instanceof Scalar\LNumber && $expr->value === 0) {
+            if ($expr instanceof LNumber && $expr->value === 0) {
                 return true;
             }
-            if ($expr instanceof Scalar\DNumber && $expr->value === 0.0) {
+            if ($expr instanceof DNumber && $expr->value === 0.0) {
                 return true;
             }
         }
