@@ -4,13 +4,13 @@ namespace Opscale\Rules\DDD\ValueObjects;
 
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -18,27 +18,16 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoAccesorMutatorRule extends DomainRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        if (parent::shouldProcess($node, $scope) === false ||
-            !$this->isEloquentModel($node)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -48,8 +37,8 @@ class NoAccesorMutatorRule extends DomainRule
         $methods = $this->getMethodNodes($rootNode);
 
         foreach ($methods as $method) {
-            if ($this->isEloquentMutator($method) || 
-                $this->isEloquentAccessor($method) || 
+            if ($this->isEloquentMutator($method) ||
+                $this->isEloquentAccessor($method) ||
                 $this->isAttributeMethod($method)) {
                 $error = sprintf(
                     'Model "%s" is defining "%s" and it should not contain Eloquent mutators or accessors. ' .
@@ -60,11 +49,24 @@ class NoAccesorMutatorRule extends DomainRule
 
                 $errors[] = RuleErrorBuilder::message($error)
                     ->line($method->getLine())
+                    ->identifier('ddd.valueObjects.noAccesorMutator')
                     ->build();
             }
         }
 
         return $errors;
+    }
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false ||
+            ! $this->isEloquentModel($node)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -73,12 +75,12 @@ class NoAccesorMutatorRule extends DomainRule
     private function isEloquentMutator(ClassMethod $method): bool
     {
         $methodName = $method->name->toString();
-        
+
         // Check for Laravel 9+ attribute-style mutators (set...Attribute)
         if (preg_match('/^set[A-Z]\w*Attribute$/', $methodName)) {
             return true;
         }
-        
+
         // Check for older mutator patterns
         if (str_starts_with($methodName, 'set') && str_ends_with($methodName, 'Attribute')) {
             return true;
@@ -93,12 +95,12 @@ class NoAccesorMutatorRule extends DomainRule
     private function isEloquentAccessor(ClassMethod $method): bool
     {
         $methodName = $method->name->toString();
-        
+
         // Check for Laravel 9+ attribute-style accessors (get...Attribute)
         if (preg_match('/^get[A-Z]\w*Attribute$/', $methodName)) {
             return true;
         }
-        
+
         // Check for older accessor patterns
         if (str_starts_with($methodName, 'get') && str_ends_with($methodName, 'Attribute')) {
             return true;
@@ -113,7 +115,7 @@ class NoAccesorMutatorRule extends DomainRule
     private function isAttributeMethod(ClassMethod $method): bool
     {
         // Check if the method returns an Attribute instance
-        if (!$method->returnType) {
+        if (! $method->returnType) {
             return false;
         }
 
@@ -121,7 +123,7 @@ class NoAccesorMutatorRule extends DomainRule
         $returnType = $method->returnType;
         if ($returnType instanceof Name) {
             $returnTypeName = $returnType->toString();
-            if ($returnTypeName === 'Attribute' || 
+            if ($returnTypeName === 'Attribute' ||
                 str_ends_with($returnTypeName, '\\Attribute')) {
                 return true;
             }
@@ -134,7 +136,7 @@ class NoAccesorMutatorRule extends DomainRule
                     $staticCall = $stmt->expr;
                     if ($staticCall->class instanceof Name) {
                         $className = $staticCall->class->toString();
-                        if ($className === 'Attribute' || 
+                        if ($className === 'Attribute' ||
                             str_ends_with($className, '\\Attribute')) {
                             return true;
                         }

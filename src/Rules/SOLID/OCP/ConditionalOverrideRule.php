@@ -2,23 +2,24 @@
 
 namespace Opscale\Rules\SOLID\OCP;
 
+use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use Opscale\Rules\BaseRule;
 
 /**
- * Rule that ensures all public and protected methods are final 
+ * Rule that ensures all public and protected methods are final
  * unless annotated with #[\Override] or @overridable
  */
 class ConditionalOverrideRule extends BaseRule
 {
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -28,7 +29,7 @@ class ConditionalOverrideRule extends BaseRule
         $classReflection = $this->getClassReflection($node);
 
         foreach ($methods as $method) {
-            if (!$this->isPublicOrProtected($method)) {
+            if (! $this->isPublicOrProtected($method)) {
                 continue;
             }
 
@@ -36,7 +37,7 @@ class ConditionalOverrideRule extends BaseRule
                 continue;
             }
 
-            if ($this->hasOverrideAttribute($method) || 
+            if ($this->hasOverrideAttribute($method) ||
                 $this->hasOverridableAnnotation($method)) {
                 continue;
             }
@@ -50,6 +51,7 @@ class ConditionalOverrideRule extends BaseRule
 
             $errors[] = RuleErrorBuilder::message($error)
                 ->line($method->getLine())
+                ->identifier('solid.ocp.conditionalOverride')
                 ->build();
         }
 
@@ -76,6 +78,7 @@ class ConditionalOverrideRule extends BaseRule
                 }
             }
         }
+
         return false;
     }
 
@@ -90,6 +93,7 @@ class ConditionalOverrideRule extends BaseRule
         }
 
         $docText = $docComment->getText();
+
         return strpos($docText, '@overridable') !== false;
     }
 }

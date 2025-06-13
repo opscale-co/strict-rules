@@ -1,0 +1,16 @@
+parameters:
+    level: 5
+    phpVersion: 80200
+    paths:
+        - src
+        - tests/Rules
+    reportUnmatchedIgnoredErrors: true
+    ignoreErrors:
+        -   
+            message: '#Method Opscale\\Rules(\\\w+)+::processNode\(\) should return list<PHPStan\\Rules\\IdentifierRuleError> but returns list<PHPStan\\Rules\\RuleError>.#'
+            paths:
+                - src/Rules/*.php
+        -   
+            message: '#Method Opscale\\Rules(\\\w+)+::processNode\(\) should return list<PHPStan\\Rules\\IdentifierRuleError> but returns array<PHPStan\\Rules\\RuleError>.#'
+            paths:
+                - src/Rules/*.php

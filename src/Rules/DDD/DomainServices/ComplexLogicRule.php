@@ -2,13 +2,14 @@
 
 namespace Opscale\Rules\DDD\DomainServices;
 
+use Illuminate\Database\Eloquent\Model;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use Illuminate\Database\Eloquent\Model;
+use Throwable;
 
 /**
  * Rule that verifies Service classes can have complex logic with multiple Eloquent models,
@@ -16,9 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ComplexLogicRule extends DomainRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
@@ -26,7 +24,9 @@ class ComplexLogicRule extends DomainRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -35,7 +35,7 @@ class ComplexLogicRule extends DomainRule
         $namespace = $this->getNamespace($node);
         $isServiceClass = $this->isInNamespaces($namespace, ['\\Services']);
         $modelsCount = 0;
-        
+
         // Get all use statements and count Eloquent models
         $uses = $this->getUseStatements($node);
 
@@ -44,7 +44,7 @@ class ComplexLogicRule extends DomainRule
             $modelsCount += $this->isEloquentModelClass($usedClass) ? 1 : 0;
 
             // Non-Service classes should limit their model dependencies
-            if (!$isServiceClass && $modelsCount > 1) {
+            if (! $isServiceClass && $modelsCount > 1) {
                 $error = sprintf(
                     'Class "%s" is importing %d Eloquent models, and it should not import more than 1. ' .
                     'Consider moving complex logic involving multiple models to a Service class in the Services namespace.',
@@ -54,6 +54,7 @@ class ComplexLogicRule extends DomainRule
 
                 $errors[] = RuleErrorBuilder::message($error)
                     ->line($rootNode->getLine())
+                    ->identifier('ddd.domainServices.complexLogic')
                     ->build();
 
                 break;
@@ -70,17 +71,17 @@ class ComplexLogicRule extends DomainRule
     private function isEloquentModelClass(string $className): bool
     {
         try {
-            if (!$this->reflectionProvider->hasClass($className)) {
+            if (! $this->reflectionProvider->hasClass($className)) {
                 return false;
             }
 
             $classReflection = $this->reflectionProvider->getClass($className);
-            
+
             // Check if the class extends Eloquent Model
             return $classReflection->getName() === Model::class
                 || $classReflection->isSubclassOf(Model::class);
-                
-        } catch (\Throwable $e) {
+
+        } catch (Throwable $e) {
             // If we can't determine if it's a model, assume it's not
             return false;
         }

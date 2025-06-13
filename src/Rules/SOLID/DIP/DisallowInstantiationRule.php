@@ -2,6 +2,7 @@
 
 namespace Opscale\Rules\SOLID\DIP;
 
+use Exception;
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
@@ -31,7 +32,7 @@ class DisallowInstantiationRule extends BaseRule
         'Illuminate\\Database\\Eloquent\\Collection',
         'Illuminate\\Pagination\\LengthAwarePaginator',
         'Illuminate\\Pagination\\Paginator',
-        
+
         // Common data transfer objects and value objects patterns
         'Carbon\\Carbon',
         'Carbon\\CarbonImmutable',
@@ -42,10 +43,6 @@ class DisallowInstantiationRule extends BaseRule
      */
     private array $additionalAllowedClasses;
 
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     * @param array<string> $additionalAllowedClasses
-     */
     public function __construct(
         ReflectionProvider $reflectionProvider,
         array $additionalAllowedClasses = []
@@ -56,13 +53,15 @@ class DisallowInstantiationRule extends BaseRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
         $errors = [];
         $rootNode = $this->getRootNode($node);
-        
+
         if ($rootNode === null) {
             return [];
         }
@@ -79,15 +78,13 @@ class DisallowInstantiationRule extends BaseRule
     /**
      * Check a method for direct class instantiations
      *
-     * @param ClassMethod $method
-     * @param FileNode $fileNode
      * @return RuleError[]
      */
     private function checkMethodForInstantiations(ClassMethod $method, FileNode $fileNode): array
     {
         $errors = [];
         $classReflection = $this->getClassReflection($fileNode);
-        
+
         if ($classReflection === null) {
             return [];
         }
@@ -101,12 +98,12 @@ class DisallowInstantiationRule extends BaseRule
         $newExpressions = $this->findNewExpressions($method);
 
         foreach ($newExpressions as $newExpression) {
-            if (!$newExpression->class instanceof Node\Name) {
+            if (! $newExpression->class instanceof Node\Name) {
                 continue;
             }
 
             $instantiatedClass = $newExpression->class->toString();
-            
+
             // Resolve the full class name considering use statements
             $resolvedClassName = $this->resolveClassName($instantiatedClass, $fileNode);
 
@@ -130,6 +127,7 @@ class DisallowInstantiationRule extends BaseRule
 
             $errors[] = RuleErrorBuilder::message($error)
                 ->line($newExpression->getLine())
+                ->identifier('solid.dip.disallowInstantiation')
                 ->build();
         }
 
@@ -139,7 +137,6 @@ class DisallowInstantiationRule extends BaseRule
     /**
      * Recursively find all 'new' expressions in a node
      *
-     * @param Node $node
      * @return New_[]
      */
     private function findNewExpressions(Node $node): array
@@ -181,7 +178,7 @@ class DisallowInstantiationRule extends BaseRule
         $useStatements = $this->getUseStatements($fileNode);
         foreach ($useStatements as $useNode) {
             $useName = $useNode->name->toString();
-            
+
             if ($className === $useName) {
                 return $useName;
             }
@@ -241,13 +238,14 @@ class DisallowInstantiationRule extends BaseRule
             return false;
         }
 
-        // Check if it's a built-in class using reflection
+        // Check if it's a built-in class using PHPStan reflection
         try {
-            if (class_exists($className)) {
-                $reflection = new \ReflectionClass($className);
-                return $reflection->isInternal();
+            if ($this->reflectionProvider->hasClass($className)) {
+                $reflection = $this->reflectionProvider->getClass($className);
+
+                return $reflection->isBuiltin();
             }
-        } catch (\ReflectionException $e) {
+        } catch (Exception $e) {
             // If we can't reflect on it, assume it's not built-in
             return false;
         }

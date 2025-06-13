@@ -2,8 +2,8 @@
 
 namespace Opscale\Rules\CLEAN\Orchestration;
 
-use PHPStan\Reflection\ReflectionProvider;
 use Opscale\Rules\CLEAN\CleanRule;
+use PHPStan\Reflection\ReflectionProvider;
 
 /**
  * Rule that enforces Clean Architecture for Orchestration layer
@@ -11,9 +11,6 @@ use Opscale\Rules\CLEAN\CleanRule;
  */
 class OrchestrationLayerRule extends CleanRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);

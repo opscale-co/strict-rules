@@ -4,16 +4,18 @@ namespace Opscale\Rules\SOLID\LSP;
 
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
 use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use Throwable;
 
 /**
  * Rule that verifies all constructor injections are interfaces (abstractions)
@@ -38,52 +40,40 @@ class AbstractionInjectionRule extends BaseRule
         'callable',
         'iterable',
         'object',
-        'mixed'
+        'mixed',
     ];
 
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        if(parent::shouldProcess($node, $scope) === false) {
-            return false;
-        }
-
-        $namespace = $this->getNamespace($node);
-
-        return $this->isInNamespaces($namespace, ['\\Services']);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
         $rootNode = $this->getRootNode($node);
 
-        if (!($rootNode instanceof Class_)) {
+        if (! ($rootNode instanceof Class_)) {
             return [];
         }
 
         $constructorMethod = $this->getConstructorMethod($rootNode);
-        
+
         if ($constructorMethod === null) {
             return [];
         }
 
         $errors = [];
         $classReflection = $this->getClassReflection($node);
-        
+
         foreach ($constructorMethod->params as $param) {
             $error = $this->validateParameter(
-                $param, 
+                $param,
                 $classReflection->getName());
             if ($error !== null) {
                 $errors[] = $error;
@@ -93,19 +83,32 @@ class AbstractionInjectionRule extends BaseRule
         return $errors;
     }
 
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        $namespace = $this->getNamespace($node);
+
+        return $this->isInNamespaces($namespace, ['\\Services']);
+    }
+
     /**
      * Get the constructor method from class node
      */
     private function getConstructorMethod(Class_ $rootNode): ?ClassMethod
     {
         $methods = $this->getMethodNodes($rootNode);
-        
+
         foreach ($methods as $method) {
             if ($method->name->toString() === self::CONSTRUCTOR_METHOD) {
                 return $method;
             }
         }
-        
+
         return null;
     }
 
@@ -116,7 +119,7 @@ class AbstractionInjectionRule extends BaseRule
     {
         $parameterName = $param->var->name ?? 'unknown';
         $typeName = $this->getParameterTypeName($param);
-        
+
         // Allow scalar types and built-in PHP types
         if ($typeName && $this->isAllowedScalarType($typeName)) {
             return null;
@@ -133,9 +136,10 @@ class AbstractionInjectionRule extends BaseRule
             $parameterName,
             $className
         );
-            
+
         return RuleErrorBuilder::message($error)
             ->line($param->getLine())
+            ->identifier('solid.lsp.abstractionInjection')
             ->build();
     }
 
@@ -152,9 +156,10 @@ class AbstractionInjectionRule extends BaseRule
         if ($param->type instanceof UnionType) {
             // For union types, we'll check the first type for simplicity
             // In a more complex implementation, we might want to check all types
-            if (!empty($param->type->types)) {
+            if (! empty($param->type->types)) {
                 return $this->extractTypeName($param->type->types[0]);
             }
+
             return null;
         }
 
@@ -169,7 +174,7 @@ class AbstractionInjectionRule extends BaseRule
         if ($typeNode instanceof Name) {
             return $typeNode->toString();
         }
-        
+
         if ($typeNode instanceof Identifier) {
             return $typeNode->name;
         }
@@ -191,13 +196,14 @@ class AbstractionInjectionRule extends BaseRule
     private function isInterface(string $typeName): bool
     {
         try {
-            if (!$this->reflectionProvider->hasClass($typeName)) {
+            if (! $this->reflectionProvider->hasClass($typeName)) {
                 return false;
             }
 
             $classReflection = $this->reflectionProvider->getClass($typeName);
+
             return $classReflection->isInterface();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // If we can't determine if it's an interface, assume it's not
             return false;
         }

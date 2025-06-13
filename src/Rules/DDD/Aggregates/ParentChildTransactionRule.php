@@ -2,18 +2,16 @@
 
 namespace Opscale\Rules\DDD\Aggregates;
 
+use Illuminate\Database\Eloquent\Model;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
-use PhpParser\NodeFinder;
-use PhpParser\Node\Name;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
-use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Node\FileNode;
-use Illuminate\Database\Eloquent\Model;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * Rule that prevents direct saving of child models that have parent relationships (belongsTo)
@@ -21,55 +19,45 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ParentChildTransactionRule extends DomainRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        $namespace = $this->getNamespace($node);
-        if (parent::shouldProcess($node, $scope) === false ||
-            !$this->isInNamespaces($namespace, ['\\Models\\Repositories', '\\Services'])) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
-        
+
         $errors = [];
         $rootNode = $this->getRootNode($node);
-        $nodeFinder = new NodeFinder();
+        $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 
         foreach ($methods as $method) {
             $calls = $nodeFinder->findInstanceOf($method->stmts ?? [], Node\Expr::class);
             foreach ($calls as $call) {
                 // Check if we're making an Eloquent query builder call
-                if (!($call instanceof MethodCall) || 
-                    !($call->name instanceof Node\Identifier) || 
+                if (! ($call instanceof MethodCall) ||
+                    ! ($call->name instanceof Node\Identifier) ||
                     $call->name->toString() !== 'save') {
                     continue;
                 }
 
                 // Get the type of the object from the method parameters
                 $callerType = null;
-                foreach($method->params as $param) {
-                    if ($param->var->name === $call->var->name) {
-                        $callerType = $param->type->toString();
-                        break;
-                    } 
+                if (isset($call->var) && isset($call->var->name)) {
+                    foreach ($method->params as $param) {
+                        if (isset($param->var->name) && $param->var->name === $call->var->name && $param->type) {
+                            $callerType = $param->type->toString();
+                            break;
+                        }
+                    }
                 }
-                
+
                 // Check if the caller is an Eloquent model
                 if ($this->isEloquentModel($callerType)) {
                     // Now check if this model has belongsTo relationships
@@ -79,9 +67,10 @@ class ParentChildTransactionRule extends DomainRule
                             'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
                             $callerType
                         );
-                        
+
                         $errors[] = RuleErrorBuilder::message($error)
                             ->line($call->getLine())
+                            ->identifier('ddd.aggregates.parentChildTransaction')
                             ->build();
                     }
                 }
@@ -91,12 +80,31 @@ class ParentChildTransactionRule extends DomainRule
         return $errors;
     }
 
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! ($node instanceof FileNode)) {
+            return false;
+        }
+
+        $namespace = $this->getNamespace($node);
+        if (parent::shouldProcess($node, $scope) === false ||
+            ! $this->isInNamespaces($namespace, ['\\Models\\Repositories', '\\Services'])) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Check if a specific model class has belongsTo relationships by analyzing its source code
      */
     private function modelHasParent(string $className): bool
     {
         $classNode = $this->getASTForClass($className);
+        if (! $classNode instanceof \PhpParser\Node\Stmt\Class_) {
+            return false;
+        }
         $methods = $this->getMethodNodes($classNode);
         foreach ($methods as $method) {
             if ($this->isBelongsToMethod($method)) {
@@ -113,14 +121,14 @@ class ParentChildTransactionRule extends DomainRule
     private function isBelongsToMethod(ClassMethod $method): bool
     {
         // Method must be public
-        if (!$method->isPublic()) {
+        if (! $method->isPublic()) {
             return false;
         }
 
         // Check return type annotation
         if ($method->returnType) {
             $returnTypeName = $method->returnType->toString();
-            if ($returnTypeName === 'BelongsTo' || 
+            if ($returnTypeName === 'BelongsTo' ||
                 $returnTypeName === 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo') {
                 return true;
             }
@@ -128,10 +136,11 @@ class ParentChildTransactionRule extends DomainRule
 
         // Check method body for belongsTo() calls
         if ($method->stmts) {
-            foreach ($method->stmts as $stmt) {
-                if ($stmt instanceof Node\Expr\MethodCall &&
-                    $stmt->name instanceof Node\Identifier &&
-                    $stmt->name->toString() === 'belongsTo') {
+            $nodeFinder = new NodeFinder;
+            $methodCalls = $nodeFinder->findInstanceOf($method->stmts, MethodCall::class);
+            foreach ($methodCalls as $methodCall) {
+                if ($methodCall->name instanceof Node\Identifier &&
+                    $methodCall->name->toString() === 'belongsTo') {
                     return true; // Found a belongsTo call
                 }
             }

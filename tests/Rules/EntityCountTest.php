@@ -2,29 +2,34 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\Subdomains\EntityCountRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(EntityCountRule::class)]
 class EntityCountTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new EntityCountRule($broker, 1);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([
             __DIR__ . '/../app/Models/User.php',
-            __DIR__ . '/../app/Models/Product.php'
-            ], [
-                [
-                    'Subdomain has 2 entities, which exceeds the maximum of 1 entities. ' .
-                    'Consider splitting this subdomain into smaller, more focused subdomains.',
-                    3,
-                ],
-         ]);
+            __DIR__ . '/../app/Models/Product.php',
+        ], [
+            [
+                'Subdomain has 2 entities, which exceeds the maximum of 1 entities. ' .
+                'Consider splitting this subdomain into smaller, more focused subdomains.',
+                3,
+            ],
+        ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new EntityCountRule($broker, 1);
     }
 }

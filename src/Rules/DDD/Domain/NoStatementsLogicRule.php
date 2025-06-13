@@ -4,12 +4,12 @@ namespace Opscale\Rules\DDD\Domain;
 
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
-use PhpParser\Node\Stmt\While_;
-use PhpParser\Node\Stmt\Do_;
-use PhpParser\Node\Stmt\Switch_;
 use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Switch_;
+use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
@@ -21,9 +21,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoStatementsLogicRule extends DomainRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
@@ -31,14 +28,16 @@ class NoStatementsLogicRule extends DomainRule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if(!$this->shouldProcess($node, $scope) ||
-           !$this->isEloquentModel($node)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope) ||
+            ! $this->isEloquentModel($node)) {
             return []; // Skip if not a model class
         }
 
         $errors = [];
         $classNode = $this->getRootNode($node);
-        $nodeFinder = new NodeFinder();
+        $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($classNode);
 
         foreach ($methods as $method) {
@@ -58,17 +57,18 @@ class NoStatementsLogicRule extends DomainRule
 
             // Check for for loops
             foreach ($statements as $statement => $ocurrences) {
-                foreach($ocurrences as $ocurrence) {
+                foreach ($ocurrences as $ocurrence) {
                     $error = sprintf(
-                        'Method "%s::%s" contains a "%s" statement ' . 
+                        'Method "%s::%s" contains a "%s" statement ' .
                         'which is not allowed in domain model classes.',
                         $classNode->namespacedName->toString(),
                         $method->name->toString(),
                         $statement
                     );
-                    
+
                     $errors[] = RuleErrorBuilder::message($error)
                         ->line($ocurrence->getLine())
+                        ->identifier('ddd.domain.noStatementsLogic')
                         ->build();
                 }
             }

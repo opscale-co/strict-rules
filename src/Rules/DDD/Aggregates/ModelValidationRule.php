@@ -5,8 +5,8 @@ namespace Opscale\Rules\DDD\Aggregates;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -14,27 +14,16 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class ModelValidationRule extends DomainRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        if (parent::shouldProcess($node, $scope) === false ||
-            !$this->isEloquentModel($node)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$this->shouldProcess($node, $scope)) {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            ! $this->shouldProcess($node, $scope)) {
             return [];
         }
 
@@ -60,8 +49,21 @@ class ModelValidationRule extends DomainRule
 
         $errors[] = RuleErrorBuilder::message($error)
             ->line($rootNode->getLine())
+            ->identifier('ddd.aggregates.modelValidation')
             ->build();
 
         return $errors;
+    }
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        // @phpstan-ignore-next-line
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false ||
+            ! $this->isEloquentModel($node)) {
+            return false;
+        }
+
+        return true;
     }
 }

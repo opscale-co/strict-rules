@@ -2,8 +2,8 @@
 
 namespace Opscale\Rules\CLEAN\Interaction;
 
-use PHPStan\Reflection\ReflectionProvider;
 use Opscale\Rules\CLEAN\CleanRule;
+use PHPStan\Reflection\ReflectionProvider;
 
 /**
  * Rule that enforces Clean Architecture for Interaction layer
@@ -11,9 +11,6 @@ use Opscale\Rules\CLEAN\CleanRule;
  */
 class InteractionLayerRule extends CleanRule
 {
-    /**
-     * @param ReflectionProvider $reflectionProvider
-     */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         parent::__construct($reflectionProvider);
@@ -36,31 +33,31 @@ class InteractionLayerRule extends CleanRule
         return [
             // Laravel Framework Controllers
             'Illuminate\Routing',
-            
+
             // Console Commands
             'Illuminate\Console',
             'Symfony\Component\Console',
-            
+
             // HTTP Components
             'Illuminate\Http',
             'Illuminate\Foundation\Http',
-            
+
             // Authentication & Authorization
             'Illuminate\Auth',
             'Illuminate\Contracts',
-            
+
             // Nova Components
             'Laravel\Nova',
-            
+
             // Laravel Sanctum (API authentication)
             'Laravel\Sanctum',
-            
+
             // Laravel Passport (OAuth)
             'Laravel\Passport',
-            
+
             // Livewire Components (if used)
             'Livewire',
-            
+
             // Inertia.js (if used)
             'Inertia',
         ];

@@ -2,23 +2,21 @@
 
 namespace Opscale\Tests\Rules;
 
-use PHPStan\Rules\Rule;
 use Opscale\Rules\DDD\ValueObjects\NoAccesorMutatorRule;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 
+#[CoversClass(NoAccesorMutatorRule::class)]
 class NoAccesorMutatorTest extends RuleTestCase
 {
-    protected function getRule(): Rule
-    {
-        $broker = $this->createReflectionProvider();
-        return new NoAccesorMutatorRule($broker);
-    }
-
-    public function testRule(): void
+    #[Test]
+    public function rule(): void
     {
         $this->analyse([
-                __DIR__ . '/../app/Models/Product.php',
-            ], 
+            __DIR__ . '/../app/Models/Product.php',
+        ],
             [
                 [
                     'Model "Opscale\Models\Product" is defining "getIdAttribute" and it should not contain Eloquent mutators or accessors. ' .
@@ -36,5 +34,12 @@ class NoAccesorMutatorTest extends RuleTestCase
                     32,
                 ],
             ]);
+    }
+
+    protected function getRule(): Rule
+    {
+        $broker = $this->createReflectionProvider();
+
+        return new NoAccesorMutatorRule($broker);
     }
 }
