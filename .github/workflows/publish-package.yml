@@ -34,17 +34,14 @@ jobs:
           echo "No 'prod' script found in package.json, skipping production build"
         fi
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.2
-        extensions: mbstring, pdo, pdo_mysql
-
     - name: Configure Nova
       run: composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
 
     - name: Install PHP dependencies
       uses: php-actions/composer@v6
+      with:
+        php_version: "8.2"
+        php_extensions: bcmath, ctype, curl, dom, fileinfo, json, mbstring, openssl, pdo, tokenizer, xml, pdo_mysql, pdo_pgsql
 
     - name: Duster lint
       uses: tighten/duster-action@v3
