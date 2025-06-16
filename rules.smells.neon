@@ -9,8 +9,3 @@ services:
         class: Opscale\Rules\Smells\NoDummyCatchesRule
         tags:
             - phpstan.rules.rule
-            
-    - 
-        class: Opscale\Rules\Smells\StrictTypesRule
-        tags:
-            - phpstan.rules.rule
