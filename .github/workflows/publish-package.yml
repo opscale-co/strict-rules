@@ -17,14 +17,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
         
-    - name: Set up Node.js
+    - name: Set up Node workflow
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-
-    - name: Install Node dependencies
-      run: npm ci --ignore-scripts
+    - run: npm ci --ignore-scripts
 
     - name: Cache PHP dependencies
       uses: actions/cache@v3
