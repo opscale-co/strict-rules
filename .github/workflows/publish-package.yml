@@ -27,7 +27,7 @@ jobs:
     - name: Cache PHP dependencies
       uses: actions/cache@v3
       with:
-        path: /tmp/composer-cache
+        path: ~/.composer/cache
         key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
     - name: Install PHP dependencies
