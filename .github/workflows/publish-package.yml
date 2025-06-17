@@ -7,7 +7,7 @@ on:
       - master
       - next
       - beta
-      - "*.x" # maintenance releases branches
+      - "*.x" # Maintenance releases branches
 
 jobs:
   test:
@@ -24,15 +24,7 @@ jobs:
         cache: 'npm'
 
     - name: Install Node dependencies
-      run: npm ci
-
-    - name: Generate production code
-      run: |
-        if npm run --silent | grep -q "prod"; then
-          npm run prod
-        else
-          echo "No 'prod' script found in package.json, skipping production build"
-        fi
+      run: npm ci --ignore-scripts
 
     - name: Cache PHP dependencies
       uses: actions/cache@v3
@@ -47,14 +39,19 @@ jobs:
         php_extensions: bcmath pdo_mysql pdo_pgsql
         args: --prefer-dist --optimize-autoloader --no-progress --no-suggest --no-interaction
       env:
-        COMPOSER_AUTH: '{"http-basic": {"nova.laravel.com": {"username": "${{ secrets.NOVA_USERNAME }}", "password": "${{ secrets.NOVA_LICENSE_KEY }}"}}'
+        COMPOSER_AUTH: '{"http-basic": {"nova.laravel.com": {"username": "${{ secrets.NOVA_USERNAME }}", "password": "${{ secrets.NOVA_LICENSE_KEY }}"}}}'
 
-    - name: Duster lint
+    - name: Gate 1 - Linters
       uses: tighten/duster-action@v3
       with:
         args: lint
         
-    - name: Run tests
+    - name: Gate 2 - SonarQube scan
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    - name: Gate 3 - Unit tests
       uses: php-actions/phpunit@v3
 
   release:
@@ -78,8 +75,7 @@ jobs:
           
       - name: Install semantic-release and dependencies
         run: |
-          npm install -g \
-            semantic-release \
+          npm install semantic-release \
             @semantic-release/changelog \
             @semantic-release/git \
             @semantic-release/exec \
