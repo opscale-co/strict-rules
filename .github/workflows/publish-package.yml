@@ -34,14 +34,20 @@ jobs:
           echo "No 'prod' script found in package.json, skipping production build"
         fi
 
-    - name: Configure Nova
-      run: composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_LICENSE_KEY }}"
+    - name: Cache PHP dependencies
+      uses: actions/cache@v3
+      with:
+        path: /tmp/composer-cache
+        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
     - name: Install PHP dependencies
       uses: php-actions/composer@v6
       with:
         php_version: "8.2"
-        php_extensions: bcmath, ctype, curl, dom, fileinfo, json, mbstring, openssl, pdo, tokenizer, xml, pdo_mysql, pdo_pgsql
+        php_extensions: bcmath pdo_mysql pdo_pgsql
+        args: --prefer-dist --optimize-autoloader --no-progress --no-suggest --no-interaction
+      env:
+        COMPOSER_AUTH: '{"http-basic": {"nova.laravel.com": {"username": "${{ secrets.NOVA_USERNAME }}", "password": "${{ secrets.NOVA_LICENSE_KEY }}"}}'
 
     - name: Duster lint
       uses: tighten/duster-action@v3
