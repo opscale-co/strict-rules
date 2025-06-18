@@ -64,7 +64,7 @@ class AbstractionInjectionRule extends BaseRule
 
         $constructorMethod = $this->getConstructorMethod($rootNode);
 
-        if ($constructorMethod === null) {
+        if (! $constructorMethod instanceof \PhpParser\Node\Stmt\ClassMethod) {
             return [];
         }
 
@@ -75,7 +75,7 @@ class AbstractionInjectionRule extends BaseRule
             $error = $this->validateParameter(
                 $param,
                 $classReflection->getName());
-            if ($error !== null) {
+            if ($error instanceof \PHPStan\Rules\RuleError) {
                 $errors[] = $error;
             }
         }
@@ -99,9 +99,9 @@ class AbstractionInjectionRule extends BaseRule
     /**
      * Get the constructor method from class node
      */
-    private function getConstructorMethod(Class_ $rootNode): ?ClassMethod
+    private function getConstructorMethod(Class_ $class): ?ClassMethod
     {
-        $methods = $this->getMethodNodes($rootNode);
+        $methods = $this->getMethodNodes($class);
 
         foreach ($methods as $method) {
             if ($method->name->toString() === self::CONSTRUCTOR_METHOD) {
@@ -148,7 +148,7 @@ class AbstractionInjectionRule extends BaseRule
      */
     private function getParameterTypeName(Param $param): ?string
     {
-        if ($param->type === null) {
+        if (! $param->type instanceof \PhpParser\Node) {
             return null;
         }
 
@@ -156,7 +156,7 @@ class AbstractionInjectionRule extends BaseRule
         if ($param->type instanceof UnionType) {
             // For union types, we'll check the first type for simplicity
             // In a more complex implementation, we might want to check all types
-            if (! empty($param->type->types)) {
+            if ($param->type->types !== []) {
                 return $this->extractTypeName($param->type->types[0]);
             }
 
@@ -203,7 +203,7 @@ class AbstractionInjectionRule extends BaseRule
             $classReflection = $this->reflectionProvider->getClass($typeName);
 
             return $classReflection->isInterface();
-        } catch (Throwable $e) {
+        } catch (Throwable $throwable) {
             // If we can't determine if it's an interface, assume it's not
             return false;
         }

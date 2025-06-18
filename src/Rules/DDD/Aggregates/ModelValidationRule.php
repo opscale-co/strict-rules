@@ -29,7 +29,7 @@ class ModelValidationRule extends DomainRule
 
         $errors = [];
         $rootNode = $this->getRootNode($node);
-        $classReflection = $this->getClassReflection($node);
+        $this->getClassReflection($node);
         $methods = $this->getMethodNodes($rootNode);
 
         foreach ($methods as $method) {

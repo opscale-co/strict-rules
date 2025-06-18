@@ -26,8 +26,8 @@ class BaseNamespaceTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new BaseNamespaceRule($broker);
+        return new BaseNamespaceRule($reflectionProvider);
     }
 }

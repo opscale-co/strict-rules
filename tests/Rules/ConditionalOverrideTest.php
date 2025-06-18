@@ -18,7 +18,7 @@ class ConditionalOverrideTest extends RuleTestCase
             __DIR__ . '/../app/Models/Product.php',
         ], [
             [
-                'Method "Opscale\Models\Product::isInStock()" must be final unless annotated with #[\Override] or @overridable. ' .
+                'Method "' . \Opscale\Models\Product::class . '::isInStock()" must be final unless annotated with #[\Override] or @overridable. ' .
                 'Public and protected methods should be explicitly marked as final to follow the Open/Closed Principle.',
                 17,
             ],
@@ -27,8 +27,8 @@ class ConditionalOverrideTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new ConditionalOverrideRule($broker);
+        return new ConditionalOverrideRule($reflectionProvider);
     }
 }

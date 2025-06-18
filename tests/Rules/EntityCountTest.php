@@ -28,8 +28,8 @@ class EntityCountTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EntityCountRule($broker, 1);
+        return new EntityCountRule($reflectionProvider, 1);
     }
 }

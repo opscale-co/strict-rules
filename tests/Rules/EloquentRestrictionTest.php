@@ -34,8 +34,8 @@ class EloquentRestrictionTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EloquentRestrictionRule($broker);
+        return new EloquentRestrictionRule($reflectionProvider);
     }
 }

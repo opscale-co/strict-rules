@@ -22,10 +22,7 @@ use Throwable;
  */
 abstract class BaseRule implements Rule
 {
-    /**
-     * @var ReflectionProvider
-     */
-    protected $reflectionProvider;
+    protected \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
 
     public function __construct(ReflectionProvider $reflectionProvider)
     {
@@ -78,9 +75,9 @@ abstract class BaseRule implements Rule
     /**
      * Resolve a ClassReflection for the root Class_ node
      */
-    protected function getClassReflection(FileNode $node): ?ClassReflection
+    protected function getClassReflection(FileNode $fileNode): ?ClassReflection
     {
-        $classNode = $this->getRootNode($node);
+        $classNode = $this->getRootNode($fileNode);
         if ($classNode === null) {
             return null;
         }
@@ -96,11 +93,11 @@ abstract class BaseRule implements Rule
     /**
      * Get the namespace name
      */
-    protected function getNamespace(FileNode $node): string
+    protected function getNamespace(FileNode $fileNode): string
     {
-        $namespace = $this->getNamespaceNode($node);
+        $namespace = $this->getNamespaceNode($fileNode);
 
-        return $namespace !== null && $namespace->name !== null
+        return $namespace instanceof \PhpParser\Node\Stmt\Namespace_ && $namespace->name instanceof \PhpParser\Node\Name
             ? $namespace->name->toString()
             : '';
     }
@@ -125,13 +122,14 @@ abstract class BaseRule implements Rule
      *
      * @return Class_[]
      */
-    protected function getClassNodes(FileNode $node): array
+    protected function getClassNodes(FileNode $fileNode): array
     {
         $classes = [];
-        $namespace = $this->getNamespaceNode($node);
-        if ($namespace === null) {
+        $namespace = $this->getNamespaceNode($fileNode);
+        if (! $namespace instanceof \PhpParser\Node\Stmt\Namespace_) {
             return $classes;
         }
+
         foreach ($namespace->stmts as $stmt) {
             if ($stmt instanceof Class_) {
                 $classes[] = $stmt;
@@ -144,13 +142,14 @@ abstract class BaseRule implements Rule
     /**
      * Get all use statements within the namespace
      */
-    protected function getUseStatements(FileNode $node): array
+    protected function getUseStatements(FileNode $fileNode): array
     {
         $uses = [];
-        $namespace = $this->getNamespaceNode($node);
-        if ($namespace === null) {
+        $namespace = $this->getNamespaceNode($fileNode);
+        if (! $namespace instanceof \PhpParser\Node\Stmt\Namespace_) {
             return $uses;
         }
+
         foreach ($namespace->stmts as $stmt) {
             if ($stmt instanceof Use_) {
                 foreach ($stmt->uses as $useUse) {
@@ -165,12 +164,11 @@ abstract class BaseRule implements Rule
     /**
      * Get the parent class
      */
-    protected function getParentNode(FileNode $node): string
+    protected function getParentNode(FileNode $fileNode): string
     {
-        $rootClassNode = $this->getRootNode($node);
-        $parentClass = $rootClassNode->extends->toString();
+        $rootClassNode = $this->getRootNode($fileNode);
 
-        return $parentClass;
+        return $rootClassNode->extends->toString();
     }
 
     /**
@@ -191,10 +189,10 @@ abstract class BaseRule implements Rule
     /**
      * Get all used traits in a class
      */
-    protected function getTraitNodes(Class_ $classNode): array
+    protected function getTraitNodes(Class_ $class): array
     {
         $traits = [];
-        foreach ($classNode->stmts as $stmt) {
+        foreach ($class->stmts as $stmt) {
             if ($stmt instanceof \PhpParser\Node\Stmt\TraitUse) {
                 $traits[] = $stmt;
             }
@@ -206,13 +204,11 @@ abstract class BaseRule implements Rule
     /**
      * Get all interface implementations in a class
      */
-    protected function getInterfaceNodes(Class_ $rootNode): array
+    protected function getInterfaceNodes(Class_ $class): array
     {
         $interfaces = [];
-        if ($rootNode->implements) {
-            foreach ($rootNode->implements as $interface) {
-                $interfaces[] = $interface->toString();
-            }
+        foreach ($class->implements as $interface) {
+            $interfaces[] = $interface->toString();
         }
 
         return $interfaces;
@@ -259,8 +255,8 @@ abstract class BaseRule implements Rule
 
         try {
             // Parse the model's source file to analyze its AST
-            $parser = new ParserFactory;
-            $phpParser = $parser->createForVersion(PhpVersion::fromString('8.2'));
+            $parserFactory = new ParserFactory;
+            $phpParser = $parserFactory->createForVersion(PhpVersion::fromString('8.2'));
             $sourceCode = file_get_contents($filename);
             $ast = $phpParser->parse($sourceCode);
 
@@ -268,7 +264,7 @@ abstract class BaseRule implements Rule
             $classNode = $this->getRootNode($ast);
 
             return $classNode;
-        } catch (Throwable $e) {
+        } catch (Throwable $throwable) {
             // If we can't parse the file, fall back to false
             return null;
         }

@@ -58,11 +58,14 @@ abstract class DomainRule extends BaseRule
         $classReflection = is_string($class) ?
             $this->reflectionProvider->getClass($class) :
             $this->getClassReflection($class);
-        if (! $classReflection) {
+        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
             return false;
         }
 
-        return $classReflection->getName() === Model::class
-            || $classReflection->isSubclassOf(Model::class);
+        if ($classReflection->getName() === Model::class) {
+            return true;
+        }
+
+        return $classReflection->isSubclassOf(Model::class);
     }
 }

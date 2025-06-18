@@ -32,8 +32,8 @@ class AbstractionInjectionTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new AbstractionInjectionRule($broker);
+        return new AbstractionInjectionRule($reflectionProvider);
     }
 }

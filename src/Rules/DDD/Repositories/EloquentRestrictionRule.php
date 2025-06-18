@@ -55,15 +55,13 @@ class EloquentRestrictionRule extends DomainRule
                 $namespace = $rootNode->namespacedName->toString();
 
                 // If we're in a trait, check if it's in an allowed namespace
-                if ($rootNode instanceof Trait_) {
-                    // Check if trait is in any of the allowed namespaces
-                    if ($this->isInNamespaces($namespace, [self::REPOSITORIES_NAMESPACE])) {
-                        continue;
-                    }
+                // Check if trait is in any of the allowed namespaces
+                if ($rootNode instanceof Trait_ && $this->isInNamespaces($namespace, [self::REPOSITORIES_NAMESPACE])) {
+                    continue;
                 }
 
                 $methodName = 'unknown';
-                if (isset($call->name)) {
+                if (property_exists($call, 'name') && $call->name !== null) {
                     $methodName = $call->name instanceof Identifier ? $call->name->toString() : 'unknown';
                 }
 
@@ -87,7 +85,7 @@ class EloquentRestrictionRule extends DomainRule
     /**
      * Check if the node represents an Eloquent query builder call
      */
-    private function isEloquentQueryBuilderCall(Node $node, Node $rootNode): bool
+    private function isEloquentQueryBuilderCall(Node $node, \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|null $rootNode): bool
     {
         // Common Eloquent query builder methods
         $queryBuilderMethods = [
@@ -101,41 +99,37 @@ class EloquentRestrictionRule extends DomainRule
         ];
 
         // Check for static calls on self:: or static::
-        if ($node instanceof StaticCall) {
-            if ($node->class instanceof Name) {
-                $className = $node->class->toString();
-                if (in_array($className, ['self', 'static', 'parent'])) {
-                    $methodName = $node->name instanceof Identifier ? $node->name->toString() : null;
-                    if ($methodName && in_array($methodName, $queryBuilderMethods)) {
-                        return true;
-                    }
+        if ($node instanceof StaticCall && $node->class instanceof Name) {
+            $className = $node->class->toString();
+            if (in_array($className, ['self', 'static', 'parent'])) {
+                $methodName = $node->name instanceof Identifier ? $node->name->toString() : null;
+                if ($methodName && in_array($methodName, $queryBuilderMethods)) {
+                    return true;
                 }
+            }
 
-                // Also check for direct model class calls
-                if ($this->isEloquentModel($className)) {
-                    $methodName = $node->name instanceof Node\Identifier ? $node->name->toString() : null;
-                    if ($methodName && in_array($methodName, $queryBuilderMethods)) {
-                        return true;
-                    }
+            // Also check for direct model class calls
+            if ($this->isEloquentModel($className)) {
+                $methodName = $node->name instanceof Node\Identifier ? $node->name->toString() : null;
+                if ($methodName && in_array($methodName, $queryBuilderMethods)) {
+                    return true;
                 }
             }
         }
 
         // Check for method calls on $this
-        if ($node instanceof MethodCall) {
-            // Check if it's a call on $this
-            if ($node->var instanceof Node\Expr\Variable && $node->var->name === 'this') {
-                $methodName = $node->name instanceof Node\Identifier ? $node->name->toString() : null;
-                if ($methodName && in_array($methodName, $queryBuilderMethods)) {
-                    // Verify that $this is an Eloquent model by checking the root node's namespace
-                    if ($rootNode instanceof \PhpParser\Node\Stmt\Class_ && $rootNode->namespacedName) {
-                        $namespace = $rootNode->namespacedName->toString();
+        // Check if it's a call on $this
+        if ($node instanceof MethodCall && ($node->var instanceof Node\Expr\Variable && $node->var->name === 'this')) {
+            $methodName = $node->name instanceof Node\Identifier ? $node->name->toString() : null;
+            if ($methodName && in_array($methodName, $queryBuilderMethods)) {
+                // Verify that $this is an Eloquent model by checking the root node's namespace
+                if ($rootNode instanceof \PhpParser\Node\Stmt\Class_ && $rootNode->namespacedName) {
+                    $namespace = $rootNode->namespacedName->toString();
 
-                        return $this->isEloquentModel($namespace);
-                    }
-
-                    return false;
+                    return $this->isEloquentModel($namespace);
                 }
+
+                return false;
             }
         }
 

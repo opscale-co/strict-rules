@@ -58,7 +58,7 @@ class EntityCountRule extends DomainRule
 
             $namespaceNode = $this->getNamespaceNode($node);
             $errors[] = RuleErrorBuilder::message($error)
-                ->line($namespaceNode ? $namespaceNode->getLine() : 1)
+                ->line($namespaceNode instanceof \PhpParser\Node\Stmt\Namespace_ ? $namespaceNode->getLine() : 1)
                 ->identifier('ddd.subdomains.entityCount')
                 ->build();
         }

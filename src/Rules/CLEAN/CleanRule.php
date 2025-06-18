@@ -113,9 +113,9 @@ abstract class CleanRule extends BaseRule
     /**
      * Check if the use statement is allowed for the processing
      */
-    public function allowUse(UseItem $useNode): bool
+    public function allowUse(UseItem $useItem): bool
     {
-        $usedClass = $useNode->name->toString();
+        $usedClass = $useItem->name->toString();
         $rootParent = $this->getRootParentNamespace($usedClass);
         if ($rootParent === null) {
             return false; // Class is not in a defined layer
@@ -149,12 +149,12 @@ abstract class CleanRule extends BaseRule
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
 
-        foreach ($uses as $useNode) {
-            $usedClass = $useNode->name->toString();
+        foreach ($uses as $use) {
+            $usedClass = $use->name->toString();
             $usedLayer = $this->getClassLayer($usedClass);
 
             $error = null;
-            if ($usedLayer != null && ! $this->isAllowedLayer($node, $useNode)) {
+            if ($usedLayer != null && ! $this->isAllowedLayer($node, $use)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s" from layer %d. ' .
                     'Layers can only use equal or lower layers and communicate via events upwards.',
@@ -163,7 +163,7 @@ abstract class CleanRule extends BaseRule
                     $usedClass,
                     $usedLayer
                 );
-            } elseif ($usedLayer == null && ! $this->allowUse($useNode) && ! $this->isAllowedFacade($node, $useNode)) {
+            } elseif ($usedLayer == null && ! $this->allowUse($use) && ! $this->isAllowedFacade($node, $use)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s". ' .
                     'This class is not allowed in this layer, it does not comply with the layer purpose.',
@@ -175,7 +175,7 @@ abstract class CleanRule extends BaseRule
 
             if ($error != null) {
                 $errors[] = RuleErrorBuilder::message($error)
-                    ->line($useNode->getLine())
+                    ->line($use->getLine())
                     ->identifier('clean.layer' . $classLayer . '.importNotAllowed')
                     ->build();
             }
@@ -187,13 +187,13 @@ abstract class CleanRule extends BaseRule
     /**
      * Check if the class is a Facade and if it is allowed in the current layer
      */
-    public function isAllowedFacade(FileNode $node, UseItem $useNode): bool
+    public function isAllowedFacade(FileNode $fileNode, UseItem $useItem): bool
     {
-        $rootNode = $this->getRootNode($node);
+        $rootNode = $this->getRootNode($fileNode);
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
         $allowedFacades = self::FACADES[$classLayer] ?? [];
-        $usedClass = $useNode->name->toString();
+        $usedClass = $useItem->name->toString();
 
         $isFacade = str_starts_with($usedClass, 'Illuminate\\Support\\Facades\\');
         $facade = substr($usedClass, strlen('Illuminate\\Support\\Facades\\'));
@@ -218,21 +218,21 @@ abstract class CleanRule extends BaseRule
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
 
-        return $classLayer !== null && $classLayer == $this->processingLayer();
+        return $classLayer !== null && $classLayer === $this->processingLayer();
     }
 
     /**
      * Check if the use statement is allowed in the current layer
      */
-    protected function isAllowedLayer(FileNode $node, UseItem $useNode): bool
+    protected function isAllowedLayer(FileNode $fileNode, UseItem $useItem): bool
     {
-        $usedClass = $useNode->name->toString();
+        $usedClass = $useItem->name->toString();
         $usedLayer = $this->getClassLayer($usedClass);
         if ($usedLayer === null) {
             return true; // Class is not in a defined layer
         }
 
-        $rootNode = $this->getRootNode($node);
+        $rootNode = $this->getRootNode($fileNode);
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
 
@@ -278,7 +278,7 @@ abstract class CleanRule extends BaseRule
 
             return $currentClass->getDisplayName();
 
-        } catch (Throwable $e) {
+        } catch (Throwable $throwable) {
             return null;
         }
     }

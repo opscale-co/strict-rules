@@ -32,8 +32,8 @@ class OrchestrationLayerTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new OrchestrationLayerRule($broker);
+        return new OrchestrationLayerRule($reflectionProvider);
     }
 }

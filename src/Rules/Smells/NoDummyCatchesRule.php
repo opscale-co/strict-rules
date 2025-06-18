@@ -36,8 +36,8 @@ class NoDummyCatchesRule extends BaseRule
         foreach ($methods as $method) {
             $exprs = $nodeFinder->findInstanceOf($method->stmts ?? [], Catch_::class);
             foreach ($exprs as $expr) {
-                $error = $this->validateCatchBlock($expr, $scope);
-                if ($error) {
+                $error = $this->validateCatchBlock($expr);
+                if ($error instanceof \PHPStan\Rules\RuleError) {
                     $errors[] = $error;
                 }
             }
@@ -49,19 +49,19 @@ class NoDummyCatchesRule extends BaseRule
     /**
      * Validate if a catch block is dummy or meaningless
      */
-    private function validateCatchBlock(Catch_ $catchNode, Scope $scope): ?RuleError
+    private function validateCatchBlock(Catch_ $catch): ?RuleError
     {
-        $stmts = $catchNode->stmts;
+        $stmts = $catch->stmts;
         $exceptionTypes = [];
 
-        foreach ($catchNode->types as $type) {
+        foreach ($catch->types as $type) {
             $exceptionTypes[] = $type->toString();
         }
 
         $exceptions = implode('|', $exceptionTypes);
 
         // Check if catch block is completely empty
-        if (empty($stmts)) {
+        if ($stmts === []) {
             $error = sprintf(
                 'Empty catch block for exception type(s) "%s". ' .
                 'Either handle the exception properly or remove the try-catch block.',
@@ -69,7 +69,7 @@ class NoDummyCatchesRule extends BaseRule
             );
 
             return RuleErrorBuilder::message($error)
-                ->line($catchNode->getLine())
+                ->line($catch->getLine())
                 ->identifier('smells.noDummyCatches')
                 ->build();
         }
@@ -84,7 +84,7 @@ class NoDummyCatchesRule extends BaseRule
             );
 
             return RuleErrorBuilder::message($error)
-                ->line($catchNode->getLine())
+                ->line($catch->getLine())
                 ->identifier('smells.noDummyCatches')
                 ->build();
         }
@@ -101,7 +101,7 @@ class NoDummyCatchesRule extends BaseRule
             );
 
             return RuleErrorBuilder::message($error)
-                ->line($catchNode->getLine())
+                ->line($catch->getLine())
                 ->identifier('smells.noDummyCatches')
                 ->build();
         }

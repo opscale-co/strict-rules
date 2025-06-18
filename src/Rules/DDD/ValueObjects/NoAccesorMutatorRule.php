@@ -72,9 +72,9 @@ class NoAccesorMutatorRule extends DomainRule
     /**
      * Check if a method is an Eloquent mutator
      */
-    private function isEloquentMutator(ClassMethod $method): bool
+    private function isEloquentMutator(ClassMethod $classMethod): bool
     {
-        $methodName = $method->name->toString();
+        $methodName = $classMethod->name->toString();
 
         // Check for Laravel 9+ attribute-style mutators (set...Attribute)
         if (preg_match('/^set[A-Z]\w*Attribute$/', $methodName)) {
@@ -92,9 +92,9 @@ class NoAccesorMutatorRule extends DomainRule
     /**
      * Check if a method is an Eloquent accessor
      */
-    private function isEloquentAccessor(ClassMethod $method): bool
+    private function isEloquentAccessor(ClassMethod $classMethod): bool
     {
-        $methodName = $method->name->toString();
+        $methodName = $classMethod->name->toString();
 
         // Check for Laravel 9+ attribute-style accessors (get...Attribute)
         if (preg_match('/^get[A-Z]\w*Attribute$/', $methodName)) {
@@ -112,15 +112,15 @@ class NoAccesorMutatorRule extends DomainRule
     /**
      * Check if a method uses the new Laravel 9+ Attribute class
      */
-    private function isAttributeMethod(ClassMethod $method): bool
+    private function isAttributeMethod(ClassMethod $classMethod): bool
     {
         // Check if the method returns an Attribute instance
-        if (! $method->returnType) {
+        if (! $classMethod->returnType instanceof \PhpParser\Node) {
             return false;
         }
 
         // Check if return type is Attribute
-        $returnType = $method->returnType;
+        $returnType = $classMethod->returnType;
         if ($returnType instanceof Name) {
             $returnTypeName = $returnType->toString();
             if ($returnTypeName === 'Attribute' ||
@@ -130,8 +130,8 @@ class NoAccesorMutatorRule extends DomainRule
         }
 
         // Check method body for Attribute::make calls
-        if ($method->stmts) {
-            foreach ($method->stmts as $stmt) {
+        if ($classMethod->stmts) {
+            foreach ($classMethod->stmts as $stmt) {
                 if ($stmt instanceof Return_ && $stmt->expr instanceof StaticCall) {
                     $staticCall = $stmt->expr;
                     if ($staticCall->class instanceof Name) {

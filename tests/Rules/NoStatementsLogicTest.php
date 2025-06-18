@@ -16,7 +16,7 @@ class NoStatementsLogicTest extends RuleTestCase
     {
         $this->analyse([__DIR__ . '/../app/Models/User.php'], [
             [
-                'Method "Opscale\Models\User::getEmail" contains a "if" ' .
+                'Method "' . \Opscale\Models\User::class . '::getEmail" contains a "if" ' .
                 'statement which is not allowed in domain model classes.',
                 51,
             ],
@@ -25,8 +25,8 @@ class NoStatementsLogicTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new NoStatementsLogicRule($broker);
+        return new NoStatementsLogicRule($reflectionProvider);
     }
 }

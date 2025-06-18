@@ -9,7 +9,7 @@ This document describes the core assumptions and design patterns used in our Lar
 The folder structure follows a layered and modular design, where each component has a clear responsibility:
 
 ```
-app|lib|src/
+app|src/
 ├── 1 Console/
 │   └── 1.1 Commands/
 ├── 2 Contracts/

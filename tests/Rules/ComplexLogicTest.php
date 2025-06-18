@@ -29,8 +29,8 @@ class ComplexLogicTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new ComplexLogicRule($broker);
+        return new ComplexLogicRule($reflectionProvider);
     }
 }

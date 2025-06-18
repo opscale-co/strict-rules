@@ -39,8 +39,8 @@ class ComplexLogicRule extends DomainRule
         // Get all use statements and count Eloquent models
         $uses = $this->getUseStatements($node);
 
-        foreach ($uses as $useNode) {
-            $usedClass = $useNode->name->toString();
+        foreach ($uses as $use) {
+            $usedClass = $use->name->toString();
             $modelsCount += $this->isEloquentModelClass($usedClass) ? 1 : 0;
 
             // Non-Service classes should limit their model dependencies
@@ -76,12 +76,14 @@ class ComplexLogicRule extends DomainRule
             }
 
             $classReflection = $this->reflectionProvider->getClass($className);
-
             // Check if the class extends Eloquent Model
-            return $classReflection->getName() === Model::class
-                || $classReflection->isSubclassOf(Model::class);
+            if ($classReflection->getName() === Model::class) {
+                return true;
+            }
 
-        } catch (Throwable $e) {
+            return $classReflection->isSubclassOf(Model::class);
+
+        } catch (Throwable $throwable) {
             // If we can't determine if it's a model, assume it's not
             return false;
         }
