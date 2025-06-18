@@ -25,8 +25,8 @@ class EnforceUlidsTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EnforceUlidsRule($broker);
+        return new EnforceUlidsRule($reflectionProvider);
     }
 }

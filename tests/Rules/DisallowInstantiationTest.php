@@ -28,8 +28,8 @@ class DisallowInstantiationTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new DisallowInstantiationRule($broker);
+        return new DisallowInstantiationRule($reflectionProvider);
     }
 }

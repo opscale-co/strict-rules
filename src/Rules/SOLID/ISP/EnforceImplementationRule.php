@@ -42,7 +42,7 @@ class EnforceImplementationRule extends BaseRule
 
         $rootNode = $this->getRootNode($node);
         $implementedInterfaces = $this->getInterfaceNodes($rootNode);
-        if (empty($implementedInterfaces)) {
+        if ($implementedInterfaces === []) {
             return []; // Skip classes that don't implement interfaces
         }
 
@@ -64,7 +64,7 @@ class EnforceImplementationRule extends BaseRule
             $error = $this->validateMethodImplementation(
                 $method,
                 $classReflection->getName());
-            if ($error !== null) {
+            if ($error instanceof \PHPStan\Rules\RuleError) {
                 $errors[] = $error;
             }
         }
@@ -79,10 +79,10 @@ class EnforceImplementationRule extends BaseRule
     {
         $methods = [];
 
-        foreach ($interfaces as $interfaceName) {
+        foreach ($interfaces as $interface) {
             try {
-                if ($this->reflectionProvider->hasClass($interfaceName)) {
-                    $interfaceReflection = $this->reflectionProvider->getClass($interfaceName);
+                if ($this->reflectionProvider->hasClass($interface)) {
+                    $interfaceReflection = $this->reflectionProvider->getClass($interface);
                     $interfaceReflection = $interfaceReflection->getNativeReflection();
 
                     foreach ($interfaceReflection->getMethods() as $method) {
@@ -103,17 +103,17 @@ class EnforceImplementationRule extends BaseRule
     /**
      * Validate that a method properly implements interface contract
      */
-    private function validateMethodImplementation(ClassMethod $method, string $className): ?RuleError
+    private function validateMethodImplementation(ClassMethod $classMethod, string $className): ?RuleError
     {
-        $methodName = $method->name->toString();
+        $methodName = $classMethod->name->toString();
 
         // Skip abstract methods
-        if ($method->isAbstract()) {
+        if ($classMethod->isAbstract()) {
             return null;
         }
 
         // Check if method body is empty
-        if (empty($method->stmts)) {
+        if ($classMethod->stmts === null || $classMethod->stmts === []) {
             $error = sprintf(
                 'Method "%s::%s()" implements an interface but has an empty body. ' .
                 'Provide a proper implementation instead.',
@@ -122,15 +122,14 @@ class EnforceImplementationRule extends BaseRule
             );
 
             return RuleErrorBuilder::message($error)
-                ->line($method->getLine())
+                ->line($classMethod->getLine())
                 ->identifier('solid.isp.enforceImplementation')
                 ->build();
         }
 
         // Check if it's a short implementation (few statements and lines)
-        if ($this->isShortImplementation($method)) {
-            $stmt = $method->stmts[0];
-
+        if ($this->isShortImplementation($classMethod)) {
+            $stmt = $classMethod->stmts[0];
             // Single throw statement
             if ($stmt instanceof Expression && $stmt->expr instanceof Throw_) {
                 $error = sprintf(
@@ -141,12 +140,13 @@ class EnforceImplementationRule extends BaseRule
                 );
 
                 return RuleErrorBuilder::message($error)
-                    ->line($method->getLine())
+                    ->line($classMethod->getLine())
                     ->identifier('solid.isp.enforceImplementation')
                     ->build();
             }
-            // Single return with default value
-            elseif ($stmt instanceof Return_ && $this->isDefaultValueReturn($stmt)) {
+
+            // Single throw statement
+            if ($stmt instanceof Return_ && $this->isDefaultValueReturn($stmt)) {
                 $error = sprintf(
                     'Method "%s::%s()" implements an interface but only returns a default value. ' .
                     'Provide a proper implementation instead.',
@@ -155,7 +155,7 @@ class EnforceImplementationRule extends BaseRule
                 );
 
                 return RuleErrorBuilder::message($error)
-                    ->line($method->getLine())
+                    ->line($classMethod->getLine())
                     ->identifier('solid.isp.enforceImplementation')
                     ->build();
             }
@@ -167,17 +167,17 @@ class EnforceImplementationRule extends BaseRule
     /**
      * Check if a method has a short implementation (likely a placeholder)
      */
-    private function isShortImplementation(ClassMethod $method): bool
+    private function isShortImplementation(ClassMethod $classMethod): bool
     {
         // Check statement count (1-2 statements only)
-        $stmtCount = count($method->stmts);
+        $stmtCount = count($classMethod->stmts);
         if ($stmtCount > 2) {
             return false;
         }
 
         // Check line count (method should span few lines)
-        $startLine = $method->getStartLine();
-        $endLine = $method->getEndLine();
+        $startLine = $classMethod->getStartLine();
+        $endLine = $classMethod->getEndLine();
         $lineCount = $endLine - $startLine + 1;
 
         return $stmtCount <= 2 && $lineCount <= 5;
@@ -188,7 +188,7 @@ class EnforceImplementationRule extends BaseRule
      */
     private function isDefaultValueReturn(Return_ $return): bool
     {
-        if ($return->expr === null) {
+        if (! $return->expr instanceof \PhpParser\Node\Expr) {
             return true; // Empty return
         }
 
@@ -200,9 +200,11 @@ class EnforceImplementationRule extends BaseRule
             if ($expr instanceof String_ && $expr->value === '') {
                 return true;
             }
+
             if ($expr instanceof LNumber && $expr->value === 0) {
                 return true;
             }
+
             if ($expr instanceof DNumber && $expr->value === 0.0) {
                 return true;
             }
@@ -217,7 +219,7 @@ class EnforceImplementationRule extends BaseRule
         }
 
         // Check for empty array
-        if ($expr instanceof Array_ && empty($expr->items)) {
+        if ($expr instanceof Array_ && $expr->items === []) {
             return true;
         }
 

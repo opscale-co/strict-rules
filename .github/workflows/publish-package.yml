@@ -4,56 +4,12 @@ on:
   push:
     branches:
       - main
-      - master
       - next
       - beta
       - "*.x" # Maintenance releases branches
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-        
-    - name: Set up Node workflow
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    - run: npm ci --ignore-scripts
-
-    - name: Cache PHP dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.composer/cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-
-    - name: Install PHP dependencies
-      uses: php-actions/composer@v6
-      with:
-        php_version: "8.2"
-        php_extensions: bcmath pdo_mysql pdo_pgsql zip
-        args: --prefer-dist --optimize-autoloader --no-progress --no-interaction
-      env:
-        COMPOSER_AUTH: '{"http-basic": {"nova.laravel.com": {"username": "${{ secrets.NOVA_USERNAME }}", "password": "${{ secrets.NOVA_LICENSE_KEY }}"}}}'
-
-    - name: Gate 1 - Linters
-      uses: tighten/duster-action@v3
-      with:
-        args: lint
-        
-    - name: Gate 2 - SonarQube scan
-      uses: SonarSource/sonarqube-scan-action@v5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-    - name: Gate 3 - Unit tests
-      uses: php-actions/phpunit@v3
-
   release:
-    needs: [check]
     runs-on: ubuntu-latest
     permissions:
       contents: write

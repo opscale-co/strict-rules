@@ -28,8 +28,8 @@ class NoDummyCatchesTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new NoDummyCatchesRule($broker);
+        return new NoDummyCatchesRule($reflectionProvider);
     }
 }

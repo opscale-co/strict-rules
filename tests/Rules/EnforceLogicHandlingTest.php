@@ -28,8 +28,8 @@ class EnforceLogicHandlingTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EnforceLogicHandlingRule($broker);
+        return new EnforceLogicHandlingRule($reflectionProvider);
     }
 }

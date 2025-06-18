@@ -27,8 +27,8 @@ class MaxLinesTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new MaxLinesRule($broker, 50);
+        return new MaxLinesRule($reflectionProvider, 50);
     }
 }

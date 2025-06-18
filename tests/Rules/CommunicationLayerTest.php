@@ -32,8 +32,8 @@ class CommunicationLayerTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new CommunicationLayerRule($broker);
+        return new CommunicationLayerRule($reflectionProvider);
     }
 }

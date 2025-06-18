@@ -28,8 +28,8 @@ class EnforceCastTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EnforceCastRule($broker);
+        return new EnforceCastRule($reflectionProvider);
     }
 }

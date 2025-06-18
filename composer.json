@@ -43,6 +43,8 @@
     "phpstan/phpstan-phpunit": "^2.0",
     "lorisleiva/laravel-actions": "^2.9",
     "laravel/nova": "^5.7",
-    "tightenco/duster": "^3.2"
+    "tightenco/duster": "^3.2",
+    "rector/rector": "^2.0",
+    "driftingly/rector-laravel": "^2.0"
   }
 }

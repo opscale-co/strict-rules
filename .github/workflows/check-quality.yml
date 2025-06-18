@@ -1,0 +1,65 @@
+name: Check quality
+
+on:
+    pull_request: null
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Node dependencies
+      run: npm ci --ignore-scripts
+
+    - name: Cache Composer
+      uses: actions/cache@v4
+      with:
+        path: /tmp/composer-cache
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
+    - name: Install PHP dependencies
+      uses: php-actions/composer@v6
+      with:
+        php_version: 8.2
+        php_extensions: bcmath pdo_mysql pdo_pgsql zip
+        args: --prefer-dist --optimize-autoloader --no-progress --no-interaction
+      env:
+        COMPOSER_AUTH: '{"http-basic": {"nova.laravel.com": {"username": "${{ secrets.NOVA_USERNAME }}", "password": "${{ secrets.NOVA_LICENSE_KEY }}"}}}'
+
+    - name: Gate 1 - Linters
+      uses: tighten/duster-action@v3
+      with:
+        args: lint
+        
+    - name: Gate 2 - SonarQube scan
+      uses: SonarSource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    - name: Gate 2 - SonarQube check
+      id: sonarqube-check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      with:
+        pollingTimeoutSec: 600
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    - name: "Gate 2 - Result"
+      run: echo "Quality Gate status is ${{ steps.sonarqube-check.outputs.quality-gate-status }}"
+
+    - name: Gate 3 - Unit tests
+      uses: php-actions/phpunit@v3
+      with:
+          php_version: 8.2
+          php_extensions: bcmath pdo_mysql pdo_pgsql zip
+          memory_limit: 250M
+          configuration: phpunit.xml

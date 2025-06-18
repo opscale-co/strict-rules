@@ -26,7 +26,7 @@ class ConditionalOverrideRule extends BaseRule
         $errors = [];
         $rootNode = $this->getRootNode($node);
         $methods = $this->getMethodNodes($rootNode);
-        $classReflection = $this->getClassReflection($node);
+        $this->getClassReflection($node);
 
         foreach ($methods as $method) {
             if (! $this->isPublicOrProtected($method)) {
@@ -37,8 +37,11 @@ class ConditionalOverrideRule extends BaseRule
                 continue;
             }
 
-            if ($this->hasOverrideAttribute($method) ||
-                $this->hasOverridableAnnotation($method)) {
+            if ($this->hasOverrideAttribute($method)) {
+                continue;
+            }
+
+            if ($this->hasOverridableAnnotation($method)) {
                 continue;
             }
 
@@ -61,17 +64,21 @@ class ConditionalOverrideRule extends BaseRule
     /**
      * Check if method is public or protected
      */
-    private function isPublicOrProtected(ClassMethod $method): bool
+    private function isPublicOrProtected(ClassMethod $classMethod): bool
     {
-        return $method->isPublic() || $method->isProtected();
+        if ($classMethod->isPublic()) {
+            return true;
+        }
+
+        return $classMethod->isProtected();
     }
 
     /**
      * Check if method has #[\Override] attribute
      */
-    private function hasOverrideAttribute(ClassMethod $method): bool
+    private function hasOverrideAttribute(ClassMethod $classMethod): bool
     {
-        foreach ($method->attrGroups as $attrGroup) {
+        foreach ($classMethod->attrGroups as $attrGroup) {
             foreach ($attrGroup->attrs as $attr) {
                 if ($attr->name->toString() === 'Override') {
                     return true;
@@ -85,10 +92,10 @@ class ConditionalOverrideRule extends BaseRule
     /**
      * Check if method has @overridable annotation in docblock
      */
-    private function hasOverridableAnnotation(ClassMethod $method): bool
+    private function hasOverridableAnnotation(ClassMethod $classMethod): bool
     {
-        $docComment = $method->getDocComment();
-        if ($docComment === null) {
+        $docComment = $classMethod->getDocComment();
+        if (! $docComment instanceof \PhpParser\Comment\Doc) {
             return false;
         }
 

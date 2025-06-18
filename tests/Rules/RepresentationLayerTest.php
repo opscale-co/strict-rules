@@ -32,8 +32,8 @@ class RepresentationLayerTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new RepresentationLayerRule($broker);
+        return new RepresentationLayerRule($reflectionProvider);
     }
 }

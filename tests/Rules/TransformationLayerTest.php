@@ -32,8 +32,8 @@ class TransformationLayerTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new TransformationLayerRule($broker);
+        return new TransformationLayerRule($reflectionProvider);
     }
 }

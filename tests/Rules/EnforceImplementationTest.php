@@ -18,17 +18,17 @@ class EnforceImplementationTest extends RuleTestCase
             __DIR__ . '/../app/Services/BatchingService.php',
         ], [
             [
-                'Method "Opscale\Services\BatchingService::processBatch()" implements an interface but only returns a default value. ' .
+                'Method "' . \Opscale\Services\BatchingService::class . '::processBatch()" implements an interface but only returns a default value. ' .
                     'Provide a proper implementation instead.',
                 11,
             ],
             [
-                'Method "Opscale\Services\BatchingService::getBatchStatus()" implements an interface but only throws an exception. ' .
+                'Method "' . \Opscale\Services\BatchingService::class . '::getBatchStatus()" implements an interface but only throws an exception. ' .
                 'Provide a proper implementation instead.',
                 16,
             ],
             [
-                'Method "Opscale\Services\BatchingService::completeBatch()" implements an interface but has an empty body. ' .
+                'Method "' . \Opscale\Services\BatchingService::class . '::completeBatch()" implements an interface but has an empty body. ' .
                 'Provide a proper implementation instead.',
                 21,
             ],
@@ -37,8 +37,8 @@ class EnforceImplementationTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new EnforceImplementationRule($broker);
+        return new EnforceImplementationRule($reflectionProvider);
     }
 }

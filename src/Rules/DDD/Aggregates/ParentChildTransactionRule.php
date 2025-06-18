@@ -41,15 +41,21 @@ class ParentChildTransactionRule extends DomainRule
             $calls = $nodeFinder->findInstanceOf($method->stmts ?? [], Node\Expr::class);
             foreach ($calls as $call) {
                 // Check if we're making an Eloquent query builder call
-                if (! ($call instanceof MethodCall) ||
-                    ! ($call->name instanceof Node\Identifier) ||
-                    $call->name->toString() !== 'save') {
+                if (! ($call instanceof MethodCall)) {
+                    continue;
+                }
+
+                if (! ($call->name instanceof Node\Identifier)) {
+                    continue;
+                }
+
+                if ($call->name->toString() !== 'save') {
                     continue;
                 }
 
                 // Get the type of the object from the method parameters
                 $callerType = null;
-                if (isset($call->var) && isset($call->var->name)) {
+                if (isset($call->var) && (property_exists($call->var, 'name') && $call->var->name !== null)) {
                     foreach ($method->params as $param) {
                         if (isset($param->var->name) && $param->var->name === $call->var->name && $param->type) {
                             $callerType = $param->type->toString();
@@ -59,20 +65,17 @@ class ParentChildTransactionRule extends DomainRule
                 }
 
                 // Check if the caller is an Eloquent model
-                if ($this->isEloquentModel($callerType)) {
-                    // Now check if this model has belongsTo relationships
-                    if ($this->modelHasParent($callerType)) {
-                        $error = sprintf(
-                            'Direct save() on model "%s" is not allowed. ' .
-                            'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
-                            $callerType
-                        );
-
-                        $errors[] = RuleErrorBuilder::message($error)
-                            ->line($call->getLine())
-                            ->identifier('ddd.aggregates.parentChildTransaction')
-                            ->build();
-                    }
+                // Now check if this model has belongsTo relationships
+                if ($this->isEloquentModel($callerType) && $this->modelHasParent($callerType)) {
+                    $error = sprintf(
+                        'Direct save() on model "%s" is not allowed. ' .
+                        'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
+                        $callerType
+                    );
+                    $errors[] = RuleErrorBuilder::message($error)
+                        ->line($call->getLine())
+                        ->identifier('ddd.aggregates.parentChildTransaction')
+                        ->build();
                 }
             }
         }
@@ -105,6 +108,7 @@ class ParentChildTransactionRule extends DomainRule
         if (! $classNode instanceof \PhpParser\Node\Stmt\Class_) {
             return false;
         }
+
         $methods = $this->getMethodNodes($classNode);
         foreach ($methods as $method) {
             if ($this->isBelongsToMethod($method)) {
@@ -118,26 +122,26 @@ class ParentChildTransactionRule extends DomainRule
     /**
      * Check if a method returns BelongsTo relationship by analyzing its AST
      */
-    private function isBelongsToMethod(ClassMethod $method): bool
+    private function isBelongsToMethod(ClassMethod $classMethod): bool
     {
         // Method must be public
-        if (! $method->isPublic()) {
+        if (! $classMethod->isPublic()) {
             return false;
         }
 
         // Check return type annotation
-        if ($method->returnType) {
-            $returnTypeName = $method->returnType->toString();
+        if ($classMethod->returnType instanceof \PhpParser\Node) {
+            $returnTypeName = $classMethod->returnType->toString();
             if ($returnTypeName === 'BelongsTo' ||
-                $returnTypeName === 'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo') {
+                $returnTypeName === \Illuminate\Database\Eloquent\Relations\BelongsTo::class) {
                 return true;
             }
         }
 
         // Check method body for belongsTo() calls
-        if ($method->stmts) {
+        if ($classMethod->stmts) {
             $nodeFinder = new NodeFinder;
-            $methodCalls = $nodeFinder->findInstanceOf($method->stmts, MethodCall::class);
+            $methodCalls = $nodeFinder->findInstanceOf($classMethod->stmts, MethodCall::class);
             foreach ($methodCalls as $methodCall) {
                 if ($methodCall->name instanceof Node\Identifier &&
                     $methodCall->name->toString() === 'belongsTo') {

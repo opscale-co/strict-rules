@@ -38,8 +38,8 @@ class NoAccesorMutatorTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new NoAccesorMutatorRule($broker);
+        return new NoAccesorMutatorRule($reflectionProvider);
     }
 }

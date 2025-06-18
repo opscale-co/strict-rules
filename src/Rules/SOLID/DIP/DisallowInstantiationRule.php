@@ -80,22 +80,22 @@ class DisallowInstantiationRule extends BaseRule
      *
      * @return RuleError[]
      */
-    private function checkMethodForInstantiations(ClassMethod $method, FileNode $fileNode): array
+    private function checkMethodForInstantiations(ClassMethod $classMethod, FileNode $fileNode): array
     {
         $errors = [];
         $classReflection = $this->getClassReflection($fileNode);
 
-        if ($classReflection === null) {
+        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
             return [];
         }
 
         // Skip constructor method as it's expected to have instantiations for initialization
-        if ($method->name->toString() === '__construct') {
+        if ($classMethod->name->toString() === '__construct') {
             return [];
         }
 
         // Recursively find all 'new' expressions in the method
-        $newExpressions = $this->findNewExpressions($method);
+        $newExpressions = $this->findNewExpressions($classMethod);
 
         foreach ($newExpressions as $newExpression) {
             if (! $newExpression->class instanceof Node\Name) {
@@ -122,7 +122,7 @@ class DisallowInstantiationRule extends BaseRule
                 'Consider injecting the dependency through constructor or method parameters.',
                 $classReflection->getName(),
                 $resolvedClassName,
-                $method->name->toString()
+                $classMethod->name->toString()
             );
 
             $errors[] = RuleErrorBuilder::message($error)
@@ -176,8 +176,8 @@ class DisallowInstantiationRule extends BaseRule
 
         // Check if it's imported via use statement
         $useStatements = $this->getUseStatements($fileNode);
-        foreach ($useStatements as $useNode) {
-            $useName = $useNode->name->toString();
+        foreach ($useStatements as $useStatement) {
+            $useName = $useStatement->name->toString();
 
             if ($className === $useName) {
                 return $useName;
@@ -186,7 +186,7 @@ class DisallowInstantiationRule extends BaseRule
 
         // If not found in use statements, prepend current namespace
         $namespace = $this->getNamespace($fileNode);
-        if ($namespace) {
+        if ($namespace !== '' && $namespace !== '0') {
             return $namespace . '\\' . $className;
         }
 
@@ -211,16 +211,16 @@ class DisallowInstantiationRule extends BaseRule
         }
 
         // Check against additional allowed classes from config
-        foreach ($this->additionalAllowedClasses as $allowedClass) {
-            if ($className === $allowedClass || str_ends_with($className, '\\' . $allowedClass)) {
+        foreach ($this->additionalAllowedClasses as $additionalAllowedClass) {
+            if ($className === $additionalAllowedClass || str_ends_with($className, '\\' . $additionalAllowedClass)) {
                 return true;
             }
         }
 
         // Allow instantiation of classes that end with common value object suffixes
         $valueObjectSuffixes = ['DTO', 'ValueObject', 'Value', 'Data', 'Request', 'Response', 'Event'];
-        foreach ($valueObjectSuffixes as $suffix) {
-            if (str_ends_with($className, $suffix)) {
+        foreach ($valueObjectSuffixes as $valueObjectSuffix) {
+            if (str_ends_with($className, $valueObjectSuffix)) {
                 return true;
             }
         }
@@ -245,7 +245,7 @@ class DisallowInstantiationRule extends BaseRule
 
                 return $reflection->isBuiltin();
             }
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             // If we can't reflect on it, assume it's not built-in
             return false;
         }

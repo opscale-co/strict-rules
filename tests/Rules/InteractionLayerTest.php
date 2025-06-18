@@ -27,8 +27,8 @@ class InteractionLayerTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new InteractionLayerRule($broker);
+        return new InteractionLayerRule($reflectionProvider);
     }
 }

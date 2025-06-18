@@ -28,8 +28,8 @@ class ParentChildTransactionTest extends RuleTestCase
 
     protected function getRule(): Rule
     {
-        $broker = $this->createReflectionProvider();
+        $reflectionProvider = $this->createReflectionProvider();
 
-        return new ParentChildTransactionRule($broker);
+        return new ParentChildTransactionRule($reflectionProvider);
     }
 }
