@@ -15,7 +15,7 @@ class MaxLinesTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/User.php',
+            __DIR__ . '/../fixtures/Models/User.php',
         ], [
             [
                 'Class "Opscale\Models\User" has 57 lines, which exceeds the maximum allowed 50 lines. ' .

@@ -5,7 +5,6 @@
         "tests"
     ],
     "exclude": [
-        "tests/app",
         "tests/fixtures"
     ],
     "scripts": {

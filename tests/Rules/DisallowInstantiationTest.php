@@ -15,13 +15,13 @@ class DisallowInstantiationTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Services/ExternalAPIService.php',
+            __DIR__ . '/../fixtures/Services/ExternalAPIService.php',
         ], [
             [
                 'Class "Opscale\Services\ExternalAPIService" violates Dependency Inversion Principle ' .
                 'by directly instantiating "Opscale\Services\BatchingService" in method "canBatch()". ' .
                 'Consider injecting the dependency through constructor or method parameters.',
-                23,
+                24,
             ],
         ]);
     }

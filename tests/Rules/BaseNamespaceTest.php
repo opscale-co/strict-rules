@@ -14,7 +14,7 @@ class BaseNamespaceTest extends RuleTestCase
     #[Test]
     public function rule(): void
     {
-        $this->analyse([__DIR__ . '/../app/Domain/User.php'], [
+        $this->analyse([__DIR__ . '/../fixtures/Domain/User.php'], [
             [
                 'Class "Opscale\Domain\User" extends Eloquent Model but ' .
                 'is not in the "root\Models" namespace. ' .

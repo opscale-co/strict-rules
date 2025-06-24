@@ -53,11 +53,11 @@ Each layer is responsible for a different type of logic and data handling:
 
 | Layer          | Role                                                       |
 | -------------- | ---------------------------------------------------------- |
-| Representation | Models – represent domain entities                         |
-| Communication  | Observers – notify and react to model changes              |
-| Transformation | Services, Exceptions – apply business rules, handle errors |
-| Orchestration  | Jobs, Notifications – coordinate processes and flows       |
-| Interaction    | Console, Http, Nova, Policies – user/system interfaces     |
+| Representation | Models – Represent domain entities                         |
+| Communication  | Observers – Notify and react to model changes              |
+| Transformation | Services, Exceptions – Apply business rules, handle errors |
+| Orchestration  | Jobs, Notifications – Coordinate processes and flows       |
+| Interaction    | Console, Http, Nova, Policies – User/system interfaces     |
 
 ---
 
@@ -74,7 +74,7 @@ This ensures loose coupling, clear data flow, and high testability.
 
 ### Laravel Actions in Services
 
-We adopt [Laravel Actions](https://github.com/lorisleiva/laravel-actions) inside the `Services/Actions` folder. Each Action represents a use case, encapsulating a single unit of business logic. These Actions can be reused across:
+We adopt [Laravel Actions](https://github.com/lorisleiva/laravel-actions) inside the `Services/Actions` folder. Each Action represents a use case, encapsulating a single unit of business logic. Use cases commonly need to be called from diferrent layers, in most cases you need to create an element to wrap this call. We can simplify this using Laravel Actions and avoid creating wrappers, you actions can be used as:
 
 - Controllers
 - Commands
@@ -83,16 +83,22 @@ We adopt [Laravel Actions](https://github.com/lorisleiva/laravel-actions) inside
 
 This design promotes separation of concerns and avoids embedding business logic directly in framework components. Each layer remains focused on its role:
 
-- **Controllers** call Actions to execute business logic.
-- **Jobs** orchestrate Actions for asynchronous processes.
-- **Commands** trigger Actions via the CLI.
-- **Listeners** react to events by invoking the corresponding Action.
-
 The objective of using Actions in this flexible way is to facilitate **upward communication** and prevent unnecessary wrapping or duplication of logic within these components.
 
 This approach results in reusable, isolated, and testable units of logic.
 
 ---
 
-By enforcing these assumptions, we ensure our application is well-structured, scalable, and easy to evolve over time.
+## 5. Managed Clean Architecture Layers
 
+This section provides an index of all Clean Architecture layers implemented in this project, with their specific responsibilities:
+
+### 📋 Index
+
+| Concept | Purpose | Rules |
+|-------|---------------------|----------------|
+| **[Representation](./Representation/documentation.md)** | Foundation layer defining what things are, not what they do | `RepresentationLayerRule` |
+| **[Communication](./Communication/documentation.md)** | Event-based notification system for domain changes | `CommunicationLayerRule` |
+| **[Transformation](./Transformation/documentation.md)** | Core business logic and domain rules application | `TransformationLayerRule` |
+| **[Orchestration](./Orchestration/documentation.md)** | Workflow coordination and asynchronous operations | `OrchestrationLayerRule` |
+| **[Interaction](./Interaction/documentation.md)** | External interfaces and user/system entry points | `InteractionLayerRule` |

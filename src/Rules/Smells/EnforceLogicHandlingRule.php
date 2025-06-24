@@ -51,13 +51,13 @@ class EnforceLogicHandlingRule extends BaseRule
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
         // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode) {
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
         $namespace = $this->getNamespace($node);
-        if (parent::shouldProcess($node, $scope) === false ||
-            $this->isInNamespaces($namespace, ['\\Services'])) {
+        if ($this->isInNamespaces($namespace, ['\\Services'])) {
             return false;
         }
 

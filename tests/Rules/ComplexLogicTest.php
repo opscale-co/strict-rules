@@ -16,8 +16,8 @@ class ComplexLogicTest extends RuleTestCase
     {
         $this->analyse(
             [
-                __DIR__ . '/../app/Models/Repositories/UserRepository.php',
-                __DIR__ . '/../app/Services/BatchingService.php',
+                __DIR__ . '/../fixtures/Models/Repositories/UserRepository.php',
+                __DIR__ . '/../fixtures/Services/BatchingService.php',
             ], [
                 [
                     'Class "Opscale\Models\Repositories\UserRepository" is importing 2 Eloquent models, and it should not import more than 1. ' .

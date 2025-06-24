@@ -15,22 +15,22 @@ class EnforceImplementationTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Services/BatchingService.php',
+            __DIR__ . '/../fixtures/Services/BatchingService.php',
         ], [
             [
                 'Method "' . \Opscale\Services\BatchingService::class . '::processBatch()" implements an interface but only returns a default value. ' .
                     'Provide a proper implementation instead.',
-                11,
+                12,
             ],
             [
                 'Method "' . \Opscale\Services\BatchingService::class . '::getBatchStatus()" implements an interface but only throws an exception. ' .
                 'Provide a proper implementation instead.',
-                16,
+                17,
             ],
             [
                 'Method "' . \Opscale\Services\BatchingService::class . '::completeBatch()" implements an interface but has an empty body. ' .
                 'Provide a proper implementation instead.',
-                21,
+                22,
             ],
         ]);
     }

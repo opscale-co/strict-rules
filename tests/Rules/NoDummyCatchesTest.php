@@ -15,7 +15,7 @@ class NoDummyCatchesTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Jobs/CleanOldProducts.php',
+            __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
         ],
             [
                 [

@@ -14,7 +14,7 @@ class NoStatementsLogicTest extends RuleTestCase
     #[Test]
     public function rule(): void
     {
-        $this->analyse([__DIR__ . '/../app/Models/User.php'], [
+        $this->analyse([__DIR__ . '/../fixtures/Models/User.php'], [
             [
                 'Method "' . \Opscale\Models\User::class . '::getEmail" contains a "if" ' .
                 'statement which is not allowed in domain model classes.',

@@ -15,7 +15,7 @@ class CommunicationLayerTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Observers/ProductObserver.php',
+            __DIR__ . '/../fixtures/Observers/ProductObserver.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Observers\ProductObserver" from layer 2 cannot depend on "Illuminate\Support\Facades\Response". ' .

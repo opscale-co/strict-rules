@@ -33,4 +33,18 @@ By structuring subdomains as standalone packages, we foster maintainability, sca
 
 ---
 
-These assumptions guide our DDD practice: domain-centric design with Laravel pragmatism, and business-driven modularization for clean, evolving systems.
+## 3. Managed DDD Concepts
+
+This section provides an index of all DDD concepts implemented in this project, with their core purpose:
+
+### 📋 Index
+
+| Concept | Purpose | Rules |
+|---------|-------------|-----------|
+| **[Aggregates](./Aggregates/documentation.md)** | Ensure data consistency through single entry points | `ModelValidationRule`, `ParentChildTransactionRule` |
+| **[Domain](./Domain/documentation.md)** | Keep business logic pure and declarative | `NoStatementsLogicRule` |
+| **[Domain Services](./DomainServices/documentation.md)** | Coordinate complex operations across multiple entities | `ComplexLogicRule` |
+| **[Entities](./Entities/documentation.md)** | Use ULIDs for globally unique, infrastructure-independent identity | `EnforceUlidsRule` |
+| **[Repositories](./Repositories/documentation.md)** | Isolate persistence logic in dedicated traits | `EloquentRestrictionRule` |
+| **[Subdomains](./Subdomains/documentation.md)** | Organize code into focused, package-oriented modules | `BaseNamespaceRule`, `EntityCountRule` |
+| **[Value Objects](./ValueObjects/documentation.md)** | Implement immutable domain concepts using Laravel casts | `EnforceCastRule`, `NoAccesorMutatorRule` |

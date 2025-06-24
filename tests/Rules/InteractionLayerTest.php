@@ -15,7 +15,7 @@ class InteractionLayerTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Http/Controllers\ProductController.php',
+            __DIR__ . '/../fixtures/Http/Controllers\ProductController.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Http\Controllers\ProductController" from layer 5 cannot depend on "Illuminate\Support\Facades\DB". ' .

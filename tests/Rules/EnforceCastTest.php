@@ -15,7 +15,7 @@ class EnforceCastTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/ValueObjects/Address.php',
+            __DIR__ . '/../fixtures/Models/ValueObjects/Address.php',
         ],
             [
                 [

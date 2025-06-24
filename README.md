@@ -18,9 +18,27 @@ Thanks for helping Opscale continue to scale! 🚀
 
 ## Description
 
-Enforce software architecture guidelines for your Laravel packages.
+Enforce software architecture guidelines for your Laravel projects with opinionated, battle-tested rules that promote maintainable, scalable code.
 
-Apply DDD, CLEAN and SOLID guidelines (opinionated) for enforcing rules for creating standardized and quality code across any Laravey project or package. You can also apply code smells and common performance checks.
+### Why Use Architectural Guidelines?
+
+Modern software projects face increasing complexity as they scale. Without clear architectural boundaries, codebases become tangled, difficult to test, and expensive to maintain. Our approach focuses on **preventing architectural debt** before it accumulates, ensuring your Laravel applications remain clean and extensible as they grow. Learn more about our architectural philosophy in [software-architecture.md](src/Rules/1-software-architecture.md).
+
+### How We Design Software Components
+
+We follow a **business-centric design methodology** that starts with understanding the domain before writing code. Our systematic approach guides you through identifying business units, mapping information flows, modeling data architecture, and defining business rules that create value. This methodology ensures your software components genuinely reflect how the business operates, making them both maintainable and AI-friendly. Discover our complete design process in [design-methodology.md](src/Rules/2-design-methodology.md).
+
+### What Guidelines We Cover
+
+Through **real-world examples and data stories**, we implement three proven architectural approaches that work together to create robust Laravel applications. Each guideline is illustrated with practical scenarios that demonstrate both common problems and their solutions. See concrete implementations in [data-story.md](src/Rules/3-data-story.md).
+
+### Supported Guidelines
+
+| Guideline | Purpose | Key Concepts | Documentation |
+|-----------|---------|--------------|---------------|
+| **[DDD](src/Rules/DDD/assumptions.md)** | Domain modeling with Laravel pragmatism | Aggregates, Entities, Value Objects, Repositories, Domain Services | [DDD Assumptions](src/Rules/DDD/assumptions.md) |
+| **[Clean Architecture](src/Rules/CLEAN/assumptions.md)** | Layered separation of concerns | Representation, Communication, Transformation, Orchestration, Interaction | [Clean Assumptions](src/Rules/CLEAN/assumptions.md) |
+| **[SOLID](src/Rules/SOLID/assumptions.md)** | Code smell prevention through proven principles | SRP, OCP, LSP, ISP, DIP with practical Laravel application | [SOLID Assumptions](src/Rules/SOLID/assumptions.md) |
 
 ## Installation
 

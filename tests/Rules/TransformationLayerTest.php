@@ -15,7 +15,7 @@ class TransformationLayerTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Services/ExternalAPIService.php',
+            __DIR__ . '/../fixtures/Services/ExternalAPIService.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Services\ExternalAPIService" from layer 3 cannot depend on "Illuminate\Support\Facades\Response". ' .
