@@ -1,3 +1,12 @@
+## [1.1.0](https://github.com/opscale-co/strict-rules/compare/v1.0.0...v1.1.0) (2025-06-25)
+
+### Features
+
+* **lot of changes:** lot of changes ([2748298](https://github.com/opscale-co/strict-rules/commit/2748298201c92700e60f9b67923f2657e304e114))
+
+
+Generating notes for version 1.1.0
+
 ## 1.0.0 (2025-06-18)
 
 ### Features
