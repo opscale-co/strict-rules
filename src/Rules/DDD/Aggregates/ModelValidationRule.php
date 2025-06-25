@@ -6,7 +6,6 @@ use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -14,11 +13,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class ModelValidationRule extends DomainRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line

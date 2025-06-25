@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -19,11 +18,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class ParentChildTransactionRule extends DomainRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line
@@ -124,11 +118,6 @@ class ParentChildTransactionRule extends DomainRule
      */
     private function isBelongsToMethod(ClassMethod $classMethod): bool
     {
-        // Method must be public
-        if (! $classMethod->isPublic()) {
-            return false;
-        }
-
         // Check return type annotation
         if ($classMethod->returnType instanceof \PhpParser\Node) {
             $returnTypeName = $classMethod->returnType->toString();

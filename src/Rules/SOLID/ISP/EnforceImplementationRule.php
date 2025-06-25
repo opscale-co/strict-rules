@@ -16,7 +16,6 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use Throwable;
@@ -27,11 +26,6 @@ use Throwable;
  */
 class EnforceImplementationRule extends BaseRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line

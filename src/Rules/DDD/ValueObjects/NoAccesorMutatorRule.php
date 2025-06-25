@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -18,11 +17,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoAccesorMutatorRule extends DomainRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line

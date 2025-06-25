@@ -13,29 +13,12 @@ class OrchestrationLayerRule extends CleanRule
 {
     public function __construct(ReflectionProvider $reflectionProvider)
     {
-        parent::__construct($reflectionProvider);
-    }
-
-    /**
-     * Get the current processing layer
-     */
-    protected function processingLayer(): int
-    {
-        return 4;
-    }
-
-    /**
-     * Get the allowed base classes for the Interaction layer
-     * Any class that extends/implements these is allowed across layers
-     */
-    protected function getAllowedBaseClasses(): array
-    {
-        return [
+        parent::__construct($reflectionProvider, 4, [
             'Illuminate\Bus',
             'Illuminate\Contracts',
             'Illuminate\Foundation\Bus',
             'Illuminate\Notifications',
             'Illuminate\Queue',
-        ];
+        ]);
     }
 }

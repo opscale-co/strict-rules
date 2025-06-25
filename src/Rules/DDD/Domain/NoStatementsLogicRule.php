@@ -13,7 +13,6 @@ use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -21,11 +20,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoStatementsLogicRule extends DomainRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line

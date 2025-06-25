@@ -106,9 +106,15 @@ abstract class CleanRule extends BaseRule
         ],
     ];
 
-    public function __construct(ReflectionProvider $reflectionProvider)
+    protected int $processingLayer;
+
+    protected array $allowedBaseClasses;
+
+    public function __construct(ReflectionProvider $reflectionProvider, ?int $processingLayer = null, array $allowedBaseClasses = [])
     {
         parent::__construct($reflectionProvider);
+        $this->processingLayer = $processingLayer ?? $this->processingLayer();
+        $this->allowedBaseClasses = $allowedBaseClasses ?: $this->getAllowedBaseClasses();
     }
 
     /**
@@ -122,8 +128,8 @@ abstract class CleanRule extends BaseRule
             return false; // Class is not in a defined layer
         }
 
-        foreach ($this->getAllowedBaseClasses() as $baseClass) {
-            if (str_starts_with($usedClass, $baseClass)) {
+        foreach ($this->allowedBaseClasses as $allowedBaseClass) {
+            if (str_starts_with($usedClass, $allowedBaseClass)) {
                 return true; // Class is allowed in this layer
             }
         }
@@ -202,9 +208,15 @@ abstract class CleanRule extends BaseRule
         return $isFacade && in_array($facade, $allowedFacades);
     }
 
-    abstract protected function processingLayer(): int;
+    protected function processingLayer(): int
+    {
+        return $this->processingLayer;
+    }
 
-    abstract protected function getAllowedBaseClasses(): array;
+    protected function getAllowedBaseClasses(): array
+    {
+        return $this->allowedBaseClasses;
+    }
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
@@ -219,7 +231,7 @@ abstract class CleanRule extends BaseRule
         $className = $rootNode->namespacedName->toString();
         $classLayer = $this->getClassLayer($className);
 
-        return $classLayer !== null && $classLayer === $this->processingLayer();
+        return $classLayer !== null && $classLayer === $this->processingLayer;
     }
 
     /**
