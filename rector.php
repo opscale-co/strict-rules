@@ -24,9 +24,7 @@ function phpSetup(RectorConfig $rectorConfig): void
 
     $rectorConfig->skip([
         // Tests fixtures
-        __DIR__ . '/tests/app',
         __DIR__ . '/tests/fixtures',
-        __DIR__ . '/tests/src',
 
         // Specific rules
         Rector\CodeQuality\Rector\If_\SimplifyIfReturnBoolRector::class,

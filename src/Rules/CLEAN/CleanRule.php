@@ -15,6 +15,7 @@ use Throwable;
 /**
  * Abstract rule that enforces Clean Architecture layer dependencies
  * Only allows usage of classes from previous/lower layers
+ * also from specific Facades related to the layer
  */
 abstract class CleanRule extends BaseRule
 {

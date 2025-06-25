@@ -17,7 +17,7 @@
         "verifyReleaseCmd": "echo 'Verifying release for version ${nextRelease.version}'",
         "generateNotesCmd": "echo 'Generating notes for version ${nextRelease.version}'",
         "prepareCmd": "jq --arg version '${nextRelease.version}' '.version = $version' composer.json > tmp.json && mv tmp.json composer.json",
-        "publishCmd": "curl -XPOST -H'content-type:application/json' 'https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}' -d'{\"repository\":{\"url\":\"https://github.com/${GITHUB_REPOSITORY}\"}}'",
+        "publishCmd": "curl -XPOST -H'content-type:application/json' 'https://packagist.org/api/update-package?username=${process.env.PACKAGIST_USERNAME}&apiToken=${process.env.PACKAGIST_TOKEN}' -d'{\"repository\":{\"url\":\"https://github.com/${process.env.GITHUB_REPOSITORY}\"}}'",
         "successCmd": "echo 'Successfully released version ${nextRelease.version}'"
       }
     ],

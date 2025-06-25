@@ -21,7 +21,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Opscale\\": "tests/app",
+      "Opscale\\": "tests/fixtures",
       "Opscale\\Tests\\": "tests"
     }
   },

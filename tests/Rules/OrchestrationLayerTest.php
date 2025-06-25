@@ -15,7 +15,7 @@ class OrchestrationLayerTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Jobs/CleanOldProducts.php',
+            __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Opscale\Http\Controllers\ProductsController" from layer 5. ' .

@@ -15,8 +15,8 @@ class EntityCountTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/User.php',
-            __DIR__ . '/../app/Models/Product.php',
+            __DIR__ . '/../fixtures/Models/User.php',
+            __DIR__ . '/../fixtures/Models/Product.php',
         ], [
             [
                 'Subdomain has 2 entities, which exceeds the maximum of 1 entities. ' .

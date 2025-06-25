@@ -15,7 +15,7 @@ class RepresentationLayerTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/Product.php',
+            __DIR__ . '/../fixtures/Models/Product.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Models\Product" from layer 1 cannot depend on "Opscale\Jobs\CleanOldProducts" from layer 4. ' .

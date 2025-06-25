@@ -53,13 +53,13 @@ class EnforceCastRule extends DomainRule
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
         // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode) {
+        if (! $node instanceof FileNode ||
+            parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
         $namespace = $this->getNamespace($node);
-        if (parent::shouldProcess($node, $scope) === false ||
-            ! $this->isInNamespaces($namespace, ['\\Models\\ValueObjects'])) {
+        if (! $this->isInNamespaces($namespace, ['\\Models\\ValueObjects'])) {
             return false;
         }
 

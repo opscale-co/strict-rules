@@ -1,0 +1,1289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1750804541">
+  <project timestamp="1750804541">
+    <package name="Opscale\Rules">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/BaseRule.php">
+        <class name="Opscale\Rules\BaseRule" namespace="Opscale\Rules">
+          <metrics complexity="48" methods="15" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="90" coveredstatements="70" elements="105" coveredelements="78"/>
+        </class>
+        <line num="27" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="22"/>
+        <line num="29" type="stmt" count="22"/>
+        <line num="32" type="method" name="getNodeType" visibility="public" complexity="1" crap="1" count="22"/>
+        <line num="34" type="stmt" count="22"/>
+        <line num="40" type="method" name="shouldProcess" visibility="protected" complexity="5" crap="5.39" count="19"/>
+        <line num="43" type="stmt" count="19"/>
+        <line num="44" type="stmt" count="0"/>
+        <line num="47" type="stmt" count="19"/>
+        <line num="48" type="stmt" count="19"/>
+        <line num="49" type="stmt" count="19"/>
+        <line num="50" type="stmt" count="19"/>
+        <line num="51" type="stmt" count="0"/>
+        <line num="54" type="stmt" count="19"/>
+        <line num="60" type="method" name="getRootNode" visibility="protected" complexity="4" crap="4" count="22"/>
+        <line num="62" type="stmt" count="22"/>
+        <line num="63" type="stmt" count="22"/>
+        <line num="64" type="stmt" count="22"/>
+        <line num="65" type="stmt" count="22"/>
+        <line num="66" type="stmt" count="22"/>
+        <line num="67" type="stmt" count="22"/>
+        <line num="68" type="stmt" count="22"/>
+        <line num="72" type="stmt" count="22"/>
+        <line num="78" type="method" name="getClassReflection" visibility="protected" complexity="3" crap="3.21" count="21"/>
+        <line num="80" type="stmt" count="21"/>
+        <line num="81" type="stmt" count="21"/>
+        <line num="82" type="stmt" count="0"/>
+        <line num="85" type="stmt" count="21"/>
+        <line num="86" type="stmt" count="21"/>
+        <line num="87" type="stmt" count="0"/>
+        <line num="90" type="stmt" count="21"/>
+        <line num="96" type="method" name="getNamespace" visibility="protected" complexity="3" crap="3" count="6"/>
+        <line num="98" type="stmt" count="6"/>
+        <line num="100" type="stmt" count="6"/>
+        <line num="101" type="stmt" count="6"/>
+        <line num="102" type="stmt" count="6"/>
+        <line num="108" type="method" name="getNamespaceNode" visibility="protected" complexity="4" crap="4.13" count="22"/>
+        <line num="110" type="stmt" count="22"/>
+        <line num="111" type="stmt" count="22"/>
+        <line num="112" type="stmt" count="22"/>
+        <line num="113" type="stmt" count="22"/>
+        <line num="117" type="stmt" count="0"/>
+        <line num="125" type="method" name="getClassNodes" visibility="protected" complexity="4" crap="20" count="0"/>
+        <line num="127" type="stmt" count="0"/>
+        <line num="128" type="stmt" count="0"/>
+        <line num="129" type="stmt" count="0"/>
+        <line num="130" type="stmt" count="0"/>
+        <line num="133" type="stmt" count="0"/>
+        <line num="134" type="stmt" count="0"/>
+        <line num="135" type="stmt" count="0"/>
+        <line num="139" type="stmt" count="0"/>
+        <line num="145" type="method" name="getUseStatements" visibility="protected" complexity="5" crap="5.03" count="7"/>
+        <line num="147" type="stmt" count="7"/>
+        <line num="148" type="stmt" count="7"/>
+        <line num="149" type="stmt" count="7"/>
+        <line num="150" type="stmt" count="0"/>
+        <line num="153" type="stmt" count="7"/>
+        <line num="154" type="stmt" count="7"/>
+        <line num="155" type="stmt" count="7"/>
+        <line num="156" type="stmt" count="7"/>
+        <line num="161" type="stmt" count="7"/>
+        <line num="167" type="method" name="getParentNode" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="169" type="stmt" count="1"/>
+        <line num="171" type="stmt" count="1"/>
+        <line num="177" type="method" name="getMethodNodes" visibility="protected" complexity="3" crap="3" count="11"/>
+        <line num="179" type="stmt" count="11"/>
+        <line num="180" type="stmt" count="11"/>
+        <line num="181" type="stmt" count="11"/>
+        <line num="182" type="stmt" count="11"/>
+        <line num="186" type="stmt" count="11"/>
+        <line num="192" type="method" name="getTraitNodes" visibility="protected" complexity="3" crap="3" count="1"/>
+        <line num="194" type="stmt" count="1"/>
+        <line num="195" type="stmt" count="1"/>
+        <line num="196" type="stmt" count="1"/>
+        <line num="197" type="stmt" count="1"/>
+        <line num="201" type="stmt" count="1"/>
+        <line num="207" type="method" name="getInterfaceNodes" visibility="protected" complexity="2" crap="2" count="2"/>
+        <line num="209" type="stmt" count="2"/>
+        <line num="210" type="stmt" count="2"/>
+        <line num="211" type="stmt" count="1"/>
+        <line num="214" type="stmt" count="2"/>
+        <line num="220" type="method" name="isInNamespaces" visibility="protected" complexity="5" crap="5.27" count="5"/>
+        <line num="222" type="stmt" count="5"/>
+        <line num="224" type="stmt" count="5"/>
+        <line num="225" type="stmt" count="5"/>
+        <line num="226" type="stmt" count="5"/>
+        <line num="227" type="stmt" count="5"/>
+        <line num="228" type="stmt" count="4"/>
+        <line num="232" type="stmt" count="0"/>
+        <line num="233" type="stmt" count="0"/>
+        <line num="237" type="stmt" count="2"/>
+        <line num="243" type="method" name="getASTForClass" visibility="protected" complexity="4" crap="4.37" count="1"/>
+        <line num="245" type="stmt" count="1"/>
+        <line num="246" type="stmt" count="0"/>
+        <line num="249" type="stmt" count="1"/>
+        <line num="250" type="stmt" count="1"/>
+        <line num="252" type="stmt" count="1"/>
+        <line num="253" type="stmt" count="0"/>
+        <line num="258" type="stmt" count="1"/>
+        <line num="259" type="stmt" count="1"/>
+        <line num="260" type="stmt" count="1"/>
+        <line num="261" type="stmt" count="1"/>
+        <line num="264" type="stmt" count="1"/>
+        <line num="266" type="stmt" count="1"/>
+        <line num="267" type="stmt" count="0"/>
+        <line num="269" type="stmt" count="0"/>
+        <metrics loc="273" ncloc="223" classes="1" methods="15" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="90" coveredstatements="70" elements="105" coveredelements="78"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/CleanRule.php">
+        <class name="Opscale\Rules\CLEAN\CleanRule" namespace="Opscale\Rules\CLEAN">
+          <metrics complexity="33" methods="8" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="76" elements="91" coveredelements="79"/>
+        </class>
+        <line num="109" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="5"/>
+        <line num="111" type="stmt" count="5"/>
+        <line num="117" type="method" name="allowUse" visibility="public" complexity="4" crap="4.03" count="5"/>
+        <line num="119" type="stmt" count="5"/>
+        <line num="120" type="stmt" count="5"/>
+        <line num="121" type="stmt" count="5"/>
+        <line num="122" type="stmt" count="0"/>
+        <line num="125" type="stmt" count="5"/>
+        <line num="126" type="stmt" count="5"/>
+        <line num="127" type="stmt" count="4"/>
+        <line num="131" type="stmt" count="5"/>
+        <line num="139" type="method" name="processNode" visibility="public" complexity="10" crap="10" count="5"/>
+        <line num="142" type="stmt" count="5"/>
+        <line num="143" type="stmt" count="5"/>
+        <line num="144" type="stmt" count="0"/>
+        <line num="147" type="stmt" count="5"/>
+        <line num="148" type="stmt" count="5"/>
+        <line num="149" type="stmt" count="5"/>
+        <line num="150" type="stmt" count="5"/>
+        <line num="151" type="stmt" count="5"/>
+        <line num="153" type="stmt" count="5"/>
+        <line num="154" type="stmt" count="5"/>
+        <line num="155" type="stmt" count="5"/>
+        <line num="157" type="stmt" count="5"/>
+        <line num="158" type="stmt" count="5"/>
+        <line num="159" type="stmt" count="4"/>
+        <line num="160" type="stmt" count="4"/>
+        <line num="161" type="stmt" count="4"/>
+        <line num="162" type="stmt" count="4"/>
+        <line num="163" type="stmt" count="4"/>
+        <line num="164" type="stmt" count="4"/>
+        <line num="165" type="stmt" count="4"/>
+        <line num="166" type="stmt" count="4"/>
+        <line num="167" type="stmt" count="5"/>
+        <line num="168" type="stmt" count="5"/>
+        <line num="169" type="stmt" count="5"/>
+        <line num="170" type="stmt" count="5"/>
+        <line num="171" type="stmt" count="5"/>
+        <line num="172" type="stmt" count="5"/>
+        <line num="173" type="stmt" count="5"/>
+        <line num="174" type="stmt" count="5"/>
+        <line num="177" type="stmt" count="5"/>
+        <line num="178" type="stmt" count="5"/>
+        <line num="179" type="stmt" count="5"/>
+        <line num="180" type="stmt" count="5"/>
+        <line num="181" type="stmt" count="5"/>
+        <line num="185" type="stmt" count="5"/>
+        <line num="191" type="method" name="isAllowedFacade" visibility="public" complexity="2" crap="2" count="5"/>
+        <line num="193" type="stmt" count="5"/>
+        <line num="194" type="stmt" count="5"/>
+        <line num="195" type="stmt" count="5"/>
+        <line num="196" type="stmt" count="5"/>
+        <line num="197" type="stmt" count="5"/>
+        <line num="199" type="stmt" count="5"/>
+        <line num="200" type="stmt" count="5"/>
+        <line num="202" type="stmt" count="5"/>
+        <line num="209" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.05" count="5"/>
+        <line num="212" type="stmt" count="5"/>
+        <line num="213" type="stmt" count="5"/>
+        <line num="214" type="stmt" count="0"/>
+        <line num="218" type="stmt" count="5"/>
+        <line num="219" type="stmt" count="5"/>
+        <line num="220" type="stmt" count="5"/>
+        <line num="222" type="stmt" count="5"/>
+        <line num="228" type="method" name="isAllowedLayer" visibility="protected" complexity="3" crap="3.02" count="5"/>
+        <line num="230" type="stmt" count="5"/>
+        <line num="231" type="stmt" count="5"/>
+        <line num="232" type="stmt" count="5"/>
+        <line num="233" type="stmt" count="0"/>
+        <line num="236" type="stmt" count="5"/>
+        <line num="237" type="stmt" count="5"/>
+        <line num="238" type="stmt" count="5"/>
+        <line num="240" type="stmt" count="5"/>
+        <line num="246" type="method" name="getClassLayer" visibility="protected" complexity="5" crap="5" count="5"/>
+        <line num="248" type="stmt" count="5"/>
+        <line num="249" type="stmt" count="5"/>
+        <line num="250" type="stmt" count="5"/>
+        <line num="251" type="stmt" count="5"/>
+        <line num="252" type="stmt" count="5"/>
+        <line num="253" type="stmt" count="5"/>
+        <line num="258" type="stmt" count="5"/>
+        <line num="265" type="method" name="getRootParentNamespace" visibility="protected" complexity="4" crap="4.59" count="5"/>
+        <line num="268" type="stmt" count="5"/>
+        <line num="269" type="stmt" count="0"/>
+        <line num="272" type="stmt" count="5"/>
+        <line num="273" type="stmt" count="5"/>
+        <line num="276" type="stmt" count="5"/>
+        <line num="277" type="stmt" count="5"/>
+        <line num="280" type="stmt" count="5"/>
+        <line num="282" type="stmt" count="0"/>
+        <line num="283" type="stmt" count="0"/>
+        <metrics loc="287" ncloc="234" classes="1" methods="8" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="76" elements="91" coveredelements="79"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN\Communication">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/Communication/CommunicationLayerRule.php">
+        <class name="Opscale\Rules\CLEAN\Communication\CommunicationLayerRule" namespace="Opscale\Rules\CLEAN\Communication">
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="8" elements="11" coveredelements="11"/>
+        </class>
+        <line num="14" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="16" type="stmt" count="1"/>
+        <line num="22" type="method" name="processingLayer" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="31" type="method" name="getAllowedBaseClasses" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <metrics loc="41" ncloc="30" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="8" elements="11" coveredelements="11"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN\Interaction">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/Interaction/InteractionLayerRule.php">
+        <class name="Opscale\Rules\CLEAN\Interaction\InteractionLayerRule" namespace="Opscale\Rules\CLEAN\Interaction">
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="16" elements="19" coveredelements="19"/>
+        </class>
+        <line num="14" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="16" type="stmt" count="1"/>
+        <line num="22" type="method" name="processingLayer" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="31" type="method" name="getAllowedBaseClasses" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <metrics loc="66" ncloc="46" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="16" elements="19" coveredelements="19"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN\Orchestration">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/Orchestration/OrchestrationLayerRule.php">
+        <class name="Opscale\Rules\CLEAN\Orchestration\OrchestrationLayerRule" namespace="Opscale\Rules\CLEAN\Orchestration">
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="12" coveredelements="12"/>
+        </class>
+        <line num="14" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="16" type="stmt" count="1"/>
+        <line num="22" type="method" name="processingLayer" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="31" type="method" name="getAllowedBaseClasses" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <metrics loc="42" ncloc="31" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="9" coveredstatements="9" elements="12" coveredelements="12"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN\Representation">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/Representation/RepresentationLayerRule.php">
+        <class name="Opscale\Rules\CLEAN\Representation\RepresentationLayerRule" namespace="Opscale\Rules\CLEAN\Representation">
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="9" coveredelements="9"/>
+        </class>
+        <line num="14" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="16" type="stmt" count="1"/>
+        <line num="22" type="method" name="processingLayer" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="31" type="method" name="getAllowedBaseClasses" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <metrics loc="39" ncloc="27" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="9" coveredelements="9"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\CLEAN\Transformation">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/CLEAN/Transformation/TransformationLayerRule.php">
+        <class name="Opscale\Rules\CLEAN\Transformation\TransformationLayerRule" namespace="Opscale\Rules\CLEAN\Transformation">
+          <metrics complexity="3" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="9" coveredelements="9"/>
+        </class>
+        <line num="14" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="16" type="stmt" count="1"/>
+        <line num="22" type="method" name="processingLayer" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="31" type="method" name="getAllowedBaseClasses" visibility="protected" complexity="1" crap="1" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <metrics loc="39" ncloc="28" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="6" coveredstatements="6" elements="9" coveredelements="9"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\Aggregates">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Aggregates/ModelValidationRule.php">
+        <class name="Opscale\Rules\DDD\Aggregates\ModelValidationRule" namespace="Opscale\Rules\DDD\Aggregates">
+          <metrics complexity="13" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="22" elements="30" coveredelements="23"/>
+        </class>
+        <line num="17" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="19" type="stmt" count="1"/>
+        <line num="22" type="method" name="processNode" visibility="public" complexity="8" crap="8.44" count="1"/>
+        <line num="25" type="stmt" count="1"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="0"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="0"/>
+        <line num="39" type="stmt" count="0"/>
+        <line num="40" type="stmt" count="0"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="58" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.13" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="0"/>
+        <line num="67" type="stmt" count="1"/>
+        <metrics loc="70" ncloc="63" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="22" elements="30" coveredelements="23"/>
+      </file>
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Aggregates/ParentChildTransactionRule.php">
+        <class name="Opscale\Rules\DDD\Aggregates\ParentChildTransactionRule" namespace="Opscale\Rules\DDD\Aggregates">
+          <metrics complexity="35" methods="5" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="64" coveredstatements="56" elements="69" coveredelements="57"/>
+        </class>
+        <line num="22" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="27" type="method" name="processNode" visibility="public" complexity="17" crap="17.22" count="1"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="0"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="0"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="0"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="70" type="stmt" count="1"/>
+        <line num="71" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="73" type="stmt" count="1"/>
+        <line num="74" type="stmt" count="1"/>
+        <line num="75" type="stmt" count="1"/>
+        <line num="76" type="stmt" count="1"/>
+        <line num="77" type="stmt" count="1"/>
+        <line num="78" type="stmt" count="1"/>
+        <line num="83" type="stmt" count="1"/>
+        <line num="86" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.37" count="1"/>
+        <line num="89" type="stmt" count="1"/>
+        <line num="90" type="stmt" count="1"/>
+        <line num="91" type="stmt" count="0"/>
+        <line num="94" type="stmt" count="1"/>
+        <line num="95" type="stmt" count="1"/>
+        <line num="96" type="stmt" count="0"/>
+        <line num="99" type="stmt" count="1"/>
+        <line num="105" type="method" name="modelHasParent" visibility="private" complexity="4" crap="4.25" count="1"/>
+        <line num="107" type="stmt" count="1"/>
+        <line num="108" type="stmt" count="1"/>
+        <line num="109" type="stmt" count="0"/>
+        <line num="112" type="stmt" count="1"/>
+        <line num="113" type="stmt" count="1"/>
+        <line num="114" type="stmt" count="1"/>
+        <line num="115" type="stmt" count="1"/>
+        <line num="119" type="stmt" count="0"/>
+        <line num="125" type="method" name="isBelongsToMethod" visibility="private" complexity="9" crap="9.02" count="1"/>
+        <line num="128" type="stmt" count="1"/>
+        <line num="129" type="stmt" count="1"/>
+        <line num="133" type="stmt" count="1"/>
+        <line num="134" type="stmt" count="1"/>
+        <line num="135" type="stmt" count="1"/>
+        <line num="136" type="stmt" count="1"/>
+        <line num="137" type="stmt" count="1"/>
+        <line num="142" type="stmt" count="1"/>
+        <line num="143" type="stmt" count="1"/>
+        <line num="144" type="stmt" count="1"/>
+        <line num="145" type="stmt" count="1"/>
+        <line num="146" type="stmt" count="1"/>
+        <line num="147" type="stmt" count="1"/>
+        <line num="148" type="stmt" count="0"/>
+        <line num="153" type="stmt" count="1"/>
+        <metrics loc="156" ncloc="134" classes="1" methods="5" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="64" coveredstatements="56" elements="69" coveredelements="57"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\Domain">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Domain/NoStatementsLogicRule.php">
+        <class name="Opscale\Rules\DDD\Domain\NoStatementsLogicRule" namespace="Opscale\Rules\DDD\Domain">
+          <metrics complexity="9" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="33" coveredstatements="31" elements="35" coveredelements="32"/>
+        </class>
+        <line num="24" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="29" type="method" name="processNode" visibility="public" complexity="8" crap="8.02" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="0"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="0"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="54" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="1"/>
+        <line num="67" type="stmt" count="1"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="70" type="stmt" count="1"/>
+        <line num="71" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="77" type="stmt" count="1"/>
+        <metrics loc="80" ncloc="72" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="33" coveredstatements="31" elements="35" coveredelements="32"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/DomainRule.php">
+        <class name="Opscale\Rules\DDD\DomainRule" namespace="Opscale\Rules\DDD">
+          <metrics complexity="10" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="19" coveredstatements="15" elements="22" coveredelements="16"/>
+        </class>
+        <line num="27" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="10"/>
+        <line num="29" type="stmt" count="10"/>
+        <line num="32" type="method" name="shouldProcess" visibility="protected" complexity="5" crap="5.20" count="7"/>
+        <line num="35" type="stmt" count="7"/>
+        <line num="36" type="stmt" count="7"/>
+        <line num="37" type="stmt" count="0"/>
+        <line num="41" type="stmt" count="7"/>
+        <line num="42" type="stmt" count="7"/>
+        <line num="43" type="stmt" count="7"/>
+        <line num="45" type="stmt" count="7"/>
+        <line num="46" type="stmt" count="7"/>
+        <line num="47" type="stmt" count="0"/>
+        <line num="50" type="stmt" count="7"/>
+        <line num="56" type="method" name="isEloquentModel" visibility="protected" complexity="4" crap="4.25" count="8"/>
+        <line num="58" type="stmt" count="8"/>
+        <line num="59" type="stmt" count="2"/>
+        <line num="60" type="stmt" count="6"/>
+        <line num="61" type="stmt" count="8"/>
+        <line num="62" type="stmt" count="0"/>
+        <line num="65" type="stmt" count="8"/>
+        <line num="66" type="stmt" count="0"/>
+        <line num="69" type="stmt" count="8"/>
+        <metrics loc="72" ncloc="58" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="19" coveredstatements="15" elements="22" coveredelements="16"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\DomainServices">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/DomainServices/ComplexLogicRule.php">
+        <class name="Opscale\Rules\DDD\DomainServices\ComplexLogicRule" namespace="Opscale\Rules\DDD\DomainServices">
+          <metrics complexity="12" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="34" coveredstatements="29" elements="37" coveredelements="30"/>
+        </class>
+        <line num="20" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="22" type="stmt" count="1"/>
+        <line num="25" type="method" name="processNode" visibility="public" complexity="7" crap="7" count="1"/>
+        <line num="28" type="stmt" count="1"/>
+        <line num="29" type="stmt" count="1"/>
+        <line num="30" type="stmt" count="0"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="71" type="method" name="isEloquentModelClass" visibility="private" complexity="4" crap="6.00" count="1"/>
+        <line num="74" type="stmt" count="1"/>
+        <line num="75" type="stmt" count="0"/>
+        <line num="78" type="stmt" count="1"/>
+        <line num="80" type="stmt" count="1"/>
+        <line num="81" type="stmt" count="0"/>
+        <line num="84" type="stmt" count="1"/>
+        <line num="86" type="stmt" count="0"/>
+        <line num="88" type="stmt" count="0"/>
+        <metrics loc="92" ncloc="80" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="34" coveredstatements="29" elements="37" coveredelements="30"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\Entities">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Entities/EnforceUlidsRule.php">
+        <class name="Opscale\Rules\DDD\Entities\EnforceUlidsRule" namespace="Opscale\Rules\DDD\Entities">
+          <metrics complexity="11" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="26" coveredstatements="23" elements="29" coveredelements="24"/>
+        </class>
+        <line num="21" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="24" type="stmt" count="1"/>
+        <line num="27" type="method" name="processNode" visibility="public" complexity="5" crap="5.01" count="1"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="0"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="59" type="method" name="usesTrait" visibility="protected" complexity="5" crap="5.39" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="0"/>
+        <line num="67" type="stmt" count="1"/>
+        <line num="68" type="stmt" count="1"/>
+        <line num="69" type="stmt" count="0"/>
+        <line num="73" type="stmt" count="1"/>
+        <metrics loc="76" ncloc="66" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="26" coveredstatements="23" elements="29" coveredelements="24"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\Repositories">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Repositories/EloquentRestrictionRule.php">
+        <class name="Opscale\Rules\DDD\Repositories\EloquentRestrictionRule" namespace="Opscale\Rules\DDD\Repositories">
+          <metrics complexity="30" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="56" coveredstatements="52" elements="59" coveredelements="53"/>
+        </class>
+        <line num="30" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="35" type="method" name="processNode" visibility="public" complexity="10" crap="10" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="0"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="68" type="stmt" count="1"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="70" type="stmt" count="1"/>
+        <line num="71" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="73" type="stmt" count="1"/>
+        <line num="75" type="stmt" count="1"/>
+        <line num="76" type="stmt" count="1"/>
+        <line num="77" type="stmt" count="1"/>
+        <line num="78" type="stmt" count="1"/>
+        <line num="82" type="stmt" count="1"/>
+        <line num="88" type="method" name="isEloquentQueryBuilderCall" visibility="private" complexity="19" crap="19.50" count="1"/>
+        <line num="91" type="stmt" count="1"/>
+        <line num="92" type="stmt" count="1"/>
+        <line num="93" type="stmt" count="1"/>
+        <line num="94" type="stmt" count="1"/>
+        <line num="95" type="stmt" count="1"/>
+        <line num="96" type="stmt" count="1"/>
+        <line num="97" type="stmt" count="1"/>
+        <line num="98" type="stmt" count="1"/>
+        <line num="99" type="stmt" count="1"/>
+        <line num="102" type="stmt" count="1"/>
+        <line num="103" type="stmt" count="1"/>
+        <line num="104" type="stmt" count="1"/>
+        <line num="105" type="stmt" count="1"/>
+        <line num="106" type="stmt" count="1"/>
+        <line num="107" type="stmt" count="1"/>
+        <line num="112" type="stmt" count="1"/>
+        <line num="113" type="stmt" count="0"/>
+        <line num="114" type="stmt" count="0"/>
+        <line num="115" type="stmt" count="0"/>
+        <line num="122" type="stmt" count="1"/>
+        <line num="123" type="stmt" count="1"/>
+        <line num="124" type="stmt" count="1"/>
+        <line num="126" type="stmt" count="1"/>
+        <line num="127" type="stmt" count="1"/>
+        <line num="129" type="stmt" count="1"/>
+        <line num="132" type="stmt" count="1"/>
+        <line num="136" type="stmt" count="1"/>
+        <metrics loc="139" ncloc="119" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="56" coveredstatements="52" elements="59" coveredelements="53"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\Subdomains">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Subdomains/BaseNamespaceRule.php">
+        <class name="Opscale\Rules\DDD\Subdomains\BaseNamespaceRule" namespace="Opscale\Rules\DDD\Subdomains">
+          <metrics complexity="7" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="19" elements="23" coveredelements="20"/>
+        </class>
+        <line num="18" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="20" type="stmt" count="1"/>
+        <line num="23" type="method" name="processNode" visibility="public" complexity="6" crap="6.04" count="1"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="1"/>
+        <line num="28" type="stmt" count="0"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="0"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <metrics loc="56" ncloc="50" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="19" elements="23" coveredelements="20"/>
+      </file>
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/Subdomains/EntityCountRule.php">
+        <class name="Opscale\Rules\DDD\Subdomains\EntityCountRule" namespace="Opscale\Rules\DDD\Subdomains">
+          <metrics complexity="7" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="22" elements="25" coveredelements="23"/>
+        </class>
+        <line num="26" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="34" type="method" name="processNode" visibility="public" complexity="6" crap="6" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="0"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="54" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="1"/>
+        <metrics loc="69" ncloc="59" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="22" elements="25" coveredelements="23"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\DDD\ValueObjects">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/ValueObjects/EnforceCastRule.php">
+        <class name="Opscale\Rules\DDD\ValueObjects\EnforceCastRule" namespace="Opscale\Rules\DDD\ValueObjects">
+          <metrics complexity="9" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="26" coveredstatements="23" elements="29" coveredelements="24"/>
+        </class>
+        <line num="18" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="20" type="stmt" count="1"/>
+        <line num="23" type="method" name="processNode" visibility="public" complexity="4" crap="4.00" count="1"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="1"/>
+        <line num="28" type="stmt" count="0"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="53" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.37" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="0"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="0"/>
+        <line num="66" type="stmt" count="1"/>
+        <metrics loc="69" ncloc="63" classes="1" methods="3" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="26" coveredstatements="23" elements="29" coveredelements="24"/>
+      </file>
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/DDD/ValueObjects/NoAccesorMutatorRule.php">
+        <class name="Opscale\Rules\DDD\ValueObjects\NoAccesorMutatorRule" namespace="Opscale\Rules\DDD\ValueObjects">
+          <metrics complexity="32" methods="6" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="58" coveredstatements="48" elements="64" coveredelements="49"/>
+        </class>
+        <line num="21" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="23" type="stmt" count="1"/>
+        <line num="26" type="method" name="processNode" visibility="public" complexity="7" crap="7" count="1"/>
+        <line num="29" type="stmt" count="1"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="0"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="60" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.13" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="0"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="75" type="method" name="isEloquentMutator" visibility="private" complexity="4" crap="4.07" count="1"/>
+        <line num="77" type="stmt" count="1"/>
+        <line num="80" type="stmt" count="1"/>
+        <line num="81" type="stmt" count="1"/>
+        <line num="85" type="stmt" count="1"/>
+        <line num="86" type="stmt" count="0"/>
+        <line num="89" type="stmt" count="1"/>
+        <line num="95" type="method" name="isEloquentAccessor" visibility="private" complexity="4" crap="4.07" count="1"/>
+        <line num="97" type="stmt" count="1"/>
+        <line num="100" type="stmt" count="1"/>
+        <line num="101" type="stmt" count="1"/>
+        <line num="105" type="stmt" count="1"/>
+        <line num="106" type="stmt" count="0"/>
+        <line num="109" type="stmt" count="1"/>
+        <line num="115" type="method" name="isAttributeMethod" visibility="private" complexity="12" crap="17.33" count="1"/>
+        <line num="118" type="stmt" count="1"/>
+        <line num="119" type="stmt" count="1"/>
+        <line num="123" type="stmt" count="1"/>
+        <line num="124" type="stmt" count="1"/>
+        <line num="125" type="stmt" count="1"/>
+        <line num="126" type="stmt" count="1"/>
+        <line num="127" type="stmt" count="1"/>
+        <line num="128" type="stmt" count="1"/>
+        <line num="133" type="stmt" count="1"/>
+        <line num="134" type="stmt" count="1"/>
+        <line num="135" type="stmt" count="1"/>
+        <line num="136" type="stmt" count="0"/>
+        <line num="137" type="stmt" count="0"/>
+        <line num="138" type="stmt" count="0"/>
+        <line num="139" type="stmt" count="0"/>
+        <line num="140" type="stmt" count="0"/>
+        <line num="141" type="stmt" count="0"/>
+        <line num="148" type="stmt" count="1"/>
+        <metrics loc="151" ncloc="130" classes="1" methods="6" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="58" coveredstatements="48" elements="64" coveredelements="49"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\SOLID\DIP">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/SOLID/DIP/DisallowInstantiationRule.php">
+        <class name="Opscale\Rules\SOLID\DIP\DisallowInstantiationRule" namespace="Opscale\Rules\SOLID\DIP">
+          <metrics complexity="41" methods="8" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="86" coveredstatements="64" elements="94" coveredelements="67"/>
+        </class>
+        <line num="46" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="54" type="method" name="processNode" visibility="public" complexity="5" crap="5.15" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="0"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="0"/>
+        <line num="70" type="stmt" count="1"/>
+        <line num="71" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="75" type="stmt" count="1"/>
+        <line num="83" type="method" name="checkMethodForInstantiations" visibility="private" complexity="7" crap="7.14" count="1"/>
+        <line num="85" type="stmt" count="1"/>
+        <line num="86" type="stmt" count="1"/>
+        <line num="88" type="stmt" count="1"/>
+        <line num="89" type="stmt" count="0"/>
+        <line num="93" type="stmt" count="1"/>
+        <line num="94" type="stmt" count="1"/>
+        <line num="98" type="stmt" count="1"/>
+        <line num="100" type="stmt" count="1"/>
+        <line num="101" type="stmt" count="1"/>
+        <line num="102" type="stmt" count="0"/>
+        <line num="105" type="stmt" count="1"/>
+        <line num="108" type="stmt" count="1"/>
+        <line num="111" type="stmt" count="1"/>
+        <line num="112" type="stmt" count="0"/>
+        <line num="116" type="stmt" count="1"/>
+        <line num="117" type="stmt" count="0"/>
+        <line num="120" type="stmt" count="1"/>
+        <line num="121" type="stmt" count="1"/>
+        <line num="122" type="stmt" count="1"/>
+        <line num="123" type="stmt" count="1"/>
+        <line num="124" type="stmt" count="1"/>
+        <line num="125" type="stmt" count="1"/>
+        <line num="126" type="stmt" count="1"/>
+        <line num="128" type="stmt" count="1"/>
+        <line num="129" type="stmt" count="1"/>
+        <line num="130" type="stmt" count="1"/>
+        <line num="131" type="stmt" count="1"/>
+        <line num="134" type="stmt" count="1"/>
+        <line num="142" type="method" name="findNewExpressions" visibility="private" complexity="7" crap="7" count="1"/>
+        <line num="144" type="stmt" count="1"/>
+        <line num="146" type="stmt" count="1"/>
+        <line num="147" type="stmt" count="1"/>
+        <line num="150" type="stmt" count="1"/>
+        <line num="151" type="stmt" count="1"/>
+        <line num="153" type="stmt" count="1"/>
+        <line num="154" type="stmt" count="1"/>
+        <line num="155" type="stmt" count="1"/>
+        <line num="156" type="stmt" count="1"/>
+        <line num="157" type="stmt" count="1"/>
+        <line num="158" type="stmt" count="1"/>
+        <line num="164" type="stmt" count="1"/>
+        <line num="170" type="method" name="resolveClassName" visibility="private" complexity="6" crap="9.38" count="1"/>
+        <line num="173" type="stmt" count="1"/>
+        <line num="174" type="stmt" count="0"/>
+        <line num="178" type="stmt" count="1"/>
+        <line num="179" type="stmt" count="1"/>
+        <line num="180" type="stmt" count="1"/>
+        <line num="182" type="stmt" count="1"/>
+        <line num="183" type="stmt" count="1"/>
+        <line num="188" type="stmt" count="0"/>
+        <line num="189" type="stmt" count="0"/>
+        <line num="190" type="stmt" count="0"/>
+        <line num="193" type="stmt" count="0"/>
+        <line num="199" type="method" name="isAllowedInstantiation" visibility="private" complexity="10" crap="15.69" count="1"/>
+        <line num="202" type="stmt" count="1"/>
+        <line num="203" type="stmt" count="0"/>
+        <line num="207" type="stmt" count="1"/>
+        <line num="208" type="stmt" count="1"/>
+        <line num="209" type="stmt" count="0"/>
+        <line num="214" type="stmt" count="1"/>
+        <line num="215" type="stmt" count="0"/>
+        <line num="216" type="stmt" count="0"/>
+        <line num="221" type="stmt" count="1"/>
+        <line num="222" type="stmt" count="1"/>
+        <line num="223" type="stmt" count="1"/>
+        <line num="224" type="stmt" count="0"/>
+        <line num="228" type="stmt" count="1"/>
+        <line num="234" type="method" name="isPhpBuiltInClass" visibility="private" complexity="4" crap="10.75" count="1"/>
+        <line num="237" type="stmt" count="1"/>
+        <line num="238" type="stmt" count="1"/>
+        <line num="243" type="stmt" count="0"/>
+        <line num="244" type="stmt" count="0"/>
+        <line num="246" type="stmt" count="0"/>
+        <line num="248" type="stmt" count="0"/>
+        <line num="250" type="stmt" count="0"/>
+        <line num="253" type="stmt" count="0"/>
+        <line num="259" type="method" name="isSelfOrParentInstantiation" visibility="private" complexity="1" crap="1" count="1"/>
+        <line num="261" type="stmt" count="1"/>
+        <metrics loc="264" ncloc="214" classes="1" methods="8" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="86" coveredstatements="64" elements="94" coveredelements="67"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\SOLID\ISP">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/SOLID/ISP/EnforceImplementationRule.php">
+        <class name="Opscale\Rules\SOLID\ISP\EnforceImplementationRule" namespace="Opscale\Rules\SOLID\ISP">
+          <metrics complexity="39" methods="6" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="95" coveredstatements="77" elements="101" coveredelements="78"/>
+        </class>
+        <line num="30" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="35" type="method" name="processNode" visibility="public" complexity="7" crap="7.05" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="0"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="0"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="1"/>
+        <line num="67" type="stmt" count="1"/>
+        <line num="68" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="78" type="method" name="getInterfaceMethods" visibility="private" complexity="6" crap="6.22" count="1"/>
+        <line num="80" type="stmt" count="1"/>
+        <line num="82" type="stmt" count="1"/>
+        <line num="84" type="stmt" count="1"/>
+        <line num="85" type="stmt" count="1"/>
+        <line num="86" type="stmt" count="1"/>
+        <line num="88" type="stmt" count="1"/>
+        <line num="89" type="stmt" count="1"/>
+        <line num="90" type="stmt" count="1"/>
+        <line num="94" type="stmt" count="0"/>
+        <line num="96" type="stmt" count="0"/>
+        <line num="100" type="stmt" count="1"/>
+        <line num="106" type="method" name="validateMethodImplementation" visibility="private" complexity="9" crap="9.01" count="1"/>
+        <line num="108" type="stmt" count="1"/>
+        <line num="111" type="stmt" count="1"/>
+        <line num="112" type="stmt" count="0"/>
+        <line num="116" type="stmt" count="1"/>
+        <line num="117" type="stmt" count="1"/>
+        <line num="118" type="stmt" count="1"/>
+        <line num="119" type="stmt" count="1"/>
+        <line num="120" type="stmt" count="1"/>
+        <line num="121" type="stmt" count="1"/>
+        <line num="122" type="stmt" count="1"/>
+        <line num="124" type="stmt" count="1"/>
+        <line num="125" type="stmt" count="1"/>
+        <line num="126" type="stmt" count="1"/>
+        <line num="127" type="stmt" count="1"/>
+        <line num="131" type="stmt" count="1"/>
+        <line num="132" type="stmt" count="1"/>
+        <line num="134" type="stmt" count="1"/>
+        <line num="135" type="stmt" count="1"/>
+        <line num="136" type="stmt" count="1"/>
+        <line num="137" type="stmt" count="1"/>
+        <line num="138" type="stmt" count="1"/>
+        <line num="139" type="stmt" count="1"/>
+        <line num="140" type="stmt" count="1"/>
+        <line num="142" type="stmt" count="1"/>
+        <line num="143" type="stmt" count="1"/>
+        <line num="144" type="stmt" count="1"/>
+        <line num="145" type="stmt" count="1"/>
+        <line num="149" type="stmt" count="1"/>
+        <line num="150" type="stmt" count="1"/>
+        <line num="151" type="stmt" count="1"/>
+        <line num="152" type="stmt" count="1"/>
+        <line num="153" type="stmt" count="1"/>
+        <line num="154" type="stmt" count="1"/>
+        <line num="155" type="stmt" count="1"/>
+        <line num="157" type="stmt" count="1"/>
+        <line num="158" type="stmt" count="1"/>
+        <line num="159" type="stmt" count="1"/>
+        <line num="160" type="stmt" count="1"/>
+        <line num="164" type="stmt" count="0"/>
+        <line num="170" type="method" name="isShortImplementation" visibility="private" complexity="3" crap="3.03" count="1"/>
+        <line num="173" type="stmt" count="1"/>
+        <line num="174" type="stmt" count="1"/>
+        <line num="175" type="stmt" count="0"/>
+        <line num="179" type="stmt" count="1"/>
+        <line num="180" type="stmt" count="1"/>
+        <line num="181" type="stmt" count="1"/>
+        <line num="183" type="stmt" count="1"/>
+        <line num="189" type="method" name="isDefaultValueReturn" visibility="private" complexity="13" crap="58.78" count="1"/>
+        <line num="191" type="stmt" count="1"/>
+        <line num="192" type="stmt" count="0"/>
+        <line num="195" type="stmt" count="1"/>
+        <line num="198" type="stmt" count="1"/>
+        <line num="200" type="stmt" count="0"/>
+        <line num="201" type="stmt" count="0"/>
+        <line num="204" type="stmt" count="0"/>
+        <line num="205" type="stmt" count="0"/>
+        <line num="208" type="stmt" count="0"/>
+        <line num="209" type="stmt" count="0"/>
+        <line num="214" type="stmt" count="1"/>
+        <line num="215" type="stmt" count="0"/>
+        <line num="216" type="stmt" count="0"/>
+        <line num="217" type="stmt" count="0"/>
+        <line num="222" type="stmt" count="1"/>
+        <line num="223" type="stmt" count="1"/>
+        <line num="226" type="stmt" count="0"/>
+        <metrics loc="229" ncloc="195" classes="1" methods="6" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="95" coveredstatements="77" elements="101" coveredelements="78"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\SOLID\LSP">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/SOLID/LSP/ParentCallRule.php">
+        <class name="Opscale\Rules\SOLID\LSP\ParentCallRule" namespace="Opscale\Rules\SOLID\LSP">
+          <metrics complexity="32" methods="7" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="45" elements="64" coveredelements="46"/>
+        </class>
+        <line num="19" type="method" name="processNode" visibility="public" complexity="7" crap="7.03" count="1"/>
+        <line num="22" type="stmt" count="1"/>
+        <line num="23" type="stmt" count="1"/>
+        <line num="24" type="stmt" count="0"/>
+        <line num="27" type="stmt" count="1"/>
+        <line num="28" type="stmt" count="1"/>
+        <line num="29" type="stmt" count="1"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="0"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="58" type="method" name="shouldProcess" visibility="protected" complexity="3" crap="3.07" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="0"/>
+        <line num="66" type="stmt" count="1"/>
+        <line num="68" type="stmt" count="1"/>
+        <line num="74" type="method" name="hasOverrideAttribute" visibility="private" complexity="4" crap="4" count="1"/>
+        <line num="76" type="stmt" count="1"/>
+        <line num="77" type="stmt" count="1"/>
+        <line num="78" type="stmt" count="1"/>
+        <line num="79" type="stmt" count="1"/>
+        <line num="84" type="stmt" count="1"/>
+        <line num="90" type="method" name="hasOverridableAnnotation" visibility="private" complexity="2" crap="2.26" count="1"/>
+        <line num="92" type="stmt" count="1"/>
+        <line num="93" type="stmt" count="1"/>
+        <line num="94" type="stmt" count="1"/>
+        <line num="97" type="stmt" count="0"/>
+        <line num="99" type="stmt" count="0"/>
+        <line num="105" type="method" name="hasParentCall" visibility="private" complexity="2" crap="2.15" count="1"/>
+        <line num="107" type="stmt" count="1"/>
+        <line num="108" type="stmt" count="0"/>
+        <line num="111" type="stmt" count="1"/>
+        <line num="117" type="method" name="searchForParentCall" visibility="private" complexity="3" crap="3.14" count="1"/>
+        <line num="119" type="stmt" count="1"/>
+        <line num="120" type="stmt" count="1"/>
+        <line num="121" type="stmt" count="0"/>
+        <line num="125" type="stmt" count="1"/>
+        <line num="131" type="method" name="nodeContainsParentCall" visibility="private" complexity="11" crap="22.36" count="1"/>
+        <line num="133" type="stmt" count="1"/>
+        <line num="134" type="stmt" count="0"/>
+        <line num="137" type="stmt" count="1"/>
+        <line num="138" type="stmt" count="1"/>
+        <line num="140" type="stmt" count="1"/>
+        <line num="141" type="stmt" count="0"/>
+        <line num="144" type="stmt" count="1"/>
+        <line num="145" type="stmt" count="0"/>
+        <line num="146" type="stmt" count="0"/>
+        <line num="147" type="stmt" count="0"/>
+        <line num="153" type="stmt" count="1"/>
+        <metrics loc="156" ncloc="135" classes="1" methods="7" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="45" elements="64" coveredelements="46"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\SOLID\OCP">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/SOLID/OCP/ConditionalOverrideRule.php">
+        <class name="Opscale\Rules\SOLID\OCP\ConditionalOverrideRule" namespace="Opscale\Rules\SOLID\OCP">
+          <metrics complexity="16" methods="4" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="31" elements="44" coveredelements="32"/>
+        </class>
+        <line num="18" type="method" name="processNode" visibility="public" complexity="8" crap="8.21" count="1"/>
+        <line num="21" type="stmt" count="1"/>
+        <line num="22" type="stmt" count="1"/>
+        <line num="23" type="stmt" count="0"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="1"/>
+        <line num="28" type="stmt" count="1"/>
+        <line num="29" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="0"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="0"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="45" type="stmt" count="0"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="51" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="67" type="method" name="isPublicOrProtected" visibility="private" complexity="2" crap="2" count="1"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="70" type="stmt" count="1"/>
+        <line num="73" type="stmt" count="1"/>
+        <line num="79" type="method" name="hasOverrideAttribute" visibility="private" complexity="4" crap="7.46" count="1"/>
+        <line num="81" type="stmt" count="1"/>
+        <line num="82" type="stmt" count="0"/>
+        <line num="83" type="stmt" count="0"/>
+        <line num="84" type="stmt" count="0"/>
+        <line num="89" type="stmt" count="1"/>
+        <line num="95" type="method" name="hasOverridableAnnotation" visibility="private" complexity="2" crap="2.26" count="1"/>
+        <line num="97" type="stmt" count="1"/>
+        <line num="98" type="stmt" count="1"/>
+        <line num="99" type="stmt" count="1"/>
+        <line num="102" type="stmt" count="0"/>
+        <line num="104" type="stmt" count="0"/>
+        <metrics loc="107" ncloc="93" classes="1" methods="4" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="40" coveredstatements="31" elements="44" coveredelements="32"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\SOLID\SRP">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/SOLID/SRP/MaxLinesRule.php">
+        <class name="Opscale\Rules\SOLID\SRP\MaxLinesRule" namespace="Opscale\Rules\SOLID\SRP">
+          <metrics complexity="5" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="22" elements="25" coveredelements="23"/>
+        </class>
+        <line num="28" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="36" type="method" name="processNode" visibility="public" complexity="4" crap="4" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="0"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="47" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="49" type="stmt" count="1"/>
+        <line num="50" type="stmt" count="1"/>
+        <line num="52" type="stmt" count="1"/>
+        <line num="53" type="stmt" count="1"/>
+        <line num="54" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="62" type="stmt" count="1"/>
+        <line num="63" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="67" type="stmt" count="1"/>
+        <metrics loc="70" ncloc="58" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="22" elements="25" coveredelements="23"/>
+      </file>
+    </package>
+    <package name="Opscale\Rules\Smells">
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/Smells/EnforceLogicHandlingRule.php">
+        <class name="Opscale\Rules\Smells\EnforceLogicHandlingRule" namespace="Opscale\Rules\Smells">
+          <metrics complexity="9" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="24" elements="29" coveredelements="24"/>
+        </class>
+        <line num="18" type="method" name="processNode" visibility="public" complexity="5" crap="5" count="1"/>
+        <line num="21" type="stmt" count="1"/>
+        <line num="22" type="stmt" count="1"/>
+        <line num="23" type="stmt" count="0"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="1"/>
+        <line num="28" type="stmt" count="1"/>
+        <line num="29" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="34" type="stmt" count="1"/>
+        <line num="35" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="42" type="stmt" count="1"/>
+        <line num="43" type="stmt" count="1"/>
+        <line num="44" type="stmt" count="1"/>
+        <line num="48" type="stmt" count="1"/>
+        <line num="51" type="method" name="shouldProcess" visibility="protected" complexity="4" crap="4.37" count="1"/>
+        <line num="54" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="56" type="stmt" count="0"/>
+        <line num="59" type="stmt" count="1"/>
+        <line num="60" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="0"/>
+        <line num="64" type="stmt" count="1"/>
+        <metrics loc="67" ncloc="61" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="24" elements="29" coveredelements="24"/>
+      </file>
+      <file name="/Users/nelson/Projects/Opscale/strict-rules/src/Rules/Smells/NoDummyCatchesRule.php">
+        <class name="Opscale\Rules\Smells\NoDummyCatchesRule" namespace="Opscale\Rules\Smells">
+          <metrics complexity="14" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="28" elements="56" coveredelements="28"/>
+        </class>
+        <line num="22" type="method" name="processNode" visibility="public" complexity="6" crap="6.01" count="1"/>
+        <line num="25" type="stmt" count="1"/>
+        <line num="26" type="stmt" count="1"/>
+        <line num="27" type="stmt" count="0"/>
+        <line num="30" type="stmt" count="1"/>
+        <line num="31" type="stmt" count="1"/>
+        <line num="32" type="stmt" count="1"/>
+        <line num="33" type="stmt" count="1"/>
+        <line num="36" type="stmt" count="1"/>
+        <line num="37" type="stmt" count="1"/>
+        <line num="38" type="stmt" count="1"/>
+        <line num="39" type="stmt" count="1"/>
+        <line num="40" type="stmt" count="1"/>
+        <line num="41" type="stmt" count="1"/>
+        <line num="46" type="stmt" count="1"/>
+        <line num="52" type="method" name="validateCatchBlock" visibility="private" complexity="8" crap="23.62" count="1"/>
+        <line num="54" type="stmt" count="1"/>
+        <line num="55" type="stmt" count="1"/>
+        <line num="57" type="stmt" count="1"/>
+        <line num="58" type="stmt" count="1"/>
+        <line num="61" type="stmt" count="1"/>
+        <line num="64" type="stmt" count="1"/>
+        <line num="65" type="stmt" count="1"/>
+        <line num="66" type="stmt" count="1"/>
+        <line num="67" type="stmt" count="1"/>
+        <line num="68" type="stmt" count="1"/>
+        <line num="69" type="stmt" count="1"/>
+        <line num="71" type="stmt" count="1"/>
+        <line num="72" type="stmt" count="1"/>
+        <line num="73" type="stmt" count="1"/>
+        <line num="74" type="stmt" count="1"/>
+        <line num="78" type="stmt" count="0"/>
+        <line num="79" type="stmt" count="0"/>
+        <line num="80" type="stmt" count="0"/>
+        <line num="81" type="stmt" count="0"/>
+        <line num="82" type="stmt" count="0"/>
+        <line num="83" type="stmt" count="0"/>
+        <line num="84" type="stmt" count="0"/>
+        <line num="86" type="stmt" count="0"/>
+        <line num="87" type="stmt" count="0"/>
+        <line num="88" type="stmt" count="0"/>
+        <line num="89" type="stmt" count="0"/>
+        <line num="93" type="stmt" count="0"/>
+        <line num="94" type="stmt" count="0"/>
+        <line num="95" type="stmt" count="0"/>
+        <line num="96" type="stmt" count="0"/>
+        <line num="97" type="stmt" count="0"/>
+        <line num="98" type="stmt" count="0"/>
+        <line num="99" type="stmt" count="0"/>
+        <line num="100" type="stmt" count="0"/>
+        <line num="101" type="stmt" count="0"/>
+        <line num="103" type="stmt" count="0"/>
+        <line num="104" type="stmt" count="0"/>
+        <line num="105" type="stmt" count="0"/>
+        <line num="106" type="stmt" count="0"/>
+        <line num="109" type="stmt" count="0"/>
+        <metrics loc="112" ncloc="101" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="28" elements="56" coveredelements="28"/>
+      </file>
+    </package>
+    <metrics files="25" loc="2822" ncloc="2370" classes="25" methods="104" coveredmethods="44" conditionals="0" coveredconditionals="0" statements="987" coveredstatements="822" elements="1091" coveredelements="866"/>
+  </project>
+</coverage>

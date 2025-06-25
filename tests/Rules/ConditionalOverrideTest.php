@@ -15,7 +15,7 @@ class ConditionalOverrideTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/Product.php',
+            __DIR__ . '/../fixtures/Models/Product.php',
         ], [
             [
                 'Method "' . \Opscale\Models\Product::class . '::isInStock()" must be final unless annotated with #[\Override] or @overridable. ' .

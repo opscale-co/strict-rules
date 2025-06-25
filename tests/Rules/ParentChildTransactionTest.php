@@ -15,7 +15,7 @@ class ParentChildTransactionTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../app/Models/Repositories/ProductRepository.php',
+            __DIR__ . '/../fixtures/Models/Repositories/ProductRepository.php',
         ],
             [
                 [

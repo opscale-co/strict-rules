@@ -1,4 +1,4 @@
-# What is Software Architecture
+# What is Software Architecture?
 
 The main goal of software architecture is to create a scalable, robust, and clean foundation for building software that mirrors the business. A well-architected system is efficient, testable, and easy to maintain, ensuring long-term success and adaptability.
 

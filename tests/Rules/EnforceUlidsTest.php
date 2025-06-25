@@ -14,7 +14,7 @@ class EnforceUlidsTest extends RuleTestCase
     #[Test]
     public function rule(): void
     {
-        $this->analyse([__DIR__ . '/../app/Models/User.php'], [
+        $this->analyse([__DIR__ . '/../fixtures/Models/User.php'], [
             [
                 'Model class "Opscale\Models\User" must use the "HasUlids" trait ' .
                 'to ensure consistent ID handling with ULIDs.',

@@ -18,6 +18,7 @@ class ExternalAPIService
     {
     }
 
+    #[\Override]
     protected function canBatch(): bool
     {
         $service = new BatchingService();

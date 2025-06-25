@@ -10,5 +10,6 @@ mix-manifest.json
 Thumbs.db
 /.claude
 /.vscode
+/coverage-html
 
 
