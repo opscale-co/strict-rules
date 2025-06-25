@@ -11,7 +11,7 @@ services:
             - phpstan.rules.rule
             
     - 
-        class: Opscale\Rules\SOLID\LSP\AbstractionInjectionRule
+        class: Opscale\Rules\SOLID\LSP\ParentCallRule
         tags:
             - phpstan.rules.rule
             

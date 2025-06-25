@@ -6,6 +6,7 @@ use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -108,45 +109,13 @@ class ParentCallRule extends BaseRule
             return false;
         }
 
-        return $this->searchForParentCall($classMethod->stmts);
-    }
+        $nodeFinder = new NodeFinder;
+        $parentCalls = $nodeFinder->findInstanceOf($classMethod->stmts, StaticCall::class);
 
-    /**
-     * Recursively search for parent:: calls in statements
-     */
-    private function searchForParentCall(array $stmts): bool
-    {
-        foreach ($stmts as $stmt) {
-            if ($this->nodeContainsParentCall($stmt)) {
+        foreach ($parentCalls as $parentCall) {
+            if ($parentCall->class instanceof Node\Name &&
+                $parentCall->class->toString() === 'parent') {
                 return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if a node contains a parent:: call
-     */
-    private function nodeContainsParentCall(Node $node): bool
-    {
-        if ($node instanceof StaticCall && ($node->class instanceof Node\Name && $node->class->toString() === 'parent')) {
-            return true;
-        }
-
-        foreach ($node->getSubNodeNames() as $subNodeName) {
-            $subNode = $node->{$subNodeName};
-
-            if ($subNode instanceof Node && $this->nodeContainsParentCall($subNode)) {
-                return true;
-            }
-
-            if (is_array($subNode)) {
-                foreach ($subNode as $arrayItem) {
-                    if ($arrayItem instanceof Node && $this->nodeContainsParentCall($arrayItem)) {
-                        return true;
-                    }
-                }
             }
         }
 

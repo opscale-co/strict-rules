@@ -7,7 +7,6 @@ use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 use Throwable;
 
@@ -17,11 +16,6 @@ use Throwable;
  */
 class ComplexLogicRule extends DomainRule
 {
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
-
     public function processNode(Node $node, Scope $scope): array
     {
         // @phpstan-ignore-next-line
@@ -76,7 +70,6 @@ class ComplexLogicRule extends DomainRule
             }
 
             $classReflection = $this->reflectionProvider->getClass($className);
-            // Check if the class extends Eloquent Model
             if ($classReflection->getName() === Model::class) {
                 return true;
             }

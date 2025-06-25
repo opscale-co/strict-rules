@@ -7,7 +7,6 @@ use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
-use PHPStan\Reflection\ReflectionProvider;
 
 /**
  * Base rule that ensures processing only for Model classes
@@ -23,11 +22,6 @@ abstract class DomainRule extends BaseRule
      * Target namespace for Domain models
      */
     protected const DOMAIN_NAMESPACE = 'Domain';
-
-    public function __construct(ReflectionProvider $reflectionProvider)
-    {
-        parent::__construct($reflectionProvider);
-    }
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
