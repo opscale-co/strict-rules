@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class ConditionalOverrideTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_methods_without_final_or_override_annotation(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Models/Product.php',
@@ -23,6 +23,14 @@ class ConditionalOverrideTest extends RuleTestCase
                 17,
             ],
         ]);
+    }
+
+    #[Test]
+    public function allows_properly_marked_final_methods(): void
+    {
+        $this->analyse([
+            __DIR__ . '/../fixtures/Models/SimpleModel.php',
+        ], []);
     }
 
     protected function getRule(): Rule

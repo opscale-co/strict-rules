@@ -12,15 +12,23 @@ use PHPUnit\Framework\Attributes\Test;
 class NoStatementsLogicTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_logic_statements_in_domain_models(): void
     {
         $this->analyse([__DIR__ . '/../fixtures/Models/User.php'], [
             [
                 'Method "' . \Opscale\Models\User::class . '::getEmail" contains a "if" ' .
                 'statement which is not allowed in domain model classes.',
-                51,
+                53,
             ],
         ]);
+    }
+
+    #[Test]
+    public function allows_models_without_logic_statements(): void
+    {
+        $this->analyse([
+            __DIR__ . '/../fixtures/Models/ValidUlidUser.php',
+        ], []);
     }
 
     protected function getRule(): Rule

@@ -32,37 +32,120 @@ We discourage using mutators or accessors for domain logic to avoid scattering b
 
 ---
 
-## 🧵 A Data Story Example: Promotion Discount as a Value Object
+## 🧵 A Data Story Example: US Coordinate Validation as a Value Object
 
-In our influencer merch store, we apply promotional discounts during checkout. There is a **specific business rule**: *a discount cannot exceed 20% of the total order value*.
+In our location-based application, we store geographic coordinates for venues and events. There is a **specific business rule**: *coordinates must be within the continental United States boundaries*.
 
-To enforce this consistently, we encapsulate the rule in a value object:
+To enforce this consistently, we encapsulate the validation in a value object:
 
 ```php
 namespace App\Models\ValueObjects;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
-class PromotionDiscount implements CastsAttributes {
-    public function get($model, string $key, $value, array $attributes): float {
-        return (float) $value;
+class USCoordinate implements CastsAttributes
+{
+    // Continental US approximate boundaries
+    private const MIN_LATITUDE = 24.396308;   // Southern tip of Florida Keys
+    private const MAX_LATITUDE = 49.384358;   // Northern border with Canada
+    private const MIN_LONGITUDE = -125.0;     // West coast (Washington/Oregon)
+    private const MAX_LONGITUDE = -66.93457;  // East coast (Maine)
+
+    public function __construct(
+        public readonly float $latitude,
+        public readonly float $longitude
+    ) {
+        $this->validateCoordinates($latitude, $longitude);
     }
 
-    public function set($model, string $key, $value, array $attributes): array {
-        $orderTotal = $attributes['total'] ?? 0;
-
-        if ($orderTotal <= 0) {
-            throw new InvalidArgumentException("Order total must be greater than 0.");
+    public function get(Model $model, string $key, $value, array $attributes): ?self
+    {
+        if ($value === null) {
+            return null;
         }
 
-        $maxDiscount = $orderTotal * 0.2;
+        $data = json_decode($value, true);
+        
+        return new self(
+            $data['latitude'] ?? 0.0,
+            $data['longitude'] ?? 0.0
+        );
+    }
 
-        if ($value > $maxDiscount) {
-            throw new InvalidArgumentException("Discount cannot exceed 20% of the total order.");
+    public function set(Model $model, string $key, $value, array $attributes): string
+    {
+        if ($value === null) {
+            return json_encode(null);
         }
 
-        return [$key => (float) $value];
+        if ($value instanceof self) {
+            return json_encode([
+                'latitude' => $value->latitude,
+                'longitude' => $value->longitude,
+            ]);
+        }
+
+        if (is_array($value)) {
+            $lat = $value['latitude'] ?? $value['lat'] ?? 0.0;
+            $lng = $value['longitude'] ?? $value['lng'] ?? 0.0;
+            
+            $coordinate = new self($lat, $lng);
+            return json_encode([
+                'latitude' => $coordinate->latitude,
+                'longitude' => $coordinate->longitude,
+            ]);
+        }
+
+        throw new InvalidArgumentException('Invalid coordinate format provided.');
+    }
+
+    private function validateCoordinates(float $latitude, float $longitude): void
+    {
+        if ($latitude < self::MIN_LATITUDE || $latitude > self::MAX_LATITUDE) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Latitude %.6f is outside US boundaries (%.6f to %.6f)',
+                    $latitude,
+                    self::MIN_LATITUDE,
+                    self::MAX_LATITUDE
+                )
+            );
+        }
+
+        if ($longitude < self::MIN_LONGITUDE || $longitude > self::MAX_LONGITUDE) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Longitude %.6f is outside US boundaries (%.6f to %.6f)',
+                    $longitude,
+                    self::MIN_LONGITUDE,
+                    self::MAX_LONGITUDE
+                )
+            );
+        }
+    }
+
+    public function getFormattedCoordinate(): string
+    {
+        return sprintf('%.6f, %.6f', $this->latitude, $this->longitude);
+    }
+
+    public function isWithinRadius(USCoordinate $other, float $radiusMiles): bool
+    {
+        $earthRadius = 3959; // Earth's radius in miles
+        
+        $latDelta = deg2rad($other->latitude - $this->latitude);
+        $lngDelta = deg2rad($other->longitude - $this->longitude);
+        
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+             cos(deg2rad($this->latitude)) * cos(deg2rad($other->latitude)) *
+             sin($lngDelta / 2) * sin($lngDelta / 2);
+             
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c;
+        
+        return $distance <= $radiusMiles;
     }
 }
 ```
@@ -70,14 +153,44 @@ class PromotionDiscount implements CastsAttributes {
 In the model:
 
 ```php
-class Order extends Model {
+class Venue extends Model {
     protected $casts = [
-        'discount' => PromotionDiscount::class,
+        'location' => USCoordinate::class,
+    ];
+    
+    protected $fillable = [
+        'name',
+        'location',
+        'address',
     ];
 }
 ```
 
-Now, any time we apply a discount, this business rule is automatically enforced in one place.
+Usage examples:
+
+```php
+// Valid US coordinates
+$venue = new Venue([
+    'name' => 'Central Park',
+    'location' => ['latitude' => 40.785091, 'longitude' => -73.968285]
+]);
+
+// Invalid coordinates (outside US) will throw exception
+try {
+    $venue = new Venue([
+        'name' => 'Invalid Location',
+        'location' => ['latitude' => 51.5074, 'longitude' => -0.1278] // London, UK
+    ]);
+} catch (InvalidArgumentException $e) {
+    // Handles coordinates outside US boundaries
+}
+
+// Business logic methods available
+$distance = $venue->location->isWithinRadius($otherVenue->location, 50); // within 50 miles?
+$formatted = $venue->location->getFormattedCoordinate(); // "40.785091, -73.968285"
+```
+
+Now, any time we store coordinates, the US boundary validation is automatically enforced, and we have domain-specific methods available for geographic calculations.
 
 ---
 

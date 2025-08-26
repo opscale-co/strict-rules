@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class ParentCallTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_override_methods_without_parent_call(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Services/BatchingService.php',
@@ -23,6 +23,14 @@ class ParentCallTest extends RuleTestCase
                 26,
             ],
         ]);
+    }
+
+    #[Test]
+    public function allows_classes_without_override_methods(): void
+    {
+        $this->analyse([
+            __DIR__ . '/../fixtures/Models/ValidUlidUser.php',
+        ], []);
     }
 
     protected function getRule(): Rule

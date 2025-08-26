@@ -10,6 +10,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
@@ -84,7 +85,7 @@ class EloquentRestrictionRule extends DomainRule
     /**
      * Check if the node represents an Eloquent query builder call
      */
-    private function isEloquentQueryBuilderCall(Node $node, Class_|Trait_|null $rootNode): bool
+    private function isEloquentQueryBuilderCall(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
     {
         if ($this->isStaticEloquentCall($node)) {
             return true;
@@ -141,7 +142,7 @@ class EloquentRestrictionRule extends DomainRule
     /**
      * Check for method calls on $this
      */
-    private function isThisMethodCall(Node $node, Class_|Trait_|null $rootNode): bool
+    private function isThisMethodCall(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
     {
         if (! ($node instanceof MethodCall &&
             ($node->var instanceof Node\Expr\Variable &&

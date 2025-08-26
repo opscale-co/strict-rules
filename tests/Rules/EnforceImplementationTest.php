@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class EnforceImplementationTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_improper_interface_implementations(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Services/BatchingService.php',
@@ -33,6 +33,14 @@ class EnforceImplementationTest extends RuleTestCase
                 22,
             ],
         ]);
+    }
+
+    #[Test]
+    public function allows_proper_interface_implementation(): void
+    {
+        $this->analyse([
+            __DIR__ . '/../fixtures/Models/ValueObjects/ValidAddress.php',
+        ], []);
     }
 
     protected function getRule(): Rule

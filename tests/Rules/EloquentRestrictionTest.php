@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class EloquentRestrictionTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_eloquent_calls_outside_repositories(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Models/Repositories/UserRepository.php',
@@ -30,6 +30,12 @@ class EloquentRestrictionTest extends RuleTestCase
                     19,
                 ],
             ]);
+    }
+
+    #[Test]
+    public function allows_eloquent_calls_within_repositories(): void
+    {
+        $this->analyse([__DIR__ . '/../fixtures/Models/Repositories/ProductRepository.php'], []);
     }
 
     protected function getRule(): Rule

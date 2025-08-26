@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class NoAccesorMutatorTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_accessors_and_mutators(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Models/Product.php',
@@ -34,6 +34,12 @@ class NoAccesorMutatorTest extends RuleTestCase
                     32,
                 ],
             ]);
+    }
+
+    #[Test]
+    public function allows_model_without_accessors_or_mutators(): void
+    {
+        $this->analyse([__DIR__ . '/../fixtures/Models/ValidUlidUser.php'], []);
     }
 
     protected function getRule(): Rule

@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class ModelValidationTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_model_without_validate_method(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Models/Product.php',
@@ -23,6 +23,12 @@ class ModelValidationTest extends RuleTestCase
                     10,
                 ],
             ]);
+    }
+
+    #[Test]
+    public function allows_model_with_validate_method(): void
+    {
+        $this->analyse([__DIR__ . '/../fixtures/Models/ValidatedModel.php'], []);
     }
 
     protected function getRule(): Rule

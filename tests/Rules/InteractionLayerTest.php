@@ -12,14 +12,14 @@ use PHPUnit\Framework\Attributes\Test;
 class InteractionLayerTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_layer_violations(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Http/Controllers\ProductController.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Http\Controllers\ProductController" from layer 5 cannot depend on "Illuminate\Support\Facades\DB". ' .
-                'This class is not allowed in this layer, it does not comply with the layer purpose.',
+                'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 7,
             ],
         ]);

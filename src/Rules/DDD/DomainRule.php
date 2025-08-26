@@ -5,6 +5,7 @@ namespace Opscale\Rules\DDD;
 use Illuminate\Database\Eloquent\Model;
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Enum_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 
@@ -18,11 +19,6 @@ abstract class DomainRule extends BaseRule
      */
     protected const MODELS_NAMESPACE = 'Models';
 
-    /**
-     * Target namespace for Domain models
-     */
-    protected const DOMAIN_NAMESPACE = 'Domain';
-
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
         // @phpstan-ignore-next-line
@@ -31,13 +27,17 @@ abstract class DomainRule extends BaseRule
             return false;
         }
 
-        // Check if the class is in the Models or Domain namespace
-        $className = $this->getRootNode($node)->namespacedName->toString();
-        $modelsPattern = '/^(\w+\\\\){1,2}(' . self::MODELS_NAMESPACE . ')/';
-        $domainPattern = '/^(\w+\\\\){1,2}(' . self::DOMAIN_NAMESPACE . ')/';
+        // Skip rule verification for enums
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode instanceof Enum_) {
+            return false;
+        }
 
-        if (preg_match($modelsPattern, $className) === false &&
-            preg_match($domainPattern, $className) === false) {
+        // Check if the class is in the Models namespace only
+        $className = $rootNode->namespacedName->toString();
+        $modelsPattern = '/^(\w+\\\\){1,2}(' . self::MODELS_NAMESPACE . ')/';
+
+        if (preg_match($modelsPattern, $className) === false) {
             return false;
         }
 

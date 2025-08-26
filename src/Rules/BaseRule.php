@@ -5,6 +5,7 @@ namespace Opscale\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
@@ -55,15 +56,16 @@ abstract class BaseRule implements Rule
     }
 
     /**
-     * Resolve the root Class_ node from the file
+     * Resolve the root Class_, Trait_, or Enum_ node from the file
      */
-    protected function getRootNode(FileNode|array $node): Class_|Trait_|null
+    protected function getRootNode(FileNode|array $node): Class_|Trait_|Enum_|null
     {
         $rootNode = null;
         $namespace = $this->getNamespaceNode($node);
         foreach ($namespace->stmts as $stmt) {
             if ($stmt instanceof Class_ ||
-                $stmt instanceof Trait_) {
+                $stmt instanceof Trait_ ||
+                $stmt instanceof Enum_) {
                 $rootNode = $stmt;
                 break;
             }
@@ -164,17 +166,25 @@ abstract class BaseRule implements Rule
     /**
      * Get the parent class
      */
-    protected function getParentNode(FileNode $fileNode): string
+    protected function getParentNode(FileNode $fileNode): ?string
     {
         $rootClassNode = $this->getRootNode($fileNode);
+
+        if ($rootClassNode === null || ! ($rootClassNode instanceof Class_)) {
+            return null;
+        }
+
+        if ($rootClassNode->extends === null) {
+            return null;
+        }
 
         return $rootClassNode->extends->toString();
     }
 
     /**
-     * Get all methods from a class node
+     * Get all methods from a class, trait, or enum node
      */
-    protected function getMethodNodes(Class_|Trait_ $rootNode): array
+    protected function getMethodNodes(Class_|Trait_|Enum_ $rootNode): array
     {
         $methods = [];
         foreach ($rootNode->stmts as $stmt) {
@@ -202,9 +212,9 @@ abstract class BaseRule implements Rule
     }
 
     /**
-     * Get all interface implementations in a class
+     * Get all interface implementations in a class or enum
      */
-    protected function getInterfaceNodes(Class_ $class): array
+    protected function getInterfaceNodes(Class_|Enum_ $class): array
     {
         $interfaces = [];
         foreach ($class->implements as $interface) {
