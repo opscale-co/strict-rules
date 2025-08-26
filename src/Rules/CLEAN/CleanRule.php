@@ -10,7 +10,6 @@ use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use Throwable;
 
 /**
  * Abstract rule that enforces Clean Architecture layer dependencies
@@ -29,7 +28,6 @@ abstract class CleanRule extends BaseRule
         ],
         2 => [ // Communication Layer
             '\\Observers\\',
-            '\\Events\\',
         ],
         3 => [ // Transformation Layer
             '\\Services\\',
@@ -38,7 +36,6 @@ abstract class CleanRule extends BaseRule
         ],
         4 => [ // Orchestration Layer
             '\\Jobs\\',
-            '\\Listeners\\',
             '\\Notifications\\',
         ],
         5 => [ // Interaction Layer
@@ -49,92 +46,26 @@ abstract class CleanRule extends BaseRule
         ],
     ];
 
-    /**
-     * Facades that are allowed in each layer
-     * These are commonly used Laravel facades that can be used across layers
-     */
-    protected const FACADES = [
-        1 => [ // Representation Layer
-            'DB',
-            'Hash',
-            'Schema',
-        ],
-        2 => [ // Communication Layer
-            'Broadcast',
-            'Event',
-        ],
-        3 => [ // Transformation Layer
-            'App',
-            'Cache',
-            'Config',
-            'Crypt',
-            'Exceptions',
-            'File',
-            'Http',
-            'Storage',
-        ],
-        4 => [ // Orchestration Layer
-            'Bus',
-            'Concurrency',
-            'Mail',
-            'Notification',
-            'Pipeline',
-            'Queue',
-            'Redis',
-            'Schedule',
-        ],
-        5 => [ // Interaction Layer
-            'Artisan',
-            'Auth',
-            'Blade',
-            'Context',
-            'Cookie',
-            'Gate',
-            'Lang',
-            'Password',
-            'Process',
-            'RateLimiter',
-            'Redirect',
-            'Request',
-            'Response',
-            'Route',
-            'Session',
-            'URL',
-            'Validator',
-            'View',
-            'Vite',
-        ],
-    ];
-
     protected int $processingLayer;
 
-    protected array $allowedBaseClasses;
+    protected array $allowedFrameworkImports;
 
-    public function __construct(ReflectionProvider $reflectionProvider, ?int $processingLayer = null, array $allowedBaseClasses = [])
-    {
+    protected array $allowedFacades;
+
+    protected array $allowedExternalImports;
+
+    public function __construct(
+        ReflectionProvider $reflectionProvider,
+        ?int $processingLayer = null,
+        array $allowedFrameworkImports = [],
+        array $allowedFacades = [],
+        array $allowedExternalImports = []
+    ) {
         parent::__construct($reflectionProvider);
         $this->processingLayer = $processingLayer ?? $this->processingLayer();
-        $this->allowedBaseClasses = $allowedBaseClasses ?: $this->getAllowedBaseClasses();
-    }
-
-    /**
-     * Check if the use statement is allowed for the processing
-     */
-    public function allowUse(UseItem $useItem): bool
-    {
-        $usedClass = $useItem->name->toString();
-        $rootParent = $this->getRootParentNamespace($usedClass);
-        if ($rootParent === null) {
-            return false; // Class is not in a defined layer
-        }
-
-        foreach ($this->allowedBaseClasses as $allowedBaseClass) {
-            if (str_starts_with($usedClass, $allowedBaseClass)) {
-                return true; // Class is allowed in this layer
-            }
-        }
-
-        return false; // Class is not allowed in this layer
+        $this->allowedFrameworkImports = $allowedFrameworkImports ?: $this->getAllowedFrameworkImports();
+        $this->allowedFacades = $allowedFacades ?: $this->getAllowedFacades();
+        $this->allowedExternalImports = $allowedExternalImports ?: $this->getAllowedExternalImports();
     }
 
     /*
@@ -161,6 +92,8 @@ abstract class CleanRule extends BaseRule
             $usedLayer = $this->getClassLayer($usedClass);
 
             $error = null;
+
+            // Check if it's a layer dependency violation (higher layer depending on lower layer)
             if ($usedLayer != null && ! $this->isAllowedLayer($node, $use)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s" from layer %d. ' .
@@ -170,10 +103,12 @@ abstract class CleanRule extends BaseRule
                     $usedClass,
                     $usedLayer
                 );
-            } elseif ($usedLayer == null && ! $this->allowUse($use) && ! $this->isAllowedFacade($node, $use)) {
+            }
+            // Check if it's an external dependency that needs validation
+            elseif ($usedLayer == null && ! $this->isAllowedUse($node, $use)) {
                 $error = sprintf(
                     'Clean Architecture violation: Class "%s" from layer %d cannot depend on "%s". ' .
-                    'This class is not allowed in this layer, it does not comply with the layer purpose.',
+                    'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                     $className,
                     $classLayer,
                     $usedClass
@@ -192,20 +127,80 @@ abstract class CleanRule extends BaseRule
     }
 
     /**
+     * Check if the use statement is allowed based on all 4 import types
+     * Evaluates: Facades, Framework imports, Project imports, and External imports
+     */
+    public function isAllowedUse(FileNode $fileNode, UseItem $useItem): bool
+    {
+        return $this->isAllowedFacade($fileNode, $useItem) ||
+               $this->isAllowedFrameworkUse($fileNode, $useItem) ||
+               $this->isAllowedProjectUse($fileNode, $useItem) ||
+               $this->isAllowedExternalUse($fileNode, $useItem);
+    }
+
+    /**
      * Check if the class is a Facade and if it is allowed in the current layer
      */
-    public function isAllowedFacade(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedFacade(FileNode $fileNode, UseItem $useItem): bool
     {
-        $rootNode = $this->getRootNode($fileNode);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className);
-        $allowedFacades = self::FACADES[$classLayer] ?? [];
         $usedClass = $useItem->name->toString();
 
         $isFacade = str_starts_with($usedClass, 'Illuminate\\Support\\Facades\\');
         $facade = substr($usedClass, strlen('Illuminate\\Support\\Facades\\'));
 
-        return $isFacade && in_array($facade, $allowedFacades);
+        return $isFacade && in_array($facade, $this->allowedFacades);
+    }
+
+    /**
+     * Check if the class is a Framework import and if it is allowed in the current layer
+     */
+    protected function isAllowedFrameworkUse(FileNode $fileNode, UseItem $useItem): bool
+    {
+        $usedClass = $useItem->name->toString();
+
+        foreach ($this->allowedFrameworkImports as $allowedImport) {
+            if (str_starts_with($usedClass, $allowedImport)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the class is a Project import and if it is allowed in the current layer
+     * Project imports are allowed if they belong to the same layer or lower layers
+     */
+    protected function isAllowedProjectUse(FileNode $fileNode, UseItem $useItem): bool
+    {
+        $usedClass = $useItem->name->toString();
+
+        // Get the layer of the used class
+        $usedLayer = $this->getClassLayer($usedClass);
+
+        // If the class is not in any defined layer, it's not a project import
+        if ($usedLayer === null) {
+            return false;
+        }
+
+        // Allow project imports from the same layer or lower layers
+        return $usedLayer <= $this->processingLayer;
+    }
+
+    /**
+     * Check if the class is an External import and if it is allowed in the current layer
+     */
+    protected function isAllowedExternalUse(FileNode $fileNode, UseItem $useItem): bool
+    {
+        $usedClass = $useItem->name->toString();
+
+        foreach ($this->allowedExternalImports as $allowedImport) {
+            if (str_starts_with($usedClass, $allowedImport)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function processingLayer(): int
@@ -213,9 +208,19 @@ abstract class CleanRule extends BaseRule
         return $this->processingLayer;
     }
 
-    protected function getAllowedBaseClasses(): array
+    protected function getAllowedFrameworkImports(): array
     {
-        return $this->allowedBaseClasses;
+        return [];
+    }
+
+    protected function getAllowedFacades(): array
+    {
+        return [];
+    }
+
+    protected function getAllowedExternalImports(): array
+    {
+        return [];
     }
 
     protected function shouldProcess(Node $node, Scope $scope): bool
@@ -268,31 +273,5 @@ abstract class CleanRule extends BaseRule
         }
 
         return null;
-    }
-
-    /**
-     * Get the root parent class namespace by traversing the inheritance chain
-     * For example, if A extends B and B extends C, this returns the namespace of C
-     */
-    protected function getRootParentNamespace(string $className): ?string
-    {
-        try {
-            if (! $this->reflectionProvider->hasClass($className)) {
-                return null;
-            }
-
-            $classReflection = $this->reflectionProvider->getClass($className);
-            $currentClass = $classReflection;
-
-            // Traverse up the inheritance chain
-            while ($parentClass = $currentClass->getParentClass()) {
-                $currentClass = $parentClass;
-            }
-
-            return $currentClass->getDisplayName();
-
-        } catch (Throwable $throwable) {
-            return null;
-        }
     }
 }

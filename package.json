@@ -3,7 +3,7 @@
   "scripts": {
     "prepare": "husky",
     "lint": "vendor/bin/duster lint --dirty",
-    "fix": "vendor/bin/duster fix",
+    "fix": "vendor/bin/duster fix --dirty",
     "test": "vendor/bin/phpunit tests"
   },
   "devDependencies": {

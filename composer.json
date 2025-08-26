@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": "^8.2",
-    "nunomaduro/larastan": "^3.4"
+    "larastan/larastan": "^3.4"
   },
   "license": "MIT",
   "autoload": {

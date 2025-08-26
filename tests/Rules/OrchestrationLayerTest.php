@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class OrchestrationLayerTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_layer_violations(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
@@ -24,7 +24,7 @@ class OrchestrationLayerTest extends RuleTestCase
             ],
             [
                 'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Illuminate\Support\Facades\Http". ' .
-                'This class is not allowed in this layer, it does not comply with the layer purpose.',
+                'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 11,
             ],
         ]);

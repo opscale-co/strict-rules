@@ -12,6 +12,7 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
@@ -35,6 +36,12 @@ class EnforceImplementationRule extends BaseRule
         }
 
         $rootNode = $this->getRootNode($node);
+
+        // Skip enums as they don't have the same interface implementation requirements
+        if ($rootNode instanceof Enum_) {
+            return [];
+        }
+
         $implementedInterfaces = $this->getInterfaceNodes($rootNode);
         if ($implementedInterfaces === []) {
             return []; // Skip classes that don't implement interfaces

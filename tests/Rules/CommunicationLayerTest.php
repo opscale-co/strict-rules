@@ -12,14 +12,14 @@ use PHPUnit\Framework\Attributes\Test;
 class CommunicationLayerTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_layer_violations(): void
     {
         $this->analyse([
             __DIR__ . '/../fixtures/Observers/ProductObserver.php',
         ], [
             [
                 'Clean Architecture violation: Class "Opscale\Observers\ProductObserver" from layer 2 cannot depend on "Illuminate\Support\Facades\Response". ' .
-                'This class is not allowed in this layer, it does not comply with the layer purpose.',
+                'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 6,
             ],
             [

@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 class BaseNamespaceTest extends RuleTestCase
 {
     #[Test]
-    public function rule(): void
+    public function detects_model_in_wrong_namespace(): void
     {
         $this->analyse([__DIR__ . '/../fixtures/Domain/User.php'], [
             [
@@ -22,6 +22,12 @@ class BaseNamespaceTest extends RuleTestCase
                 3,
             ],
         ]);
+    }
+
+    #[Test]
+    public function allows_model_in_correct_namespace(): void
+    {
+        $this->analyse([__DIR__ . '/../fixtures/Models/ValidUlidUser.php'], []);
     }
 
     protected function getRule(): Rule

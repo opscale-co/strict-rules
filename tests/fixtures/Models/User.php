@@ -5,12 +5,14 @@ namespace Opscale\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Opscale\Jobs\CleanOldProducts;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Webhookable, HasApiTokens, HasRoles;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.

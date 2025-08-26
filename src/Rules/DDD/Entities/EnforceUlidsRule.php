@@ -56,7 +56,7 @@ class EnforceUlidsRule extends DomainRule
     /**
      * Check if the class uses the UseUlids trait
      */
-    protected function usesTrait(Class_ $class, string $trait): bool
+    protected function usesTrait(Class_ $class, string $traitName): bool
     {
         $traitUse = $this->getTraitNodes($class);
         if ($traitUse === [] ||
@@ -64,8 +64,8 @@ class EnforceUlidsRule extends DomainRule
             return false;
         }
 
-        foreach ($traitUse[0]->traits as $trait) {
-            if ($trait->name === $trait) {
+        foreach ($traitUse[0]->traits as $usedTrait) {
+            if ($usedTrait->toString() === $traitName) {
                 return true;
             }
         }
