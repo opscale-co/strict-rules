@@ -1,3 +1,8 @@
+## [1.1.3](https://github.com/opscale-co/strict-rules/compare/v1.1.2...v1.1.3) (2025-09-19)
+
+
+Generating notes for version 1.1.3
+
 ## [1.1.2](https://github.com/opscale-co/strict-rules/compare/v1.1.1...v1.1.2) (2025-08-26)
 
 
