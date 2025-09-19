@@ -8,31 +8,39 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that verifies methods annotated with #[\Override] or @overridable should call parent::
+ * Rule that verifies instance methods that override parent methods should call parent::
  * ensuring the extended behavior is compatible with the base class
+ * Static methods and methods implementing abstract parent methods are excluded from this rule
  */
 class ParentCallRule extends BaseRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $methods = $this->getMethodNodes($rootNode);
-        $this->getClassReflection($node);
+        $classReflection = $this->getClassReflection($node);
+
+        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
+            return $errors;
+        }
 
         foreach ($methods as $method) {
-            if (! $this->hasOverrideAttribute($method) &&
-                ! $this->hasOverridableAnnotation($method)) {
+            // Skip static methods - rule only applies to instance methods
+            if ($method->isStatic()) {
+                continue;
+            }
+
+            if (! $this->isOverridingParentMethod($method, $classReflection)) {
                 continue;
             }
 
@@ -41,9 +49,9 @@ class ParentCallRule extends BaseRule
             }
 
             $error = sprintf(
-                'Method "%s::%s()" is annotated with #[\\Override] or @overridable but does not call parent::. ' .
+                'Method "%s::%s()" overrides a parent method but does not call parent::. ' .
                 'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                $rootNode->namespacedName->toString(),
+                $rootNode->namespacedName?->toString() ?? 'Unknown',
                 $method->name->toString()
             );
 
@@ -58,46 +66,48 @@ class ParentCallRule extends BaseRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
+        if (parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
+        assert($node instanceof \PHPStan\Node\FileNode);
         $parent = $this->getParentNode($node);
 
         return $parent != null;
     }
 
     /**
-     * Check if method has #[\Override] attribute
+     * Check if the method exists in the parent class with the same signature
      */
-    private function hasOverrideAttribute(ClassMethod $classMethod): bool
+    private function isOverridingParentMethod(ClassMethod $classMethod, ClassReflection $classReflection): bool
     {
-        foreach ($classMethod->attrGroups as $attrGroup) {
-            foreach ($attrGroup->attrs as $attr) {
-                if ($attr->name->toString() === 'Override') {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if method has @overridable annotation in docblock
-     */
-    private function hasOverridableAnnotation(ClassMethod $classMethod): bool
-    {
-        $docComment = $classMethod->getDocComment();
-        if (! $docComment instanceof \PhpParser\Comment\Doc) {
+        $parentClass = $classReflection->getParentClass();
+        if (! $parentClass instanceof \PHPStan\Reflection\ClassReflection) {
             return false;
         }
 
-        $docText = $docComment->getText();
+        $methodName = $classMethod->name->toString();
 
-        return strpos($docText, '@overridable') !== false;
+        // Check if the parent class has a method with the same name
+        if (! $parentClass->hasNativeMethod($methodName)) {
+            return false;
+        }
+
+        // Get the parent method to compare signatures
+        $extendedMethodReflection = $parentClass->getNativeMethod($methodName);
+
+        // Check if it's not private (private methods can't be overridden)
+        if ($extendedMethodReflection->isPrivate()) {
+            return false;
+        }
+
+        // Skip abstract methods - they don't need parent:: calls
+        if ($extendedMethodReflection->isAbstract()) {
+            return false;
+        }
+
+        // If we got here, the method exists in parent and can be overridden
+        return true;
     }
 
     /**

@@ -6,7 +6,6 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -14,16 +13,15 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class EnforceCastRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $interfaces = $this->getInterfaceNodes($rootNode);
 
         // Check if the class implements CastsAttributes interface
@@ -31,7 +29,7 @@ class EnforceCastRule extends DomainRule
             $error = sprintf(
                 'ValueObject class "%s" must implement "%s" interface. ' .
                 'This interface is required for classes that will be used as Value Objects.',
-                $rootNode->namespacedName->toString(),
+                $rootNode->namespacedName?->toString() ?? 'Unknown',
                 CastsAttributes::class
             );
 
@@ -46,12 +44,11 @@ class EnforceCastRule extends DomainRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
+        if (parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
+        assert($node instanceof \PHPStan\Node\FileNode);
         $namespace = $this->getNamespace($node);
         if (! $this->isInNamespaces($namespace, ['\\Models\\ValueObjects'])) {
             return false;

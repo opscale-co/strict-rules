@@ -20,6 +20,8 @@ use Throwable;
 
 /**
  * Base rule with support methods
+ *
+ * @implements Rule<FileNode>
  */
 abstract class BaseRule implements Rule
 {
@@ -34,6 +36,22 @@ abstract class BaseRule implements Rule
     {
         return FileNode::class;
     }
+
+    final public function processNode(Node $node, Scope $scope): array
+    {
+        if (! $this->shouldProcess($node, $scope)) {
+            return [];
+        }
+
+        return $this->validate($node);
+    }
+
+    /**
+     * Validate the node and return any errors
+     *
+     * @return array<\PHPStan\Rules\RuleError>
+     */
+    abstract protected function validate(Node $node): array;
 
     /**
      * Check if the rule should process the given FileNode
@@ -57,11 +75,17 @@ abstract class BaseRule implements Rule
 
     /**
      * Resolve the root Class_, Trait_, or Enum_ node from the file
+     *
+     * @param  FileNode|array<Node>  $node
      */
     protected function getRootNode(FileNode|array $node): Class_|Trait_|Enum_|null
     {
         $rootNode = null;
         $namespace = $this->getNamespaceNode($node);
+        if (! $namespace instanceof \PhpParser\Node\Stmt\Namespace_) {
+            return null;
+        }
+
         foreach ($namespace->stmts as $stmt) {
             if ($stmt instanceof Class_ ||
                 $stmt instanceof Trait_ ||
@@ -84,6 +108,10 @@ abstract class BaseRule implements Rule
             return null;
         }
 
+        if (! $classNode->namespacedName instanceof \PhpParser\Node\Name) {
+            return null;
+        }
+
         $fqcn = $classNode->namespacedName->toString();
         if (! $this->reflectionProvider->hasClass($fqcn)) {
             return null;
@@ -99,13 +127,17 @@ abstract class BaseRule implements Rule
     {
         $namespace = $this->getNamespaceNode($fileNode);
 
-        return $namespace instanceof \PhpParser\Node\Stmt\Namespace_ && $namespace->name instanceof \PhpParser\Node\Name
-            ? $namespace->name->toString()
-            : '';
+        if ($namespace instanceof \PhpParser\Node\Stmt\Namespace_ && $namespace->name instanceof \PhpParser\Node\Name) {
+            return $namespace->name->toString();
+        }
+
+        return '';
     }
 
     /**
      * Extract the Namespace_ statement
+     *
+     * @param  FileNode|array<Node>  $node
      */
     protected function getNamespaceNode(FileNode|array $node): ?Namespace_
     {
@@ -122,7 +154,7 @@ abstract class BaseRule implements Rule
     /**
      * Get all class declarations within the namespace
      *
-     * @return Class_[]
+     * @return array<Class_>
      */
     protected function getClassNodes(FileNode $fileNode): array
     {
@@ -143,6 +175,8 @@ abstract class BaseRule implements Rule
 
     /**
      * Get all use statements within the namespace
+     *
+     * @return array<\PhpParser\Node\Stmt\UseUse>
      */
     protected function getUseStatements(FileNode $fileNode): array
     {
@@ -174,7 +208,7 @@ abstract class BaseRule implements Rule
             return null;
         }
 
-        if ($rootClassNode->extends === null) {
+        if (! $rootClassNode->extends instanceof \PhpParser\Node\Name) {
             return null;
         }
 
@@ -183,6 +217,8 @@ abstract class BaseRule implements Rule
 
     /**
      * Get all methods from a class, trait, or enum node
+     *
+     * @return array<ClassMethod>
      */
     protected function getMethodNodes(Class_|Trait_|Enum_ $rootNode): array
     {
@@ -198,6 +234,8 @@ abstract class BaseRule implements Rule
 
     /**
      * Get all used traits in a class
+     *
+     * @return array<\PhpParser\Node\Stmt\TraitUse>
      */
     protected function getTraitNodes(Class_ $class): array
     {
@@ -212,13 +250,19 @@ abstract class BaseRule implements Rule
     }
 
     /**
-     * Get all interface implementations in a class or enum
+     * Get all interface implementations in a class, enum, or trait
+     *
+     * @return array<string>
      */
-    protected function getInterfaceNodes(Class_|Enum_ $class): array
+    protected function getInterfaceNodes(Class_|Enum_|Trait_ $class): array
     {
         $interfaces = [];
-        foreach ($class->implements as $interface) {
-            $interfaces[] = $interface->toString();
+
+        // Traits don't implement interfaces directly, only classes and enums do
+        if ($class instanceof Class_ || $class instanceof Enum_) {
+            foreach ($class->implements as $interface) {
+                $interfaces[] = $interface->toString();
+            }
         }
 
         return $interfaces;
@@ -226,6 +270,8 @@ abstract class BaseRule implements Rule
 
     /**
      * Check if a class is in the allowed namespaces list (considering root namespace)
+     *
+     * @param  array<string>  $allowedNamespaces
      */
     protected function isInNamespaces(string $namespace, array $allowedNamespaces): bool
     {
@@ -268,12 +314,18 @@ abstract class BaseRule implements Rule
             $parserFactory = new ParserFactory;
             $phpParser = $parserFactory->createForVersion(PhpVersion::fromString('8.2'));
             $sourceCode = file_get_contents($filename);
+            if ($sourceCode === false) {
+                return null;
+            }
+
             $ast = $phpParser->parse($sourceCode);
 
             // Find the class node in the AST
-            $classNode = $this->getRootNode($ast);
+            if ($ast === null) {
+                return null;
+            }
 
-            return $classNode;
+            return $this->getRootNode($ast);
         } catch (Throwable $throwable) {
             // If we can't parse the file, fall back to false
             return null;

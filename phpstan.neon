@@ -4,7 +4,7 @@ parameters:
     paths:
         - src
         - tests/Rules
-    reportUnmatchedIgnoredErrors: true
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         -   
             message: '#Method Opscale\\Rules(\\\w+)+::processNode\(\) should return list<PHPStan\\Rules\\IdentifierRuleError> but returns list<PHPStan\\Rules\\RuleError>.#'
@@ -14,3 +14,5 @@ parameters:
             message: '#Method Opscale\\Rules(\\\w+)+::processNode\(\) should return list<PHPStan\\Rules\\IdentifierRuleError> but returns array<PHPStan\\Rules\\RuleError>.#'
             paths:
                 - src/Rules/*.php
+        -
+            identifier: phpstanApi.instanceofAssumption

@@ -9,7 +9,6 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -18,16 +17,31 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class ParentChildTransactionRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        if (parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $namespace = $this->getNamespace($node);
+        if (! $this->isInNamespaces($namespace, ['\\Models\\Repositories', '\\Services'])) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    protected function validate(Node $node): array
+    {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 
@@ -75,22 +89,6 @@ class ParentChildTransactionRule extends DomainRule
         }
 
         return $errors;
-    }
-
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
-            return false;
-        }
-
-        $namespace = $this->getNamespace($node);
-        if (! $this->isInNamespaces($namespace, ['\\Models\\Repositories', '\\Services'])) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

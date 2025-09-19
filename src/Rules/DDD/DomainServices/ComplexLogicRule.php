@@ -5,8 +5,6 @@ namespace Opscale\Rules\DDD\DomainServices;
 use Illuminate\Database\Eloquent\Model;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 use Throwable;
 
@@ -16,16 +14,15 @@ use Throwable;
  */
 class ComplexLogicRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $namespace = $this->getNamespace($node);
         $isServiceClass = $this->isInNamespaces($namespace, ['\\Services']);
         $modelsCount = 0;
@@ -42,7 +39,7 @@ class ComplexLogicRule extends DomainRule
                 $error = sprintf(
                     'Class "%s" is importing %d Eloquent models, and it should not import more than 1. ' .
                     'Consider moving complex logic involving multiple models to a Service class in the Services namespace.',
-                    $rootNode->namespacedName->toString(),
+                    $rootNode->namespacedName?->toString() ?? 'Unknown',
                     $modelsCount
                 );
 

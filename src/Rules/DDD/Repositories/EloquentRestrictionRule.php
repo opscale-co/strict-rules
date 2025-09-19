@@ -13,8 +13,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -26,17 +24,17 @@ class EloquentRestrictionRule extends DomainRule
     /**
      * Target namespace for repositories
      */
-    private const REPOSITORIES_NAMESPACE = '\\Models\\Repositories\\';
+    private const REPOSITORIES_NAMESPACE = '\\Models\\Repositories';
 
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! ($node instanceof FileNode)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 
@@ -48,7 +46,7 @@ class EloquentRestrictionRule extends DomainRule
                     continue;
                 }
 
-                $namespace = $rootNode->namespacedName->toString();
+                $namespace = $rootNode->namespacedName?->toString() ?? 'Unknown';
 
                 // If we're in a trait, check if it's in an allowed namespace
                 // Check if trait is in any of the allowed namespaces
@@ -90,6 +88,7 @@ class EloquentRestrictionRule extends DomainRule
         if ($this->isStaticEloquentCall($node)) {
             return true;
         }
+
         if ($this->isDirectModelClassCall($node)) {
             return true;
         }
@@ -115,7 +114,7 @@ class EloquentRestrictionRule extends DomainRule
             $node->name->toString() : null;
 
         return $methodName &&
-            in_array($methodName, $this->getQueryBuilderMethods());
+            in_array($methodName, $this->getEloquentMethods());
     }
 
     /**
@@ -136,7 +135,7 @@ class EloquentRestrictionRule extends DomainRule
             $node->name->toString() : null;
 
         return $methodName &&
-            in_array($methodName, $this->getQueryBuilderMethods());
+            in_array($methodName, $this->getEloquentMethods());
     }
 
     /**
@@ -153,7 +152,7 @@ class EloquentRestrictionRule extends DomainRule
         $methodName = $node->name instanceof Node\Identifier ?
             $node->name->toString() : null;
         if (! $methodName ||
-            ! in_array($methodName, $this->getQueryBuilderMethods())) {
+            ! in_array($methodName, $this->getEloquentMethods())) {
             return false;
         }
 
@@ -167,18 +166,107 @@ class EloquentRestrictionRule extends DomainRule
     }
 
     /**
-     * Get the list of Eloquent query builder methods
+     * Get the list of Eloquent methods
      */
-    private function getQueryBuilderMethods(): array
+    private function getEloquentMethods(): array
     {
         return [
+            // Query builder methods
             'where', 'whereHas', 'whereIn', 'whereNotIn', 'whereBetween',
-            'orWhere', 'orderBy', 'groupBy', 'having', 'join', 'leftJoin',
-            'first', 'find', 'findOrFail', 'get', 'all', 'paginate',
-            'exists', 'count', 'sum', 'avg', 'max', 'min',
-            'create', 'update', 'delete', 'save', 'fill',
-            'with', 'load', 'latest', 'oldest', 'limit', 'take', 'skip',
-            'select', 'distinct', 'pluck', 'chunk', 'each',
+            'whereNull', 'whereNotNull', 'whereExists', 'whereNotExists',
+            'whereColumn', 'whereRaw', 'whereJsonContains', 'whereJsonLength',
+            'orWhere', 'orWhereHas', 'orWhereIn', 'orWhereNotIn', 'orWhereBetween',
+            'orWhereNull', 'orWhereNotNull', 'orWhereExists', 'orWhereNotExists',
+
+            // Ordering and grouping
+            'orderBy', 'orderByDesc', 'orderByRaw', 'latest', 'oldest',
+            'inRandomOrder', 'groupBy', 'groupByRaw', 'having', 'havingRaw',
+
+            // Joins
+            'join', 'leftJoin', 'rightJoin', 'crossJoin',
+            'joinSub', 'leftJoinSub', 'rightJoinSub',
+
+            // Retrieval methods
+            'get', 'first', 'firstOrFail', 'firstOr', 'firstWhere',
+            'find', 'findOrFail', 'findOr', 'findMany',
+            'findOrNew', 'firstOrNew', 'firstOrCreate',
+            'all', 'value', 'pluck', 'sole',
+
+            // Pagination
+            'paginate', 'simplePaginate', 'cursorPaginate',
+
+            // Aggregate methods
+            'count', 'sum', 'avg', 'average', 'min', 'max',
+            'exists', 'doesntExist',
+
+            // Modification methods - CRUD operations
+            'create', 'insert', 'insertOrIgnore', 'insertGetId', 'insertUsing',
+            'update', 'updateOrFail', 'updateOrCreate', 'updateOrInsert',
+            'upsert', 'increment', 'decrement',
+            'delete', 'destroy', 'forceDelete', 'restore',
+            'save', 'saveOrFail', 'saveQuietly',
+            'fill', 'forceFill', 'fillable', 'guarded',
+
+            // Soft deletes
+            'withTrashed', 'onlyTrashed', 'withoutTrashed',
+            'trashed', 'restore', 'forceDelete',
+
+            // Relationship methods
+            'with', 'withCount', 'withSum', 'withAvg', 'withMin', 'withMax',
+            'withExists', 'without', 'withOnly',
+            'load', 'loadCount', 'loadSum', 'loadAvg', 'loadMin', 'loadMax',
+            'loadMissing', 'loadMorph', 'loadAggregate',
+            'belongsTo', 'hasOne', 'hasMany', 'hasManyThrough',
+            'belongsToMany', 'morphTo', 'morphOne', 'morphMany',
+            'morphToMany', 'morphedByMany',
+
+            // Scopes and constraints
+            'limit', 'take', 'skip', 'offset', 'forPage',
+            'select', 'selectRaw', 'selectSub', 'addSelect',
+            'distinct', 'from', 'fromRaw', 'fromSub',
+
+            // Collection operations
+            'chunk', 'chunkById', 'each', 'eachById',
+            'lazy', 'lazyById', 'lazyByIdDesc', 'cursor',
+
+            // Model state methods
+            'getAttribute', 'setAttribute', 'getAttributes', 'setAttributes',
+            'getOriginal', 'only', 'except', 'syncOriginal',
+            'makeVisible', 'makeHidden', 'append', 'setAppends',
+            'getVisible', 'getHidden', 'getFillable', 'getGuarded',
+
+            // Model utility methods
+            'fresh', 'refresh', 'replicate', 'is', 'isNot',
+            'getKey', 'getKeyName', 'getKeyType', 'getRouteKey', 'getRouteKeyName',
+            'getMorphClass', 'getTable', 'getConnection', 'getConnectionName',
+
+            // Timestamps
+            'touch', 'touchQuietly', 'updateTimestamps', 'usesTimestamps',
+            'getCreatedAtColumn', 'getUpdatedAtColumn',
+
+            // Events
+            'observe', 'setObservableEvents', 'getObservableEvents',
+
+            // Other common methods
+            'toArray', 'toJson', 'jsonSerialize', 'toSql', 'dd', 'dump',
+            'clone', 'newInstance', 'newFromBuilder', 'newQuery', 'newModelQuery',
+            'wasRecentlyCreated', 'wasChanged', 'isDirty', 'isClean',
+            'push', 'pushQuietly',
+
+            // Mass assignment
+            'unguard', 'reguard', 'isGuarded', 'isFillable',
+            'totallyGuarded', 'fillableFromArray',
+
+            // Query scopes
+            'withGlobalScope', 'withoutGlobalScope', 'withoutGlobalScopes',
+            'removedScopes', 'appliedScopes',
+
+            // Locking
+            'lockForUpdate', 'sharedLock',
+
+            // Raw expressions
+            'whereRaw', 'orWhereRaw', 'havingRaw', 'orHavingRaw',
+            'orderByRaw', 'groupByRaw', 'selectRaw', 'fromRaw',
         ];
     }
 }

@@ -7,8 +7,6 @@ use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -51,14 +49,9 @@ class DisallowInstantiationRule extends BaseRule
         $this->additionalAllowedClasses = $additionalAllowedClasses;
     }
 
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
-            return [];
-        }
-
+        assert($node instanceof \PHPStan\Node\FileNode);
         $errors = [];
         $rootNode = $this->getRootNode($node);
 
@@ -67,8 +60,8 @@ class DisallowInstantiationRule extends BaseRule
         }
 
         // Check all methods in the class
-        foreach ($this->getMethodNodes($rootNode) as $method) {
-            $methodErrors = $this->checkMethodForInstantiations($method, $node);
+        foreach ($this->getMethodNodes($rootNode) as $classMethod) {
+            $methodErrors = $this->checkMethodForInstantiations($classMethod, $node);
             $errors = array_merge($errors, $methodErrors);
         }
 
@@ -80,9 +73,10 @@ class DisallowInstantiationRule extends BaseRule
      *
      * @return RuleError[]
      */
-    private function checkMethodForInstantiations(ClassMethod $classMethod, FileNode $fileNode): array
+    private function checkMethodForInstantiations(ClassMethod $classMethod, Node $fileNode): array
     {
         $errors = [];
+        assert($fileNode instanceof \PHPStan\Node\FileNode);
         $classReflection = $this->getClassReflection($fileNode);
 
         if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
@@ -167,7 +161,7 @@ class DisallowInstantiationRule extends BaseRule
     /**
      * Resolve a class name considering use statements
      */
-    private function resolveClassName(string $className, FileNode $fileNode): string
+    private function resolveClassName(string $className, Node $fileNode): string
     {
         // If it's already a fully qualified name, return as is
         if (str_starts_with($className, '\\')) {
@@ -175,6 +169,7 @@ class DisallowInstantiationRule extends BaseRule
         }
 
         // Check if it's imported via use statement
+        assert($fileNode instanceof \PHPStan\Node\FileNode);
         $useStatements = $this->getUseStatements($fileNode);
         foreach ($useStatements as $useStatement) {
             $useName = $useStatement->name->toString();

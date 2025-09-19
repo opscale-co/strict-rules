@@ -2,9 +2,12 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "lint": "vendor/bin/duster lint --dirty",
-    "fix": "vendor/bin/duster fix --dirty",
-    "test": "vendor/bin/phpunit tests"
+    "lint": "./vendor/bin/duster lint --dirty",
+    "fix": "./vendor/bin/duster fix --dirty",
+    "refactor": "./vendor/bin/rector process",
+    "test": "./vendor/bin/phpunit tests",
+    "test:coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit tests -c phpunit.xml.dist",
+    "check": "npm run fix && npm run refactor && npm run lint && npm run test"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.4.0",

@@ -11,8 +11,6 @@ use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Switch_;
 use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -20,17 +18,19 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoStatementsLogicRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope) ||
-            ! $this->isEloquentModel($node)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        if (! $this->isEloquentModel($node)) {
             return []; // Skip if not a model class
         }
 
         $errors = [];
         $classNode = $this->getRootNode($node);
+        if ($classNode === null) {
+            return [];
+        }
+
         $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($classNode);
 
@@ -55,7 +55,7 @@ class NoStatementsLogicRule extends DomainRule
                     $error = sprintf(
                         'Method "%s::%s" contains a "%s" statement ' .
                         'which is not allowed in domain model classes.',
-                        $classNode->namespacedName->toString(),
+                        $classNode->namespacedName?->toString() ?? 'Unknown',
                         $method->name->toString(),
                         $statement
                     );

@@ -50,7 +50,7 @@ class MaxLinesTest extends RuleTestCase
     #[Test]
     public function class_exactly_at_max_lines_limit(): void
     {
-        $rule = new MaxLinesRule($this->createReflectionProvider(), 25);
+        new MaxLinesRule($this->createReflectionProvider(), 25);
 
         $this->analyse([
             __DIR__ . '/../fixtures/Models/ValidSmallUser.php',

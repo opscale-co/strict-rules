@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -24,12 +22,10 @@ class EnforceUlidsRule extends DomainRule
         parent::__construct($reflectionProvider);
     }
 
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope) ||
-            ! $this->isEloquentModel($node)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        if (! $this->isEloquentModel($node)) {
             return []; // Skip if not a model class
         }
 
@@ -37,11 +33,15 @@ class EnforceUlidsRule extends DomainRule
 
         // Check if the class uses the UseUlids trait
         $classNode = $this->getRootNode($node);
+        if ($classNode === null) {
+            return [];
+        }
+
         if (! $this->usesTrait($classNode, HasUlids::class)) {
             $error = sprintf(
                 'Model class "%s" must use the "HasUlids" trait to ensure ' .
                 'consistent ID handling with ULIDs.',
-                $classNode->namespacedName->toString()
+                $classNode->namespacedName?->toString() ?? 'Unknown'
             );
 
             $errors[] = RuleErrorBuilder::message($error)

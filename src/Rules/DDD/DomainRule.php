@@ -17,27 +17,29 @@ abstract class DomainRule extends BaseRule
     /**
      * Target namespace for Eloquent models
      */
-    protected const MODELS_NAMESPACE = 'Models';
+    protected const MODELS_NAMESPACE = '\\Models';
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
         // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
+        if (parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
         // Skip rule verification for enums
+        assert($node instanceof \PHPStan\Node\FileNode);
         $rootNode = $this->getRootNode($node);
         if ($rootNode instanceof Enum_) {
             return false;
         }
 
         // Check if the class is in the Models namespace only
-        $className = $rootNode->namespacedName->toString();
-        $modelsPattern = '/^(\w+\\\\){1,2}(' . self::MODELS_NAMESPACE . ')/';
+        if ($rootNode === null || ! $rootNode->namespacedName instanceof \PhpParser\Node\Name) {
+            return false;
+        }
 
-        if (preg_match($modelsPattern, $className) === false) {
+        $className = $rootNode->namespacedName->toString();
+        if (! $this->isInNamespaces($className, [self::MODELS_NAMESPACE])) {
             return false;
         }
 
@@ -45,7 +47,7 @@ abstract class DomainRule extends BaseRule
     }
 
     /**
-     * Check if the class extends Eloquent Model
+     * Check if the class extends Eloquent Model (checks entire inheritance chain)
      */
     protected function isEloquentModel(FileNode|string $class): bool
     {
@@ -56,10 +58,13 @@ abstract class DomainRule extends BaseRule
             return false;
         }
 
+        // Check if it's the Model class itself
         if ($classReflection->getName() === Model::class) {
             return true;
         }
 
+        // Use PHPStan's built-in method to check if it's a subclass of Model
+        // This should handle the entire inheritance chain properly
         return $classReflection->isSubclassOf(Model::class);
     }
 }

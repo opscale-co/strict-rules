@@ -2,6 +2,7 @@
 
 namespace Opscale\Tests\Rules;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_exists(string $filename): void
     {
@@ -30,6 +32,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_has_valid_syntax(string $filename): void
     {
@@ -46,6 +49,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_has_services_section(string $filename): void
     {
@@ -61,6 +65,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_services_have_required_structure(string $filename): void
     {
@@ -69,11 +74,7 @@ class ConfigurationValidationTest extends TestCase
 
         // Extract class names using regex
         preg_match_all('/class:\s+(.+)/', $content, $matches);
-        if (empty($matches[1])) {
-            $classNames = [];
-        } else {
-            $classNames = $matches[1];
-        }
+        $classNames = empty($matches[1]) ? [] : $matches[1];
 
         $this->assertNotEmpty($classNames, sprintf('Configuration file %s should contain service class definitions', $filename));
 
@@ -89,6 +90,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     public function all_neon_files_are_included_in_composer_json(): void
     {
         $composerPath = __DIR__ . '/../../composer.json';
@@ -107,6 +109,7 @@ class ConfigurationValidationTest extends TestCase
     }
 
     #[Test]
+    #[CoversNothing]
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_classes_exist(string $filename): void
     {
@@ -115,11 +118,7 @@ class ConfigurationValidationTest extends TestCase
 
         // Extract class names using regex
         preg_match_all('/class:\s+(.+)/', $content, $matches);
-        if (empty($matches[1])) {
-            $classNames = [];
-        } else {
-            $classNames = $matches[1];
-        }
+        $classNames = empty($matches[1]) ? [] : $matches[1];
 
         foreach ($classNames as $className) {
             $className = trim($className);

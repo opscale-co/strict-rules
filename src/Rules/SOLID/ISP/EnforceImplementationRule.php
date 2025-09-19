@@ -15,8 +15,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use Throwable;
@@ -27,15 +25,13 @@ use Throwable;
  */
 class EnforceImplementationRule extends BaseRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
-
-        $rootNode = $this->getRootNode($node);
 
         // Skip enums as they don't have the same interface implementation requirements
         if ($rootNode instanceof Enum_) {
@@ -49,12 +45,15 @@ class EnforceImplementationRule extends BaseRule
 
         $errors = [];
         $classReflection = $this->getClassReflection($node);
+        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
+            return [];
+        }
 
         // Get all interface methods that need to be implemented
         $interfaceMethods = $this->getInterfaceMethods($implementedInterfaces);
 
-        foreach ($this->getMethodNodes($rootNode) as $method) {
-            $methodName = $method->name->toString();
+        foreach ($this->getMethodNodes($rootNode) as $classMethod) {
+            $methodName = $classMethod->name->toString();
 
             // Check if this method implements an interface method
             if (! in_array($methodName, $interfaceMethods)) {
@@ -63,7 +62,7 @@ class EnforceImplementationRule extends BaseRule
 
             // Check for improper implementations
             $error = $this->validateMethodImplementation(
-                $method,
+                $classMethod,
                 $classReflection->getName());
             if ($error instanceof \PHPStan\Rules\RuleError) {
                 $errors[] = $error;
