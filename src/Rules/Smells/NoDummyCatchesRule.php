@@ -9,8 +9,6 @@ use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -19,16 +17,15 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoDummyCatchesRule extends BaseRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 

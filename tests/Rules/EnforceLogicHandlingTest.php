@@ -20,7 +20,7 @@ class EnforceLogicHandlingTest extends RuleTestCase
             [
                 [
                     '"Opscale\Jobs\CleanOldProducts" class contains try-catch block, exception handling is only allowed in logic. ' .
-                    'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                    'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                     25,
                 ],
             ]);
@@ -58,12 +58,12 @@ class EnforceLogicHandlingTest extends RuleTestCase
         ], [
             [
                 '"Opscale\Jobs\JobWithExceptionImport" class imports exception "Exception", exception imports are only allowed in logic layers. ' .
-                'Consider managing exceptions in Services or Observers only.',
+                'Consider managing exceptions in Services, Models, or Observers only.',
                 5,
             ],
             [
                 '"Opscale\Jobs\JobWithExceptionImport" class imports exception "InvalidArgumentException", exception imports are only allowed in logic layers. ' .
-                'Consider managing exceptions in Services or Observers only.',
+                'Consider managing exceptions in Services, Models, or Observers only.',
                 6,
             ],
         ]);
@@ -77,7 +77,7 @@ class EnforceLogicHandlingTest extends RuleTestCase
         ], [
             [
                 '"Opscale\Http\Controllers\ControllerWithExceptionImport" class imports exception "RuntimeException", exception imports are only allowed in logic layers. ' .
-                'Consider managing exceptions in Services or Observers only.',
+                'Consider managing exceptions in Services, Models, or Observers only.',
                 5,
             ],
         ]);
@@ -91,17 +91,17 @@ class EnforceLogicHandlingTest extends RuleTestCase
         ], [
             [
                 '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 25,
             ],
             [
                 '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 36,
             ],
             [
                 '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 40,
             ],
         ]);
@@ -124,17 +124,17 @@ class EnforceLogicHandlingTest extends RuleTestCase
         ], [
             [
                 '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 20,
             ],
             [
                 '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 26,
             ],
             [
                 '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
-                'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
+                'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 28,
             ],
         ]);

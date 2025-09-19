@@ -9,7 +9,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -17,17 +16,20 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class NoAccesorMutatorRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $classReflection = $this->getClassReflection($node);
+        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
+            return [];
+        }
+
         $methods = $this->getMethodNodes($rootNode);
 
         foreach ($methods as $method) {
@@ -53,9 +55,8 @@ class NoAccesorMutatorRule extends DomainRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false ||
+        assert($node instanceof \PHPStan\Node\FileNode);
+        if (parent::shouldProcess($node, $scope) === false ||
             ! $this->isEloquentModel($node)) {
             return false;
         }

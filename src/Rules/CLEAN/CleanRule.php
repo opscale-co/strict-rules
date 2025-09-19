@@ -6,7 +6,6 @@ use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\UseItem;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -68,24 +67,54 @@ abstract class CleanRule extends BaseRule
         $this->allowedExternalImports = $allowedExternalImports ?: $this->getAllowedExternalImports();
     }
 
-    /*
-     * @param FileNode $node
-     * @param Scope $scope
-     * @return IdentifierRuleError[]
+    /**
+     * Check if the use statement is allowed based on all 4 import types
+     * Evaluates: Facades, Framework imports, Project imports, and External imports
      */
-    public function processNode(Node $node, Scope $scope): array
+    public function isAllowedUse(Node $fileNode, UseItem $useItem): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
-            return []; // Skip if not a model class
+        if ($this->isAllowedFacade($fileNode, $useItem)) {
+            return true;
         }
 
+        if ($this->isAllowedFrameworkUse($fileNode, $useItem)) {
+            return true;
+        }
+
+        if ($this->isAllowedProjectUse($fileNode, $useItem)) {
+            return true;
+        }
+
+        return $this->isAllowedExternalUse($fileNode, $useItem);
+    }
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        if (parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        assert($node instanceof \PHPStan\Node\FileNode);
+        // Only process for processing layer
+        $rootNode = $this->getRootNode($node);
+        $className = $rootNode?->namespacedName?->toString();
+        $classLayer = $className ? $this->getClassLayer($className) : null;
+
+        return $classLayer !== null && $classLayer === $this->processingLayer;
+    }
+
+    /*
+     * @param Node $node
+     * @return IdentifierRuleError[]
+     */
+    protected function validate(Node $node): array
+    {
+        assert($node instanceof \PHPStan\Node\FileNode);
         $errors = [];
         $uses = $this->getUseStatements($node);
         $rootNode = $this->getRootNode($node);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className);
+        $className = $rootNode?->namespacedName?->toString();
+        $classLayer = $className ? $this->getClassLayer($className) : null;
 
         foreach ($uses as $use) {
             $usedClass = $use->name->toString();
@@ -127,21 +156,9 @@ abstract class CleanRule extends BaseRule
     }
 
     /**
-     * Check if the use statement is allowed based on all 4 import types
-     * Evaluates: Facades, Framework imports, Project imports, and External imports
-     */
-    public function isAllowedUse(FileNode $fileNode, UseItem $useItem): bool
-    {
-        return $this->isAllowedFacade($fileNode, $useItem) ||
-               $this->isAllowedFrameworkUse($fileNode, $useItem) ||
-               $this->isAllowedProjectUse($fileNode, $useItem) ||
-               $this->isAllowedExternalUse($fileNode, $useItem);
-    }
-
-    /**
      * Check if the class is a Facade and if it is allowed in the current layer
      */
-    protected function isAllowedFacade(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedFacade(Node $fileNode, UseItem $useItem): bool
     {
         $usedClass = $useItem->name->toString();
 
@@ -154,12 +171,12 @@ abstract class CleanRule extends BaseRule
     /**
      * Check if the class is a Framework import and if it is allowed in the current layer
      */
-    protected function isAllowedFrameworkUse(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedFrameworkUse(Node $fileNode, UseItem $useItem): bool
     {
         $usedClass = $useItem->name->toString();
 
-        foreach ($this->allowedFrameworkImports as $allowedImport) {
-            if (str_starts_with($usedClass, $allowedImport)) {
+        foreach ($this->allowedFrameworkImports as $allowedFrameworkImport) {
+            if (str_starts_with($usedClass, $allowedFrameworkImport)) {
                 return true;
             }
         }
@@ -171,7 +188,7 @@ abstract class CleanRule extends BaseRule
      * Check if the class is a Project import and if it is allowed in the current layer
      * Project imports are allowed if they belong to the same layer or lower layers
      */
-    protected function isAllowedProjectUse(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedProjectUse(Node $fileNode, UseItem $useItem): bool
     {
         $usedClass = $useItem->name->toString();
 
@@ -190,12 +207,12 @@ abstract class CleanRule extends BaseRule
     /**
      * Check if the class is an External import and if it is allowed in the current layer
      */
-    protected function isAllowedExternalUse(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedExternalUse(Node $fileNode, UseItem $useItem): bool
     {
         $usedClass = $useItem->name->toString();
 
-        foreach ($this->allowedExternalImports as $allowedImport) {
-            if (str_starts_with($usedClass, $allowedImport)) {
+        foreach ($this->allowedExternalImports as $allowedExternalImport) {
+            if (str_starts_with($usedClass, $allowedExternalImport)) {
                 return true;
             }
         }
@@ -223,26 +240,10 @@ abstract class CleanRule extends BaseRule
         return [];
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
-            return false;
-        }
-
-        // Only process for processing layer
-        $rootNode = $this->getRootNode($node);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className);
-
-        return $classLayer !== null && $classLayer === $this->processingLayer;
-    }
-
     /**
      * Check if the use statement is allowed in the current layer
      */
-    protected function isAllowedLayer(FileNode $fileNode, UseItem $useItem): bool
+    protected function isAllowedLayer(Node $fileNode, UseItem $useItem): bool
     {
         $usedClass = $useItem->name->toString();
         $usedLayer = $this->getClassLayer($usedClass);
@@ -250,9 +251,10 @@ abstract class CleanRule extends BaseRule
             return true; // Class is not in a defined layer
         }
 
+        assert($fileNode instanceof \PHPStan\Node\FileNode);
         $rootNode = $this->getRootNode($fileNode);
-        $className = $rootNode->namespacedName->toString();
-        $classLayer = $this->getClassLayer($className);
+        $className = $rootNode?->namespacedName?->toString();
+        $classLayer = $className ? $this->getClassLayer($className) : null;
 
         return $usedLayer != null && $usedLayer <= $classLayer;
     }

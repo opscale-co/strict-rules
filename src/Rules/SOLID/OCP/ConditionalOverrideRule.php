@@ -5,31 +5,34 @@ namespace Opscale\Rules\SOLID\OCP;
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * Rule that ensures all public and protected methods are final
- * unless annotated with #[\Override] or @overridable
+ * unless annotated with #[\Override]
+ * Abstract methods are excluded as they cannot be final
  */
 class ConditionalOverrideRule extends BaseRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $methods = $this->getMethodNodes($rootNode);
         $this->getClassReflection($node);
 
         foreach ($methods as $method) {
             if (! $this->isPublicOrProtected($method)) {
+                continue;
+            }
+
+            // Skip abstract methods - they cannot be final
+            if ($method->isAbstract()) {
                 continue;
             }
 
@@ -41,14 +44,10 @@ class ConditionalOverrideRule extends BaseRule
                 continue;
             }
 
-            if ($this->hasOverridableAnnotation($method)) {
-                continue;
-            }
-
             $error = sprintf(
-                'Method "%s::%s()" must be final unless annotated with #[\Override] or @overridable. ' .
+                'Method "%s::%s()" must be final unless annotated with #[\Override]. ' .
                 'Public and protected methods should be explicitly marked as final to follow the Open/Closed Principle.',
-                $rootNode->namespacedName->toString(),
+                $rootNode->namespacedName?->toString() ?? 'Unknown',
                 $method->name->toString()
             );
 
@@ -87,20 +86,5 @@ class ConditionalOverrideRule extends BaseRule
         }
 
         return false;
-    }
-
-    /**
-     * Check if method has @overridable annotation in docblock
-     */
-    private function hasOverridableAnnotation(ClassMethod $classMethod): bool
-    {
-        $docComment = $classMethod->getDocComment();
-        if (! $docComment instanceof \PhpParser\Comment\Doc) {
-            return false;
-        }
-
-        $docText = $docComment->getText();
-
-        return strpos($docText, '@overridable') !== false;
     }
 }

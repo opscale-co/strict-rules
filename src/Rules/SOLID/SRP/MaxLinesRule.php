@@ -4,8 +4,6 @@ namespace Opscale\Rules\SOLID\SRP;
 
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -33,18 +31,17 @@ class MaxLinesRule extends BaseRule
         $this->maxLines = $maxLines;
     }
 
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
-            return [];
-        }
-
+        assert($node instanceof \PHPStan\Node\FileNode);
         $errors = [];
 
         // Calculate the number of lines in the class
         $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
+            return [];
+        }
+
         $startLine = $node->getStartLine();
         $endLine = $node->getEndLine();
         $totalLines = $endLine - $startLine + 1;
@@ -53,7 +50,7 @@ class MaxLinesRule extends BaseRule
             $error = sprintf(
                 'Class "%s" has %d lines, which exceeds the maximum allowed %d lines. ' .
                 'Consider breaking this class into smaller classes to follow the Single Responsibility Principle.',
-                $rootNode->namespacedName->toString(),
+                $rootNode->namespacedName?->toString() ?? 'Unknown',
                 $totalLines,
                 $this->maxLines
             );

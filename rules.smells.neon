@@ -9,3 +9,8 @@ services:
         class: Opscale\Rules\Smells\NoDummyCatchesRule
         tags:
             - phpstan.rules.rule
+            
+    - 
+        class: Opscale\Rules\Smells\HelpersRestrictionRule
+        tags:
+            - phpstan.rules.rule

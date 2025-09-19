@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -15,32 +14,31 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class EnforceLogicHandlingRule extends BaseRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $errors = [];
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode === null) {
             return [];
         }
 
-        $errors = [];
-        $rootNode = $this->getRootNode($node);
         $nodeFinder = new NodeFinder;
 
         // Check for exception imports in interaction layers
         $useStatements = $this->getUseStatements($node);
-        foreach ($useStatements as $useUse) {
-            $importedClass = $useUse->name->toString();
+        foreach ($useStatements as $useStatement) {
+            $importedClass = $useStatement->name->toString();
             if ($this->isExceptionClass($importedClass)) {
                 $error = sprintf(
                     '"%s" class imports exception "%s", exception imports are only allowed in logic layers. ' .
-                    'Consider managing exceptions in Services or Observers only.',
-                    $rootNode->namespacedName->toString(),
+                    'Consider managing exceptions in Services, Models, or Observers only.',
+                    $rootNode->namespacedName?->toString() ?? 'Unknown',
                     $importedClass
                 );
 
                 $errors[] = RuleErrorBuilder::message($error)
-                    ->line($useUse->getLine())
+                    ->line($useStatement->getLine())
                     ->identifier('smells.enforceLogicHandling.import')
                     ->build();
             }
@@ -54,8 +52,8 @@ class EnforceLogicHandlingRule extends BaseRule
             foreach ($exprs as $expr) {
                 $error = sprintf(
                     '"%s" class contains try-catch block, exception handling is only allowed in logic. ' .
-                    'Consider managing exceptions in Services or Observers and manage expected values anywhere else.',
-                    $rootNode->namespacedName->toString()
+                    'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
+                    $rootNode->namespacedName?->toString() ?? 'Unknown'
                 );
 
                 $errors[] = RuleErrorBuilder::message($error)
@@ -70,14 +68,13 @@ class EnforceLogicHandlingRule extends BaseRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false) {
+        if (parent::shouldProcess($node, $scope) === false) {
             return false;
         }
 
+        assert($node instanceof \PHPStan\Node\FileNode);
         $namespace = $this->getNamespace($node);
-        if ($this->isInNamespaces($namespace, ['\\Services', '\\Observers'])) {
+        if ($this->isInNamespaces($namespace, ['\\Services', '\\Models', '\\Observers'])) {
             return false;
         }
 
@@ -99,8 +96,8 @@ class EnforceLogicHandlingRule extends BaseRule
             '/^Throwable$/',
         ];
 
-        foreach ($exceptionPatterns as $pattern) {
-            if (preg_match($pattern, $className)) {
+        foreach ($exceptionPatterns as $exceptionPattern) {
+            if (preg_match($exceptionPattern, $className)) {
                 return true;
             }
         }

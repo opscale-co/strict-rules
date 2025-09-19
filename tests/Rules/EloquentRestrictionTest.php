@@ -29,6 +29,11 @@ class EloquentRestrictionTest extends RuleTestCase
                     'Repositories: Found "where" call in "Opscale\Models\Product".',
                     19,
                 ],
+                [
+                    'Eloquent calls are only allowed within ' .
+                    'Repositories: Found "belongsTo" call in "Opscale\Models\Product".',
+                    41,
+                ],
             ]);
     }
 

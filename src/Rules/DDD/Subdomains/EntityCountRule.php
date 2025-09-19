@@ -4,8 +4,6 @@ namespace Opscale\Rules\DDD\Subdomains;
 
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -31,19 +29,11 @@ class EntityCountRule extends DomainRule
         $this->maxClasses = $maxClasses;
     }
 
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! ($node instanceof FileNode) ||
-            ! $this->isEloquentModel($node)) {
+        assert($node instanceof \PHPStan\Node\FileNode);
+        if (! $this->isEloquentModel($node)) {
             return []; // Skip if not a model class
-        }
-
-        // Check if the class is in the root\Models namespace
-        $pattern = '/^(\w+\\\\){1,2}(' . self::MODELS_NAMESPACE . ')/';
-        $namespace = $this->getNamespace($node);
-        if (preg_match($pattern, $namespace)) {
-            self::$processedModels++;
         }
 
         // Check if the count exceeds the limit

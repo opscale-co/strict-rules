@@ -3,8 +3,8 @@
 namespace Opscale\Rules\CLEAN\Representation;
 
 use Opscale\Rules\CLEAN\CleanRule;
+use PhpParser\Node;
 use PhpParser\Node\UseItem;
-use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
 
 /**
@@ -36,8 +36,9 @@ class RepresentationLayerRule extends CleanRule
     /**
      * Override to allow trait imports in Eloquent models in the Representation layer
      */
-    public function isAllowedUse(FileNode $fileNode, UseItem $useItem): bool
+    public function isAllowedUse(Node $fileNode, UseItem $useItem): bool
     {
+        assert($fileNode instanceof \PHPStan\Node\FileNode);
         $usedClass = $useItem->name->toString();
         $rootNode = $this->getRootNode($fileNode);
         $currentClassName = $rootNode?->namespacedName->toString();
@@ -63,7 +64,7 @@ class RepresentationLayerRule extends CleanRule
         if ($this->reflectionProvider->hasClass($className)) {
             $reflection = $this->reflectionProvider->getClass($className);
 
-            return $reflection->isSubclassOf('Illuminate\\Database\\Eloquent\\Model');
+            return $reflection->isSubclassOf(\Illuminate\Database\Eloquent\Model::class);
         }
 
         return false;

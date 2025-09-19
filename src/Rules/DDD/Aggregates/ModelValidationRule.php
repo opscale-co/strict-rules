@@ -5,7 +5,6 @@ namespace Opscale\Rules\DDD\Aggregates;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
@@ -13,14 +12,9 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class ModelValidationRule extends DomainRule
 {
-    public function processNode(Node $node, Scope $scope): array
+    protected function validate(Node $node): array
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            ! $this->shouldProcess($node, $scope)) {
-            return [];
-        }
-
+        assert($node instanceof \PHPStan\Node\FileNode);
         $errors = [];
         $rootNode = $this->getRootNode($node);
         $this->getClassReflection($node);
@@ -38,11 +32,11 @@ class ModelValidationRule extends DomainRule
 
         $error = sprintf(
             'Model class "%s" must implement a "validate(string $key): array"',
-            $rootNode->namespacedName->toString()
+            $rootNode?->namespacedName?->toString() ?? 'Unknown'
         );
 
         $errors[] = RuleErrorBuilder::message($error)
-            ->line($rootNode->getLine())
+            ->line($rootNode?->getLine() ?? 1)
             ->identifier('ddd.aggregates.modelValidation')
             ->build();
 
@@ -51,10 +45,12 @@ class ModelValidationRule extends DomainRule
 
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
-        // @phpstan-ignore-next-line
-        if (! $node instanceof FileNode ||
-            parent::shouldProcess($node, $scope) === false ||
-            ! $this->isEloquentModel($node)) {
+        if (parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        assert($node instanceof \PHPStan\Node\FileNode);
+        if (! $this->isEloquentModel($node)) {
             return false;
         }
 
