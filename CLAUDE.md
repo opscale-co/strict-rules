@@ -69,7 +69,6 @@ src/Rules/
 │   ├── ISP/ (EnforceImplementationRule) # Interface Segregation
 │   └── DIP/ (DisallowInstantiationRule) # Dependency Inversion
 └── Smells/        # Code smell detection
-    ├── EnforceLogicHandlingRule   # Exception handling restrictions
     ├── NoDummyCatchesRule         # Empty catch block detection
     └── HelpersRestrictionRule     # Helper function usage prevention
 ```
