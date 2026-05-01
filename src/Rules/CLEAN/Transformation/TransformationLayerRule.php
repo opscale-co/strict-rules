@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\CLEAN\Transformation;
 
 use Opscale\Rules\CLEAN\CleanRule;
@@ -19,8 +21,12 @@ class TransformationLayerRule extends CleanRule
             [ // Allowed framework imports
                 'Illuminate\\Contracts\\',
                 'Illuminate\\Foundation\\',
-                'Symfony\\Component\\',
                 'Illuminate\\Http\\Client\\',
+                'Illuminate\\Support\\Arr',
+                'Illuminate\\Support\\Collection',
+                'Illuminate\\Support\\Number',
+                'Illuminate\\Support\\Str',
+                'Symfony\\Component\\',
             ],
             [ // Allowed facades
                 'App',
@@ -30,6 +36,7 @@ class TransformationLayerRule extends CleanRule
                 'Exceptions',
                 'File',
                 'Http',
+                'Log',
                 'Storage',
             ],
             [ // Allowed external imports

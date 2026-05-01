@@ -83,13 +83,15 @@ If you find yourself throwing exceptions or returning dummy data just to satisfy
 ### 📌 `EnforceImplementationRule`
 
 - **Purpose:** Ensure methods declared by interfaces are **meaningfully implemented**.
-- **Description:** Flags implementations that throw generic exceptions or return default/no-op values in interface methods.
-- **Justification:** Prevents interface bloat and encourages focused, intentional design.
+- **Description:** For every classlike (`Class_`, `Trait_`) declared in the file, walks every method and flags those that match a stub pattern: empty body, single `throw` expression, or single `return` of a default value (`null`, `false`, `0`, `0.0`, `''`, `[]`). The set of interface method names is resolved via `ClassReflection::getInterfaces()` (transitive), so methods from interfaces inherited through a parent class are also covered. Enums are skipped (different interface semantics). Multi-class files are fully covered.
+- **Justification:** Half-implemented interfaces are a sign the interface is too broad and should be split. Detecting transitive interface inheritance closes a real gap on classes that gain their contract via `extends` rather than direct `implements`.
 
 ### 🔧 Rule Summary
 
 | Property     | Value                      |
 |--------------|----------------------------|
 | Rule Name    | `EnforceImplementationRule`|
-| Scope        | Method-level               |
-| Condition    | Interface methods must not throw \Exception or return dummy values |
+| Identifier   | `solid.isp.enforceImplementation` |
+| Scope        | Method-level. Walks every classlike (Class_, Trait_) in the file. Enums skipped. |
+| Flagged      | Empty body, single throw expression, single return of `null` / `false` / `0` / `0.0` / `''` / `[]`. |
+| Interface set | `ClassReflection::getInterfaces()` — direct, parent-class-inherited, and via interface extension. |

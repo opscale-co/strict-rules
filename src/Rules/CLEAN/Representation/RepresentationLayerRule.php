@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\CLEAN\Representation;
 
 use Opscale\Rules\CLEAN\CleanRule;
@@ -20,6 +22,7 @@ class RepresentationLayerRule extends CleanRule
             1, // Representation layer
             [ // Allowed framework imports
                 'Illuminate\\Database\\',
+                'Illuminate\\Support\\Carbon',
             ],
             [ // Allowed facades
                 'DB',

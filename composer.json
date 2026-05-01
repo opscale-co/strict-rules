@@ -23,7 +23,18 @@
     "psr-4": {
       "Opscale\\": "tests/fixtures",
       "Opscale\\Tests\\": "tests"
-    }
+    },
+    "classmap": [
+      "tests/fixtures/Classes/MultiClassWithHelpers.php",
+      "tests/fixtures/Domain/MultiClassFile.php",
+      "tests/fixtures/Jobs/MultiClassDummyCatch.php",
+      "tests/fixtures/Models/MultiClassConditionalOverride.php",
+      "tests/fixtures/Models/MultiClassFatClasses.php",
+      "tests/fixtures/Models/MultiClassParentCall.php",
+      "tests/fixtures/Models/MultiModelWithMutator.php",
+      "tests/fixtures/Models/ValueObjects/MultiVOFile.php",
+      "tests/fixtures/Services/MultiInstantiationServices.php"
+    ]
   },
   "extra": {
     "phpstan": {
@@ -38,13 +49,21 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require-dev": {
+    "driftingly/rector-laravel": "^2.0",
     "laravel/laravel": "^11",
-    "phpunit/phpunit": "^11.5",
-    "phpstan/phpstan-phpunit": "^2.0",
-    "lorisleiva/laravel-actions": "^2.9",
     "laravel/nova": "^5.7",
-    "tightenco/duster": "^3.2",
+    "lorisleiva/laravel-actions": "^2.9",
+    "opscale-co/validations": "^1.0",
+    "pestphp/pest": "^3.8",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.0",
-    "driftingly/rector-laravel": "^2.0"
+    "tightenco/duster": "^3.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

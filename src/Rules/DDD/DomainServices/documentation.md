@@ -58,12 +58,13 @@ Domain Services should own this complexity to ensure separation of concerns.
 
 ### 📌 `ComplexLogicRule`
 
-- **Purpose:** Enforce that complex domain logic spanning multiple models lives only inside domain services (typically your `App\Services`).
-- **Description:** Allows multiple Eloquent model references only inside classes recognized as services.
-- **Justification:** Keeps orchestration logic out of models and helpers, centralizing it in dedicated services.
+- **Purpose:** Enforce that orchestration logic touching more than two domain entities lives only inside `\Services\*` (typically an Opscale Action under `\Services\Actions\*`).
+- **Description:** Counts **distinct Eloquent models operated upon** by a class — `StaticCall` on a Model class, `new Model(...)`, and `->save()` on a parameter typed as a Model. Mere references (`Model::class`, type hints, return types, `instanceof`) are not operations and are not counted. Classes under `\Services\*` are exempt.
+- **Justification:** Keeps cross-entity coordination centralized in Services where transactionality, business invariants and tenant scoping are enforced. References-only patterns (Form Requests, Nova Resources, DTOs) are not orchestration and stay outside the rule's signal.
 
 | Property     | Value               |
 |--------------|---------------------|
 | Rule Name    | `ComplexLogicRule`  |
-| Scope        | Class-level         |
-| Condition    | Multiple model dependencies allowed only in `*Service` classes |
+| Identifier   | `ddd.domainServices.complexLogic` |
+| Scope        | Class-level. Applies to every class whose namespace is **not** under `\Services\*`. Enums are skipped. |
+| Condition    | The class MUST NOT operate on more than 2 distinct Eloquent models. Operations counted: `StaticCall` on a Model, `new Model(...)`, and `->save()` on a parameter typed as a Model. Operations on `Builder` (e.g. `$query->where(...)` inside a Nova `indexQuery`) do not count — `Builder` is not a Model. |

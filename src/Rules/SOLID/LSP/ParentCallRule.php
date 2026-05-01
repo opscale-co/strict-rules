@@ -1,118 +1,109 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\SOLID\LSP;
 
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that verifies instance methods that override parent methods should call parent::
- * ensuring the extended behavior is compatible with the base class
- * Static methods and methods implementing abstract parent methods are excluded from this rule
+ * Rule that flags instance methods which override a concrete parent
+ * method without calling `parent::`. The Liskov Substitution Principle
+ * requires subclass behaviour to remain compatible with the base
+ * class; calling `parent::` preserves the contract unless the override
+ * is intentionally a complete replacement.
+ *
+ * Skipped:
+ *  - static methods (LSP applies to instance polymorphism)
+ *  - methods that implement abstract parent methods (no body to call)
+ *  - methods that override private parent methods (private isn't inherited)
+ *  - methods with a `parent::*` call anywhere in their body
+ *
+ * Walks every classlike (Class_, Trait_, Enum_) in the file so
+ * multi-class layouts are fully covered.
  */
 class ParentCallRule extends BaseRule
 {
     protected function validate(Node $node): array
     {
-        assert($node instanceof \PHPStan\Node\FileNode);
+        assert($node instanceof FileNode);
         $errors = [];
-        $rootNode = $this->getRootNode($node);
-        if ($rootNode === null) {
-            return [];
-        }
 
-        $methods = $this->getMethodNodes($rootNode);
-        $classReflection = $this->getClassReflection($node);
-
-        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
-            return $errors;
-        }
-
-        foreach ($methods as $method) {
-            // Skip static methods - rule only applies to instance methods
-            if ($method->isStatic()) {
+        foreach ($this->getClassLikeNodes($node) as $classNode) {
+            if (! $classNode->namespacedName instanceof Name) {
                 continue;
             }
 
-            if (! $this->isOverridingParentMethod($method, $classReflection)) {
+            $fqcn = $classNode->namespacedName->toString();
+            if (! $this->reflectionProvider->hasClass($fqcn)) {
                 continue;
             }
 
-            if ($this->hasParentCall($method)) {
+            $reflection = $this->reflectionProvider->getClass($fqcn);
+            if ($reflection->getParentClass() === null) {
                 continue;
             }
 
-            $error = sprintf(
-                'Method "%s::%s()" overrides a parent method but does not call parent::. ' .
-                'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                $rootNode->namespacedName?->toString() ?? 'Unknown',
-                $method->name->toString()
-            );
+            foreach ($this->getMethodNodes($classNode) as $method) {
+                if ($method->isStatic()) {
+                    continue;
+                }
 
-            $errors[] = RuleErrorBuilder::message($error)
-                ->line($method->getLine())
-                ->identifier('solid.lsp.parentCall')
-                ->build();
+                if (! $this->isOverridingParentMethod($method, $reflection)) {
+                    continue;
+                }
+
+                if ($this->hasParentCall($method)) {
+                    continue;
+                }
+
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'Method "%s::%s()" overrides a parent method but does not call parent::. '.
+                    'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
+                    $fqcn,
+                    $method->name->toString()
+                ))
+                    ->line($method->getLine())
+                    ->identifier('solid.lsp.parentCall')
+                    ->build();
+            }
         }
 
         return $errors;
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
-    {
-        if (parent::shouldProcess($node, $scope) === false) {
-            return false;
-        }
-
-        assert($node instanceof \PHPStan\Node\FileNode);
-        $parent = $this->getParentNode($node);
-
-        return $parent != null;
-    }
-
-    /**
-     * Check if the method exists in the parent class with the same signature
-     */
     private function isOverridingParentMethod(ClassMethod $classMethod, ClassReflection $classReflection): bool
     {
         $parentClass = $classReflection->getParentClass();
-        if (! $parentClass instanceof \PHPStan\Reflection\ClassReflection) {
+        if ($parentClass === null) {
             return false;
         }
 
         $methodName = $classMethod->name->toString();
-
-        // Check if the parent class has a method with the same name
         if (! $parentClass->hasNativeMethod($methodName)) {
             return false;
         }
 
-        // Get the parent method to compare signatures
-        $extendedMethodReflection = $parentClass->getNativeMethod($methodName);
-
-        // Check if it's not private (private methods can't be overridden)
-        if ($extendedMethodReflection->isPrivate()) {
+        $parentMethod = $parentClass->getNativeMethod($methodName);
+        if ($parentMethod->isPrivate()) {
             return false;
         }
 
-        // Skip abstract methods - they don't need parent:: calls
-        if ($extendedMethodReflection->isAbstract()) {
-            return false;
-        }
-
-        // If we got here, the method exists in parent and can be overridden
-        return true;
+        return ! $parentMethod->isAbstract();
     }
 
-    /**
-     * Check if method contains a parent:: call
-     */
     private function hasParentCall(ClassMethod $classMethod): bool
     {
         if ($classMethod->stmts === null) {
@@ -120,15 +111,36 @@ class ParentCallRule extends BaseRule
         }
 
         $nodeFinder = new NodeFinder;
-        $parentCalls = $nodeFinder->findInstanceOf($classMethod->stmts, StaticCall::class);
+        $staticCalls = $nodeFinder->findInstanceOf($classMethod->stmts, StaticCall::class);
 
-        foreach ($parentCalls as $parentCall) {
-            if ($parentCall->class instanceof Node\Name &&
-                $parentCall->class->toString() === 'parent') {
+        foreach ($staticCalls as $staticCall) {
+            if ($staticCall->class instanceof Name && $staticCall->class->toString() === 'parent') {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @return list<Class_|Trait_|Enum_>
+     */
+    private function getClassLikeNodes(FileNode $fileNode): array
+    {
+        $nodes = [];
+        foreach ($fileNode->getNodes() as $stmt) {
+            if (! $stmt instanceof Namespace_) {
+                continue;
+            }
+            foreach ($stmt->stmts as $inner) {
+                if ($inner instanceof Class_ ||
+                    $inner instanceof Trait_ ||
+                    $inner instanceof Enum_) {
+                    $nodes[] = $inner;
+                }
+            }
+        }
+
+        return $nodes;
     }
 }

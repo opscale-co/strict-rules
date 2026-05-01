@@ -74,14 +74,16 @@ This indicates a broken contract between base and child.
 
 ### 📌 `ParentCallRule`
 
-- **Purpose:** Enforce that overridden methods preserve base behavior.
-- **Description:** Any method annotated with `#[\Override]` or `@overridable` must call `parent::method()`.
-- **Justification:** Ensures the subclass respects the base contract and maintains substitutability.
+- **Purpose:** Enforce that overridden instance methods preserve base behaviour by calling `parent::method()`.
+- **Description:** For every classlike (`Class_` / `Trait_` / `Enum_`) declared in the file, walks each non-static instance method that overrides a concrete parent method (resolved via `ClassReflection::getParentClass()` and `getNativeMethod()`). If the method does not contain a `parent::*` call anywhere in its body (recursively, including inside `try`/`catch`, conditionals, and bound closures), the rule emits an error. Static methods, methods that implement abstract parent methods, and methods that override private parent methods are skipped. Multi-class files are fully covered.
+- **Justification:** PHP's default polymorphism allows a subclass override to silently replace base behaviour. Calling `parent::` preserves the substitutability contract. Walking every classlike catches the multi-class file edge case.
 
 ### 🔧 Rule Summary
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `ParentCallRule`   |
-| Scope        | Method-level       |
-| Condition    | Methods with `#[\Override]` or `@overridable` must include `parent::` call |
+| Identifier   | `solid.lsp.parentCall` |
+| Scope        | Per non-static instance method, in every classlike declared in the file. |
+| Skipped      | Static methods, abstract-parent implementations, private-parent overrides. |
+| Condition    | If a method overrides a concrete parent method, it MUST contain a `parent::*` call somewhere in its body. |

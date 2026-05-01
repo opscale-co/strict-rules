@@ -71,10 +71,11 @@ Here, both models define relationships, fields, and custom value objects. There'
 
 | Type      | Allowed Namespaces                                      |
 |-----------|----------------------------------------------------------|
-| Framework | `Illuminate\Database\Eloquent`, `Illuminate\Support`     |
-| Project   | `App\Models\ValueObjects`, `App\Models\Enums`          |
+| Project   | Any class under `\Models\` (including `\Models\ValueObjects`, `\Models\Enums`, `\Models\Repositories` traits). The root namespace is package-agnostic — `Opscale\Models\Foo`, `App\Models\Foo`, and `Vendor\Package\Models\Foo` all detect as layer 1. |
+| Framework | `Illuminate\Database\` (entire Eloquent / migration / query-builder tree), `Illuminate\Support\Carbon` (date typing only — no other Support helpers, no Support facades). |
+| External  | `Carbon\` (the carbon package), `Spatie\` |
 | Facades   | `DB`, `Hash`, `Schema`                                  |
-| Custom    | `App\Models\Repositories` (Traits only)                 |
+| Override  | When the file's class is an Eloquent Model, ANY trait import or Eloquent-Model class import is auto-allowed regardless of namespace. This covers `Authenticatable`, `Notifiable`, `HasFactory`, `HasUlids`, package traits, etc. |
 
 Imports from Communication, Transformation, Orchestration, or Interaction layers are **not allowed**.
 

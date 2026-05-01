@@ -62,11 +62,12 @@ This makes them hard to reason about, test, or refactor cleanly.
 ### 📌 `NoStatementsLogicRule`
 
 - **Purpose:** Keep domain models focused and declarative.
-- **Description:** Flags loop constructs (`if`, `switch`, `foreach`, `for`, `while`) and complex logic structures inside domain classes.
-- **Justification:** Prevents bloated domain logic and encourages delegation to strategy or service layers.
+- **Description:** Flags imperative control-flow nodes inside the bodies of an Eloquent model's methods. Recognised statements: `if`, `switch`, `match`, `foreach`, `for`, `while`, `do-while`. The body of any `Closure` or `ArrowFunction` is **not** inspected — control flow inside a closure is encapsulated and is part of the closure's scope, not the model's.
+- **Justification:** Prevents bloated domain logic and encourages delegation to Actions or Domain Services. Closures used as Laravel callbacks (`Attribute::make(get: function (...) { ... })`) remain a valid declarative idiom.
 
 | Property     | Value                  |
 |--------------|------------------------|
 | Rule Name    | `NoStatementsLogicRule`|
-| Scope        | Method-level           |
-| Condition    | Disallow loops and excessive control structures in domain models |
+| Identifier   | `ddd.domain.noStatementsLogic` |
+| Scope        | Method-level (excluding `__construct` and the bodies of `Closure` / `ArrowFunction`) |
+| Condition    | Disallow `if`, `switch`, `match`, `foreach`, `for`, `while`, and `do-while` in domain model methods. Closures and arrow functions are skipped — their bodies belong to the callback, not to the model. |

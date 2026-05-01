@@ -53,9 +53,10 @@ This service encapsulates a business rule: discounts cannot exceed 20%. It proce
 
 | Type      | Allowed Namespaces                                                     |
 |-----------|------------------------------------------------------------------------|
-| Project   | `App\Services\`, `App\Exceptions\`, `App\Contracts\`, `App\Models\` |
-| Framework | `Illuminate\Http\Client`, `Lorisleiva\`                             |
-| Facades   | `App`, `Cache`, `Config`, `Crypt`, `Exceptions`, `File`, `Http`, `Storage` |
+| Project   | Any class under `\Services\`, `\Exceptions\`, `\Contracts\`, or any class in lower layers (`\Models\`, `\Observers\`). The root namespace is package-agnostic — `Opscale\Services\Foo`, `App\Services\Foo`, `Vendor\Package\Services\Foo` all detect as layer 3. |
+| Framework | `Illuminate\Contracts\`, `Illuminate\Foundation\`, `Illuminate\Http\Client\`, `Illuminate\Support\Arr`, `Illuminate\Support\Collection`, `Illuminate\Support\Number`, `Illuminate\Support\Str` (covers `Stringable` too), `Symfony\Component\` |
+| External  | `Carbon\`, `Lorisleiva\`, `Ramsey\Uuid\`, `Spatie\` |
+| Facades   | `App`, `Cache`, `Config`, `Crypt`, `Exceptions`, `File`, `Http`, `Log`, `Storage` |
 
 The Transformation layer can depend on **Representation** and **Communication** layers, but not on Jobs, Controllers, or Nova components.
 

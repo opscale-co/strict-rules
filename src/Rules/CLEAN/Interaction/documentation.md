@@ -54,9 +54,10 @@ Here, the controller simply captures input and forwards the flow to the `Checkou
 
 | Type      | Allowed Namespaces                                                                                   |
 |-----------|--------------------------------------------------------------------------------------------------------|
-| Project   | `App\Http\`, `App\Console\`, `App\Nova\`, `App\Policies\`, `App\Models\`, `App\Services\` |
-| Framework | `Illuminate\Routing`, `Illuminate\Console`, `Symfony\Component\Console`, `Illuminate\Http`, `Laravel\Nova`, `Laravel\Sanctum`, `Laravel\Passport`, `Livewire`, `Inertia` |
-| Facades   | `Artisan`, `Auth`, `Blade`, `Context`, `Cookie`, `Gate`, `Lang`, `Password`, `Process`, `RateLimiter`, `Redirect`, `Request`, `Response`, `Route`, `Session`, `URL`, `Validator`, `View`, `Vite` |
+| Project   | `App\Http\`, `App\Console\`, `App\Nova\`, `App\Policies\`, plus any class in lower layers (`App\Models\`, `App\Observers\`, `App\Services\`, `App\Exceptions\`, `App\Contracts\`, `App\Jobs\`, `App\Notifications\`) |
+| Framework | `Illuminate\Console\`, `Illuminate\Http\`, `Illuminate\Routing\`, `Illuminate\Foundation\`, `Illuminate\Validation\`, `Symfony\Component\HttpFoundation\` |
+| External  | `Inertia\`, `Laravel\Nova\`, `Laravel\Sanctum\`, `Mcp\`, `PhpMcp\` |
+| Facades   | `Artisan`, `Auth`, `Blade`, `Context`, `Cookie`, `Gate`, `Lang`, `Log`, `Password`, `Process`, `RateLimiter`, `Redirect`, `Request`, `Response`, `Route`, `Session`, `URL`, `Validator`, `View`, `Vite` |
 
 This layer may use any lower layers (including orchestration and transformation) but **must not implement logic** directly.
 

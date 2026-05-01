@@ -43,15 +43,21 @@ This ensures that:
 - Items are only persisted in valid order contexts
 - Business rules (e.g., total validation) are enforced
 
-To support this boundary, we also require a `validate()` method in the Aggregate Root:
+To support this boundary, we require the Aggregate Root to declare its validation rules through the `Validatable` trait from the [`opscale-co/validations`](https://github.com/opscale-co/validations) package:
 
 ```php
-public function validate(string $key): array {
-    return [
-        'items' => ['required', 'gt:1']
-    ];
+use Opscale\Validations\Validatable;
+
+class Order extends Model {
+    use Validatable;
+
+    // Validatable provides the validation contract for the
+    // aggregate root: declare rules() and validation runs
+    // before persistence.
 }
 ```
+
+The rule is satisfied if `Validatable` is declared on the class itself **or on any ancestor** in its inheritance chain — so a base `AbstractAggregateRoot extends Model { use Validatable; }` covers every concrete subclass without requiring each one to redeclare the trait.
 
 ---
 
@@ -68,25 +74,27 @@ This bypasses the rules and leads to inconsistent domain states.
 ### 📌 `ModelValidationRule`
 
 - **Purpose:** Ensure all Eloquent models used as Aggregate Roots define a validation mechanism.
-- **Description:** Flags Eloquent models that do not implement a `validate(): void` method.
-- **Justification:** Validates business invariants before persisting changes.
+- **Description:** Flags Eloquent models that do not use the `Validatable` trait from the `opscale-co/validations` package, taking the inheritance chain into account.
+- **Justification:** Validates business invariants before persisting changes using a standardized validation contract owned by Opscale.
 
 | Property     | Value               |
 |--------------|---------------------|
 | Rule Name    | `ModelValidationRule`|
-| Scope        | Class-level         |
-| Condition    | Must define `public function validate(): void` |
+| Identifier   | `ddd.aggregates.modelValidation` |
+| Scope        | Class-level (walks the inheritance chain) |
+| Condition    | The class itself or any ancestor MUST use `Opscale\Validations\Validatable` from [`opscale-co/validations`](https://github.com/opscale-co/validations). The match is by FQCN — a homonymous trait in another namespace does not satisfy the rule. |
 
 ---
 
 ### 📌 `ParentChildTransactionRule`
 
 - **Purpose:** Enforce that child entities are not saved directly.
-- **Description:** Flags usage of `save()` or `create()` on child models that have a `belongsTo` relationship.
+- **Description:** Flags `save()` calls in `\Models\Repositories` or `\Services` on Eloquent models whose own class — or any ancestor in their inheritance chain — declares a method with a `BelongsTo` (or `MorphTo`) return type. Such entities must be persisted through their aggregate root.
 - **Justification:** Child entities must be persisted through their parent aggregate to preserve domain consistency.
 
 | Property     | Value                     |
 |--------------|---------------------------|
 | Rule Name    | `ParentChildTransactionRule` |
-| Scope        | Method-level              |
-| Condition    | Disallow save/create on child with `belongsTo()` relationship |
+| Identifier   | `ddd.aggregates.parentChildTransaction` |
+| Scope        | Method-level inside `\Models\Repositories` and `\Services` |
+| Condition    | Disallow `save()` on a parameter whose declared type (or any ancestor) declares a method returning `BelongsTo` or `MorphTo`. Recognition is **return-type only** — the textual presence of a `belongsTo()` call inside a method body is **not** a relationship signal, so domain helpers that use `belongsTo` as a verb are no longer mis-flagged. |

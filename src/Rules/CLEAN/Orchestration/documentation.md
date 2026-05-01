@@ -50,9 +50,9 @@ This job coordinates notification after an order is confirmed. The logic of "wha
 
 | Type      | Allowed Namespaces                                                                         |
 |-----------|----------------------------------------------------------------------------------------------|
-| Project   | `App\Jobs\`, `App\Listeners\`, `App\Notifications\`, `App\Models\`, `App\Events\` |
-| Framework | `Illuminate\Bus`, `Illuminate\Contracts`, `Illuminate\Foundation\Bus`, `Illuminate\Notifications`, `Illuminate\Queue` |
-| Facades   | `Bus`, `Concurrency`, `Mail`, `Notification`, `Pipeline`, `Queue`, `Redis`, `Schedule`      |
+| Project   | Any class under `\Jobs\` or `\Notifications\`, or any class in lower layers (`\Models\`, `\Observers\`, `\Services\`, `\Exceptions\`, `\Contracts\`). The root namespace is package-agnostic — `Opscale\Jobs\Foo`, `App\Jobs\Foo`, and `Vendor\Package\Jobs\Foo` all detect as layer 4. |
+| Framework | `Illuminate\Bus\`, `Illuminate\Contracts\Queue\`, `Illuminate\Database\Eloquent\` (for Model type hints), `Illuminate\Foundation\Bus\`, `Illuminate\Mail\`, `Illuminate\Notifications\`, `Illuminate\Queue\` |
+| Facades   | `Bus`, `Concurrency`, `Log`, `Mail`, `Notification`, `Pipeline`, `Queue`, `Redis`, `Schedule` |
 
 This layer can use **Transformation**, **Communication**, and **Representation** layers, but must avoid directly interacting with Controllers or UI.
 

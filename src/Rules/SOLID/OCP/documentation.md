@@ -85,16 +85,18 @@ This makes the override **intentional and explicit**, and ensures the structure 
 
 ## 🧪 AST Rules
 
-### 📌 `FinalMethodRule`
+### 📌 `ConditionalOverrideRule`
 
 - **Purpose:** Protect core logic by making methods non-overridable unless explicitly marked.
-- **Description:** Ensures all public and protected methods are declared `final`, unless annotated with `#[\Override]` or `@overridable`.
-- **Justification:** In PHP, methods are virtual by default. This rule reduces the risk of unintended polymorphism and enforces deliberate extension points.
+- **Description:** For every classlike (`Class_`, `Trait_`, `Enum_`) declared in the file, walks each public/protected method and flags those that are neither `final`, nor `abstract`, nor annotated with `#[\Override]`. Magic methods (any method whose name starts with `__`) are skipped — they are conventionally not marked `final` because subclasses commonly call `parent::__construct()` and similar. Multi-class files are fully covered.
+- **Justification:** In PHP, methods are virtual by default. This rule reduces the risk of unintended polymorphism and forces deliberate extension points. Skipping magic methods preserves PHP idiom; walking every class catches multi-class file leaks.
 
 ### 🔧 Rule Summary
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `ConditionalOverrideRule`  |
-| Scope        | Method-level       |
-| Condition    | Must be `final` unless explicitly marked `@overridable` or `#[\Override]` |
+| Identifier   | `solid.ocp.conditionalOverride` |
+| Scope        | Method-level. Walks every classlike (`Class_` / `Trait_` / `Enum_`) declared in the file. |
+| Flagged      | Public or protected method that is NOT `final`, NOT `abstract`, NOT `__`-prefixed, and NOT annotated with `#[\Override]`. |
+| Skipped      | Private methods, abstract methods, final methods, magic methods (`__`-prefixed), methods with `#[\Override]`. |

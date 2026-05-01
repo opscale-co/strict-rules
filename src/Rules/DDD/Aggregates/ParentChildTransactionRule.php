@@ -1,22 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\DDD\Aggregates;
 
-use Illuminate\Database\Eloquent\Model;
 use Opscale\Rules\DDD\DomainRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that prevents direct saving of child models that have parent relationships (belongsTo)
- * Child models should only be saved through their parent (Aggregate root)
+ * Rule that prevents direct save() calls on child entities — Eloquent models
+ * whose own class or any ancestor declares a method with a BelongsTo (or
+ * MorphTo) return type. Such entities must be persisted through their
+ * aggregate root.
+ *
+ * Detection is return-type-only: the textual presence of a belongsTo() call
+ * inside a method body is NOT a signal of a relationship — modern Laravel
+ * idiom declares relations with a typed return.
  */
 class ParentChildTransactionRule extends DomainRule
 {
+    /**
+     * Return-type names recognised as a parent relationship.
+     */
+    private const PARENT_RELATION_TYPES = [
+        'BelongsTo',
+        'Illuminate\\Database\\Eloquent\\Relations\\BelongsTo',
+        'MorphTo',
+        'Illuminate\\Database\\Eloquent\\Relations\\MorphTo',
+    ];
+
     protected function shouldProcess(Node $node, Scope $scope): bool
     {
         if (parent::shouldProcess($node, $scope) === false) {
@@ -30,7 +49,6 @@ class ParentChildTransactionRule extends DomainRule
         }
 
         return true;
-
     }
 
     protected function validate(Node $node): array
@@ -48,7 +66,6 @@ class ParentChildTransactionRule extends DomainRule
         foreach ($methods as $method) {
             $calls = $nodeFinder->findInstanceOf($method->stmts ?? [], Node\Expr::class);
             foreach ($calls as $call) {
-                // Check if we're making an Eloquent query builder call
                 if (! ($call instanceof MethodCall)) {
                     continue;
                 }
@@ -61,30 +78,28 @@ class ParentChildTransactionRule extends DomainRule
                     continue;
                 }
 
-                // Get the type of the object from the method parameters
-                $callerType = null;
-                if (isset($call->var) && (property_exists($call->var, 'name') && $call->var->name !== null)) {
-                    foreach ($method->params as $param) {
-                        if (isset($param->var->name) && $param->var->name === $call->var->name && $param->type) {
-                            $callerType = $param->type->toString();
-                            break;
-                        }
-                    }
+                $callerType = $this->resolveCallerTypeFromParams($method, $call);
+                if ($callerType === null) {
+                    continue;
                 }
 
-                // Check if the caller is an Eloquent model
-                // Now check if this model has belongsTo relationships
-                if ($this->isEloquentModel($callerType) && $this->modelHasParent($callerType)) {
-                    $error = sprintf(
-                        'Direct save() on model "%s" is not allowed. ' .
-                        'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
-                        $callerType
-                    );
-                    $errors[] = RuleErrorBuilder::message($error)
-                        ->line($call->getLine())
-                        ->identifier('ddd.aggregates.parentChildTransaction')
-                        ->build();
+                if (! $this->isEloquentModel($callerType)) {
+                    continue;
                 }
+
+                if (! $this->modelHasParentInChain($callerType)) {
+                    continue;
+                }
+
+                $error = sprintf(
+                    'Direct save() on model "%s" is not allowed. '.
+                    'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
+                    $callerType
+                );
+                $errors[] = RuleErrorBuilder::message($error)
+                    ->line($call->getLine())
+                    ->identifier('ddd.aggregates.parentChildTransaction')
+                    ->build();
             }
         }
 
@@ -92,51 +107,80 @@ class ParentChildTransactionRule extends DomainRule
     }
 
     /**
-     * Check if a specific model class has belongsTo relationships by analyzing its source code
+     * Resolve the static type of the variable that the save() call is made on,
+     * by matching it against the enclosing method's parameter type hints.
      */
-    private function modelHasParent(string $className): bool
+    private function resolveCallerTypeFromParams(ClassMethod $method, MethodCall $call): ?string
     {
-        $classNode = $this->getASTForClass($className);
-        if (! $classNode instanceof \PhpParser\Node\Stmt\Class_) {
-            return false;
+        if (! isset($call->var) ||
+            ! property_exists($call->var, 'name') ||
+            $call->var->name === null) {
+            return null;
         }
 
-        $methods = $this->getMethodNodes($classNode);
-        foreach ($methods as $method) {
-            if ($this->isBelongsToMethod($method)) {
-                return true; // Found a belongsTo method
+        foreach ($method->params as $param) {
+            if (isset($param->var->name) &&
+                $param->var->name === $call->var->name &&
+                $param->type) {
+                return $param->type->toString();
             }
         }
 
-        return false; // No belongsTo methods found
+        return null;
     }
 
     /**
-     * Check if a method returns BelongsTo relationship by analyzing its AST
+     * Walk the class itself and every ancestor; return true on the first
+     * method whose return type names a parent relation (BelongsTo / MorphTo).
      */
-    private function isBelongsToMethod(ClassMethod $classMethod): bool
+    private function modelHasParentInChain(string $className): bool
     {
-        // Check return type annotation
-        if ($classMethod->returnType instanceof \PhpParser\Node) {
-            $returnTypeName = $classMethod->returnType->toString();
-            if ($returnTypeName === 'BelongsTo' ||
-                $returnTypeName === \Illuminate\Database\Eloquent\Relations\BelongsTo::class) {
+        if (! $this->reflectionProvider->hasClass($className)) {
+            return false;
+        }
+
+        $reflection = $this->reflectionProvider->getClass($className);
+        $chain = array_merge([$reflection], $reflection->getParents());
+
+        foreach ($chain as $current) {
+            if ($this->classDeclaresParentRelation($current)) {
                 return true;
             }
         }
 
-        // Check method body for belongsTo() calls
-        if ($classMethod->stmts) {
-            $nodeFinder = new NodeFinder;
-            $methodCalls = $nodeFinder->findInstanceOf($classMethod->stmts, MethodCall::class);
-            foreach ($methodCalls as $methodCall) {
-                if ($methodCall->name instanceof Node\Identifier &&
-                    $methodCall->name->toString() === 'belongsTo') {
-                    return true; // Found a belongsTo call
-                }
+        return false;
+    }
+
+    /**
+     * Inspect a single class (no inheritance) for a method with a parent-
+     * relation return type.
+     */
+    private function classDeclaresParentRelation(ClassReflection $reflection): bool
+    {
+        $classNode = $this->getASTForClass($reflection->getName());
+        if (! $classNode instanceof Class_) {
+            return false;
+        }
+
+        foreach ($this->getMethodNodes($classNode) as $method) {
+            if ($this->isParentRelationReturn($method)) {
+                return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * A method declares a parent relationship iff its return type is one of
+     * the recognised parent-relation names.
+     */
+    private function isParentRelationReturn(ClassMethod $classMethod): bool
+    {
+        if (! $classMethod->returnType instanceof Node) {
+            return false;
+        }
+
+        return in_array($classMethod->returnType->toString(), self::PARENT_RELATION_TYPES, true);
     }
 }

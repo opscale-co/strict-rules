@@ -206,26 +206,28 @@ This mixes responsibilities and makes logic harder to track and reuse.
 
 ### 📌 `EnforceCastRule`
 
-- **Purpose:** Ensure all value object classes implement the `CastsAttributes` interface.
-- **Description:** Flags any class in `App\Models\ValueObjects` that does not implement `CastsAttributes`.
-- **Justification:** Encourages the use of cast-based value objects to isolate transformation logic.
+- **Purpose:** Ensure every concrete Value Object class implements the `CastsAttributes` interface, directly or transitively.
+- **Description:** Walks every `Class_` declared in any file whose namespace is under `\Models\ValueObjects\*`. For each concrete class (non-abstract), the rule asks `ClassReflection::getInterfaces()` whether `Illuminate\Contracts\Database\Eloquent\CastsAttributes` is implemented — directly, via a parent class, or via interface extension. If not, the class is flagged. Abstract base classes are skipped because they are infrastructure for VOs, not VOs themselves; the concrete subclass is what must satisfy the contract. Multi-class files are fully covered.
+- **Justification:** Cast-based Value Objects keep serialisation logic centralised and let Laravel handle persistence through a single contract. Recognising transitive contract implementation supports the common pattern of sharing VO behaviour through an `AbstractCastableValueObject` base class.
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `EnforceCastRule`  |
-| Scope        | Class-level        |
-| Condition    | Must implement `CastsAttributes` if under `App\Models\ValueObjects` |
+| Identifier   | `ddd.valueObjects.enforceCast` |
+| Scope        | Class-level. Walks every `Class_` in files under `\Models\ValueObjects\*`. |
+| Condition    | The class itself, any ancestor class, or any inherited interface MUST implement `Illuminate\Contracts\Database\Eloquent\CastsAttributes`. Abstract classes are skipped. Interfaces, traits, enums and anonymous classes never apply. |
 
 ---
 
 ### 📌 `NoAccesorMutatorRule`
 
-- **Purpose:** Prevent the use of accessors and mutators inside value object classes.
-- **Description:** Flags any value object class that defines methods with `get...Attribute` or `set...Attribute`.
-- **Justification:** Keeps all transformation logic in cast methods to promote immutability and consistency.
+- **Purpose:** Push custom attribute logic out of Eloquent Models and into Value Object casts.
+- **Description:** For every Eloquent Model under `\Models\*`, flags methods that match the canonical mutator/accessor patterns or the Laravel 9+ `Attribute` pattern. The detection is shape-based: `^set[A-Z]\w*Attribute$` for mutators, `^get[A-Z]\w*Attribute$` for accessors, and exact-FQCN match against `Illuminate\Database\Eloquent\Casts\Attribute` for the Laravel 9+ pattern. Eloquent's own framework method overrides (`getAttribute($key)`, `setAttribute($key, $value)`) do not match these regexes — they are not custom mutators on a specific attribute name and are correctly left alone. The rule walks every Class_ in the file (multi-class supported) and skips non-Eloquent classes.
+- **Justification:** Custom attribute transformations belong in a Value Object cast (a class implementing `CastsAttributes`) so they remain reusable, testable, and explicitly typed. Keeping them off the Model preserves the Model as a declarative description of the entity.
 
 | Property     | Value                  |
 |--------------|------------------------|
 | Rule Name    | `NoAccesorMutatorRule` |
-| Scope        | Method-level           |
-| Condition    | Disallow `get*/set*Attribute` methods in Model classes |
+| Identifier   | `ddd.valueObjects.noAccesorMutator` |
+| Scope        | Method-level inside every Eloquent Model under `\Models\*`. Walks every `Class_` declared in the file. |
+| Condition    | A method MUST NOT match `^set[A-Z]\w*Attribute$`, MUST NOT match `^get[A-Z]\w*Attribute$`, AND MUST NOT have a return type or top-level `::make(...)` whose class resolves to `Illuminate\Database\Eloquent\Casts\Attribute`. |

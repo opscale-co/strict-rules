@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -26,7 +28,7 @@ class ConfigurationValidationTest extends TestCase
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_exists(string $filename): void
     {
-        $filePath = __DIR__ . '/../../' . $filename;
+        $filePath = __DIR__.'/../../'.$filename;
 
         $this->assertFileExists($filePath, sprintf('Configuration file %s should exist', $filename));
     }
@@ -36,10 +38,10 @@ class ConfigurationValidationTest extends TestCase
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_has_valid_syntax(string $filename): void
     {
-        $filePath = __DIR__ . '/../../' . $filename;
+        $filePath = __DIR__.'/../../'.$filename;
         $content = file_get_contents($filePath);
 
-        $this->assertNotFalse($content, 'Could not read ' . $filename);
+        $this->assertNotFalse($content, 'Could not read '.$filename);
         $this->assertNotEmpty($content, sprintf('Configuration file %s should not be empty', $filename));
 
         // Parse NEON content using simple regex validation for basic structure
@@ -53,7 +55,7 @@ class ConfigurationValidationTest extends TestCase
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_file_has_services_section(string $filename): void
     {
-        $filePath = __DIR__ . '/../../' . $filename;
+        $filePath = __DIR__.'/../../'.$filename;
         $content = file_get_contents($filePath);
 
         // Simple validation for services section structure
@@ -69,7 +71,7 @@ class ConfigurationValidationTest extends TestCase
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_services_have_required_structure(string $filename): void
     {
-        $filePath = __DIR__ . '/../../' . $filename;
+        $filePath = __DIR__.'/../../'.$filename;
         $content = file_get_contents($filePath);
 
         // Extract class names using regex
@@ -93,7 +95,7 @@ class ConfigurationValidationTest extends TestCase
     #[CoversNothing]
     public function all_neon_files_are_included_in_composer_json(): void
     {
-        $composerPath = __DIR__ . '/../../composer.json';
+        $composerPath = __DIR__.'/../../composer.json';
         $composerContent = json_decode(file_get_contents($composerPath), true);
 
         $this->assertArrayHasKey('extra', $composerContent, "composer.json should have 'extra' section");
@@ -113,7 +115,7 @@ class ConfigurationValidationTest extends TestCase
     #[DataProvider('neonFilesProvider')]
     public function neon_configuration_classes_exist(string $filename): void
     {
-        $filePath = __DIR__ . '/../../' . $filename;
+        $filePath = __DIR__.'/../../'.$filename;
         $content = file_get_contents($filePath);
 
         // Extract class names using regex

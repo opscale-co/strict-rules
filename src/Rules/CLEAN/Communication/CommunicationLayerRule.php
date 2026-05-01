@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\CLEAN\Communication;
 
 use Opscale\Rules\CLEAN\CleanRule;
@@ -18,11 +20,13 @@ class CommunicationLayerRule extends CleanRule
             2, // Communication layer
             [ // Allowed framework imports
                 'Illuminate\\Contracts\\Broadcasting\\',
+                'Illuminate\\Database\\Eloquent\\',
                 'Illuminate\\Events\\',
             ],
             [ // Allowed facades
                 'Broadcast',
                 'Event',
+                'Log',
             ],
             [] // Allowed external imports
         );

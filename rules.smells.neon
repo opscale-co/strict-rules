@@ -1,16 +1,11 @@
 services:
     # Code Smells Rules
-    - 
-        class: Opscale\Rules\Smells\EnforceLogicHandlingRule
-        tags:
-            - phpstan.rules.rule
-            
-    - 
+    -
         class: Opscale\Rules\Smells\NoDummyCatchesRule
         tags:
             - phpstan.rules.rule
-            
-    - 
+
+    -
         class: Opscale\Rules\Smells\HelpersRestrictionRule
         tags:
             - phpstan.rules.rule

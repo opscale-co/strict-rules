@@ -1,145 +1,160 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\DDD\ValueObjects;
 
-use Opscale\Rules\DDD\DomainRule;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\FileNode;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that verifies Value Object classes don't contain Eloquent mutators or accessors
+ * Rule that flags Eloquent Model methods carrying custom attribute
+ * logic (Laravel-style accessors / mutators, or Laravel 9+ Attribute
+ * methods). The constitution requires custom attribute logic to live
+ * in a Value Object cast (a class implementing CastsAttributes), not
+ * inside the Model itself.
+ *
+ * Detection:
+ *   - Mutators:   method name matches `^set[A-Z]\w*Attribute$`.
+ *   - Accessors:  method name matches `^get[A-Z]\w*Attribute$`.
+ *   - Attribute methods: declared return type OR top-level
+ *     `return ::make(...)` resolves to the exact FQCN
+ *     `Illuminate\Database\Eloquent\Casts\Attribute`.
+ *
+ * Walks every Class_ in the file (multi-class supported) and filters
+ * per class so non-Eloquent classes are ignored. Eloquent's own
+ * framework overrides (`getAttribute`, `setAttribute`) do not match
+ * the regex (no capital letter immediately after `set`/`get`) and are
+ * therefore not flagged.
  */
-class NoAccesorMutatorRule extends DomainRule
+class NoAccesorMutatorRule extends BaseRule
 {
+    private const MODELS_NAMESPACE = '\\Models';
+
+    private const MUTATOR_REGEX = '/^set[A-Z]\w*Attribute$/';
+
+    private const ACCESSOR_REGEX = '/^get[A-Z]\w*Attribute$/';
+
+    private const ATTRIBUTE_FQCN = Attribute::class;
+
+    private const ERROR_TEMPLATE = 'Model "%s" is defining "%s" and it should not contain Eloquent '.
+        'mutators or accessors. Custom attribute logic should be defined as a ValueObject.';
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        if (! $node instanceof FileNode) {
+            return false;
+        }
+
+        $namespace = $this->getNamespace($node);
+
+        return $this->isInNamespaces($namespace, [self::MODELS_NAMESPACE]);
+    }
+
     protected function validate(Node $node): array
     {
-        assert($node instanceof \PHPStan\Node\FileNode);
+        assert($node instanceof FileNode);
         $errors = [];
-        $rootNode = $this->getRootNode($node);
-        if ($rootNode === null) {
-            return [];
-        }
 
-        $classReflection = $this->getClassReflection($node);
-        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
-            return [];
-        }
+        foreach ($this->getClassNodes($node) as $classNode) {
+            if (! $classNode->namespacedName instanceof Name) {
+                continue;
+            }
 
-        $methods = $this->getMethodNodes($rootNode);
+            $fqcn = $classNode->namespacedName->toString();
+            if (! $this->isEloquentModelClassName($fqcn)) {
+                continue;
+            }
 
-        foreach ($methods as $method) {
-            if ($this->isEloquentMutator($method) ||
-                $this->isEloquentAccessor($method) ||
-                $this->isAttributeMethod($method)) {
-                $error = sprintf(
-                    'Model "%s" is defining "%s" and it should not contain Eloquent mutators or accessors. ' .
-                    'Custom attribute logic should be defined as a ValueObject.',
-                    $classReflection->getName(),
-                    $method->name->toString()
-                );
-
-                $errors[] = RuleErrorBuilder::message($error)
-                    ->line($method->getLine())
-                    ->identifier('ddd.valueObjects.noAccesorMutator')
-                    ->build();
+            foreach ($this->getMethodNodes($classNode) as $method) {
+                if ($this->isMutator($method) ||
+                    $this->isAccessor($method) ||
+                    $this->isAttributeMethod($method)) {
+                    $errors[] = $this->buildError($fqcn, $method);
+                }
             }
         }
 
         return $errors;
     }
 
-    protected function shouldProcess(Node $node, Scope $scope): bool
+    private function isMutator(ClassMethod $classMethod): bool
     {
-        assert($node instanceof \PHPStan\Node\FileNode);
-        if (parent::shouldProcess($node, $scope) === false ||
-            ! $this->isEloquentModel($node)) {
-            return false;
-        }
-
-        return true;
+        return preg_match(self::MUTATOR_REGEX, $classMethod->name->toString()) === 1;
     }
 
-    /**
-     * Check if a method is an Eloquent mutator
-     */
-    private function isEloquentMutator(ClassMethod $classMethod): bool
+    private function isAccessor(ClassMethod $classMethod): bool
     {
-        $methodName = $classMethod->name->toString();
-
-        // Check for Laravel 9+ attribute-style mutators (set...Attribute)
-        if (preg_match('/^set[A-Z]\w*Attribute$/', $methodName)) {
-            return true;
-        }
-
-        // Check for older mutator patterns
-        if (str_starts_with($methodName, 'set') && str_ends_with($methodName, 'Attribute')) {
-            return true;
-        }
-
-        return false;
+        return preg_match(self::ACCESSOR_REGEX, $classMethod->name->toString()) === 1;
     }
 
-    /**
-     * Check if a method is an Eloquent accessor
-     */
-    private function isEloquentAccessor(ClassMethod $classMethod): bool
-    {
-        $methodName = $classMethod->name->toString();
-
-        // Check for Laravel 9+ attribute-style accessors (get...Attribute)
-        if (preg_match('/^get[A-Z]\w*Attribute$/', $methodName)) {
-            return true;
-        }
-
-        // Check for older accessor patterns
-        if (str_starts_with($methodName, 'get') && str_ends_with($methodName, 'Attribute')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if a method uses the new Laravel 9+ Attribute class
-     */
     private function isAttributeMethod(ClassMethod $classMethod): bool
     {
-        // Check if the method returns an Attribute instance
-        if (! $classMethod->returnType instanceof \PhpParser\Node) {
+        if ($classMethod->returnType instanceof Name &&
+            $classMethod->returnType->toString() === self::ATTRIBUTE_FQCN) {
+            return true;
+        }
+
+        if ($classMethod->stmts === null) {
             return false;
         }
 
-        // Check if return type is Attribute
-        $returnType = $classMethod->returnType;
-        if ($returnType instanceof Name) {
-            $returnTypeName = $returnType->toString();
-            if ($returnTypeName === 'Attribute' ||
-                str_ends_with($returnTypeName, '\\Attribute')) {
+        foreach ($classMethod->stmts as $stmt) {
+            if (! $stmt instanceof Return_) {
+                continue;
+            }
+            if (! $stmt->expr instanceof StaticCall) {
+                continue;
+            }
+            if (! $stmt->expr->class instanceof Name) {
+                continue;
+            }
+            if ($stmt->expr->class->toString() === self::ATTRIBUTE_FQCN) {
                 return true;
             }
         }
 
-        // Check method body for Attribute::make calls
-        if ($classMethod->stmts) {
-            foreach ($classMethod->stmts as $stmt) {
-                if ($stmt instanceof Return_ && $stmt->expr instanceof StaticCall) {
-                    $staticCall = $stmt->expr;
-                    if ($staticCall->class instanceof Name) {
-                        $className = $staticCall->class->toString();
-                        if ($className === 'Attribute' ||
-                            str_ends_with($className, '\\Attribute')) {
-                            return true;
-                        }
-                    }
-                }
-            }
+        return false;
+    }
+
+    private function isEloquentModelClassName(string $fqcn): bool
+    {
+        if (! $this->reflectionProvider->hasClass($fqcn)) {
+            return false;
         }
 
-        return false;
+        $reflection = $this->reflectionProvider->getClass($fqcn);
+        if ($reflection->isAnonymous() ||
+            $reflection->isInterface() ||
+            $reflection->isTrait() ||
+            $reflection->isEnum()) {
+            return false;
+        }
+        if ($reflection->getName() === Model::class) {
+            return true;
+        }
+
+        return $reflection->isSubclassOf(Model::class);
+    }
+
+    private function buildError(string $fqcn, ClassMethod $classMethod): \PHPStan\Rules\IdentifierRuleError
+    {
+        return RuleErrorBuilder::message(sprintf(
+            self::ERROR_TEMPLATE,
+            $fqcn,
+            $classMethod->name->toString()
+        ))
+            ->line($classMethod->getLine())
+            ->identifier('ddd.valueObjects.noAccesorMutator')
+            ->build();
     }
 }
