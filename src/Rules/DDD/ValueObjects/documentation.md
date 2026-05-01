@@ -206,15 +206,16 @@ This mixes responsibilities and makes logic harder to track and reuse.
 
 ### 📌 `EnforceCastRule`
 
-- **Purpose:** Ensure all value object classes implement the `CastsAttributes` interface.
-- **Description:** Flags any class in `App\Models\ValueObjects` that does not implement `CastsAttributes`.
-- **Justification:** Encourages the use of cast-based value objects to isolate transformation logic.
+- **Purpose:** Ensure every concrete Value Object class implements the `CastsAttributes` interface, directly or transitively.
+- **Description:** Walks every `Class_` declared in any file whose namespace is under `\Models\ValueObjects\*`. For each concrete class (non-abstract), the rule asks `ClassReflection::getInterfaces()` whether `Illuminate\Contracts\Database\Eloquent\CastsAttributes` is implemented — directly, via a parent class, or via interface extension. If not, the class is flagged. Abstract base classes are skipped because they are infrastructure for VOs, not VOs themselves; the concrete subclass is what must satisfy the contract. Multi-class files are fully covered.
+- **Justification:** Cast-based Value Objects keep serialisation logic centralised and let Laravel handle persistence through a single contract. Recognising transitive contract implementation supports the common pattern of sharing VO behaviour through an `AbstractCastableValueObject` base class.
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `EnforceCastRule`  |
-| Scope        | Class-level        |
-| Condition    | Must implement `CastsAttributes` if under `App\Models\ValueObjects` |
+| Identifier   | `ddd.valueObjects.enforceCast` |
+| Scope        | Class-level. Walks every `Class_` in files under `\Models\ValueObjects\*`. |
+| Condition    | The class itself, any ancestor class, or any inherited interface MUST implement `Illuminate\Contracts\Database\Eloquent\CastsAttributes`. Abstract classes are skipped. Interfaces, traits, enums and anonymous classes never apply. |
 
 ---
 

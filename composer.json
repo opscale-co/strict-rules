@@ -25,7 +25,8 @@
       "Opscale\\Tests\\": "tests"
     },
     "classmap": [
-      "tests/fixtures/Domain/MultiClassFile.php"
+      "tests/fixtures/Domain/MultiClassFile.php",
+      "tests/fixtures/Models/ValueObjects/MultiVOFile.php"
     ]
   },
   "extra": {
