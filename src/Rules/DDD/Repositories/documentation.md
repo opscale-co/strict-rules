@@ -80,13 +80,13 @@ This tightly couples business logic with persistence, making testing and evoluti
 
 ### 📌 `EloquentRestrictionRule`
 
-- **Purpose:** Ensure Eloquent method calls happen only inside Repository traits or Services.
-- **Description:** Flags any Eloquent query / persistence / relationship call (`User::find`, `$this->where`, `self::create`, `$this->belongsTo`, ...) made by a class whose namespace is **not** under `\Models\Repositories\*` or `\Services\*`. The rule covers Models themselves, Controllers, Jobs, Listeners, Observers, Nova classes, Console commands and any other location. Static calls to `self`/`static`/`parent` and `$this->method()` calls are only flagged when the enclosing class is itself an Eloquent Model — non-Eloquent helpers that happen to declare same-named methods (`find`, `get`, `clone`) are not mis-flagged.
-- **Justification:** Keeps persistence logic out of domain entities, HTTP controllers, queued jobs and any orchestration glue, centralising it in dedicated repositories and services.
+- **Purpose:** Ensure Eloquent CRUD calls happen only inside Repository traits or Services.
+- **Description:** Flags any Eloquent CRUD call — query building (`where`, `orderBy`, `select`, `join`, ...), retrieval (`find`, `first`, `get`, `paginate`, ...), aggregates (`count`, `sum`, `exists`, ...) or persistence (`create`, `update`, `save`, `delete`, ...) — made by a class whose namespace is **not** under `\Models\Repositories\*` or `\Services\*`. The rule covers Models themselves, Controllers, Jobs, Listeners, Observers, Nova classes, Console commands and any other location. Relationship declarations (`belongsTo`, `hasMany`, `morphTo`, `with`, `load`, ...), collection iteration helpers (`chunk`, `cursor`, ...), model state accessors (`getAttribute`, `fill`, ...), timestamp utilities, event hooks and serialization helpers (`toArray`, `toJson`, ...) are intentionally **not** flagged — they are legitimate Model concerns. Static calls to `self`/`static`/`parent` and `$this->method()` calls are only flagged when the enclosing class is itself an Eloquent Model — non-Eloquent helpers that happen to declare same-named methods (`find`, `get`) are not mis-flagged.
+- **Justification:** Keeps persistence logic out of domain entities, HTTP controllers, queued jobs and any orchestration glue, centralising it in dedicated repositories and services — without overreaching into the Model's own responsibilities (relationships, state, serialization).
 
 | Property     | Value                   |
 |--------------|--------------------------|
 | Rule Name    | `EloquentRestrictionRule`|
 | Identifier   | `ddd.repositories.eloquentRestriction` |
 | Scope        | Class-level. Applies to every class whose namespace is **not** under `\Models\Repositories\*` or `\Services\*`. Enums are skipped. |
-| Condition    | A `StaticCall` whose target class is an Eloquent Model FQCN with an Eloquent method is always flagged. A `StaticCall` to `self`/`static`/`parent`, or a `MethodCall` on `$this`, is flagged only when the enclosing class is itself an Eloquent Model. |
+| Condition    | A `StaticCall` whose target class is an Eloquent Model FQCN with a CRUD method is always flagged. A `StaticCall` to `self`/`static`/`parent`, or a `MethodCall` on `$this`, is flagged only when the enclosing class is itself an Eloquent Model. The curated method list covers query building, retrieval, pagination, aggregates and persistence; relationships, collection iteration, model state, timestamps, events and serialization helpers are excluded. |

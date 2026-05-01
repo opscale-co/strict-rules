@@ -102,7 +102,7 @@ Every rule preserves a stable PHPStan diagnostic identifier — useful when conf
 | `NoStatementsLogicRule` | `ddd.domain.noStatementsLogic` | No `if` / `switch` / `match` / `for` / `foreach` / `while` / `do-while` in Eloquent model methods (closures and arrow functions are skipped). |
 | `ComplexLogicRule` | `ddd.domainServices.complexLogic` | Classes outside `\Services\*` do not operate on more than 2 distinct Eloquent models via `StaticCall`, `new`, or `->save()` on a typed parameter. |
 | `EnforceUlidsRule` | `ddd.entities.enforceUlids` | Eloquent models use `HasUlids` (directly or via any ancestor) and do not neutralise it via `$incrementing = true` or `$keyType = 'int'`. |
-| `EloquentRestrictionRule` | `ddd.repositories.eloquentRestriction` | Eloquent calls only happen inside `\Models\Repositories\*` or `\Services\*`. |
+| `EloquentRestrictionRule` | `ddd.repositories.eloquentRestriction` | Eloquent CRUD calls (queries, retrieval, aggregates, persistence) only happen inside `\Models\Repositories\*` or `\Services\*`. Relationships, model state and serialization helpers are not in scope. |
 | `BaseNamespaceRule` | `ddd.subdomains.baseNamespace` | Eloquent models live directly under a `\Models` namespace segment — no subfolders. |
 | `EntityCountRule` | `ddd.subdomains.entityCount` | Each `\Models\*` subdomain has at most 25 concrete Eloquent entities (configurable). Implemented as `Collector` + `Rule<CollectedDataNode>`. |
 | `EnforceCastRule` | `ddd.valueObjects.enforceCast` | Concrete classes under `\Models\ValueObjects\*` implement `Illuminate\Contracts\Database\Eloquent\CastsAttributes` (directly or via inheritance). |

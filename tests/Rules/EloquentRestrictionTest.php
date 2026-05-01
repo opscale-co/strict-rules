@@ -17,10 +17,12 @@ class EloquentRestrictionTest extends RuleTestCase
         '`\\Models\\Repositories\\*` or `\\Services\\*`. Found "%s" call in "%s".';
 
     /**
-     * Caso positivo — un modelo Eloquent (Product) ejecuta `self::where`,
-     * `$this->where` y `$this->belongsTo`. Está fuera de las dos
-     * ubicaciones permitidas (no es Repository ni Service), por lo que
-     * la regla debe reportar las tres llamadas.
+     * Caso positivo — un modelo Eloquent (Product) ejecuta `self::where`
+     * y `$this->where`. Está fuera de las dos ubicaciones permitidas
+     * (no es Repository ni Service), por lo que la regla debe reportar
+     * ambas llamadas CRUD. La declaración de relación `$this->belongsTo`
+     * en la línea 41 NO se reporta: las relaciones quedan fuera del
+     * alcance de la regla, que solo cubre operaciones CRUD.
      */
     #[Test]
     public function caso_positivo_eloquent_calls_en_modelo(): void
@@ -33,7 +35,6 @@ class EloquentRestrictionTest extends RuleTestCase
             [
                 [sprintf(self::ERROR_MESSAGE_TEMPLATE, 'where', 'Opscale\Models\Product'), 14],
                 [sprintf(self::ERROR_MESSAGE_TEMPLATE, 'where', 'Opscale\Models\Product'), 19],
-                [sprintf(self::ERROR_MESSAGE_TEMPLATE, 'belongsTo', 'Opscale\Models\Product'), 41],
             ]
         );
     }
@@ -68,6 +69,24 @@ class EloquentRestrictionTest extends RuleTestCase
     {
         $this->analyse(
             [__DIR__.'/../fixtures/Domain/Locator.php'],
+            []
+        );
+    }
+
+    /**
+     * Falso positivo a evitar — un modelo Eloquent declara relaciones
+     * (`belongsTo`, `hasMany`), eager-load (`load`) y helpers de estado
+     * (`getAttributes`, `toArray`, `refresh`). La iteración previa de la
+     * regla cubría todas estas APIs y producía falsos positivos: las
+     * relaciones y el estado del modelo son responsabilidad legítima
+     * del propio Model y no operaciones CRUD. La regla actual solo
+     * cubre CRUD, por lo que ninguna llamada se reporta.
+     */
+    #[Test]
+    public function falso_positivo_relaciones_y_estado_en_modelo(): void
+    {
+        $this->analyse(
+            [__DIR__.'/../fixtures/Models/RelationsOnlyModel.php'],
             []
         );
     }
