@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\DDD\Repositories;
 
-use Illuminate\Database\Eloquent\Model;
-use Opscale\Rules\DDD\DomainRule;
+use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
@@ -13,64 +14,80 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\Scope;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that restricts Eloquent model method calls within model classes themselves,
- * but allows them within Traits in the Models\Repositories or Domain\Services namespaces
+ * Rule that restricts Eloquent method calls to classes inside
+ * `\Models\Repositories\*` or `\Services\*`. Models themselves, Controllers,
+ * Jobs, Listeners, Observers, Nova classes, Console commands and any
+ * other class that does not live under those two namespaces must not
+ * call Eloquent methods directly — they must delegate to a Repository
+ * trait or to a Service / Action class.
+ *
+ * Detection mechanics:
+ *   - A `StaticCall` whose class is an Eloquent Model FQCN (User::find)
+ *     and whose method is in the curated Eloquent-method list is always
+ *     flagged.
+ *   - A `StaticCall` to `self`, `static`, or `parent` is only flagged
+ *     when the enclosing class is an Eloquent Model — this prevents
+ *     false positives on non-Eloquent classes that happen to declare
+ *     methods with the same names (`find`, `get`, `clone`, ...).
+ *   - A `MethodCall` on `$this` is only flagged when the enclosing
+ *     class is an Eloquent Model.
  */
-class EloquentRestrictionRule extends DomainRule
+class EloquentRestrictionRule extends BaseRule
 {
-    /**
-     * Target namespace for repositories
-     */
-    private const REPOSITORIES_NAMESPACE = '\\Models\\Repositories';
+    private const ALLOWED_NAMESPACES = ['\\Models\\Repositories', '\\Services'];
+
+    private const ERROR_TEMPLATE = 'Eloquent calls are only allowed within '.
+        '`\\Models\\Repositories\\*` or `\\Services\\*`. Found "%s" call in "%s".';
+
+    protected function shouldProcess(Node $node, Scope $scope): bool
+    {
+        if (parent::shouldProcess($node, $scope) === false) {
+            return false;
+        }
+
+        assert($node instanceof \PHPStan\Node\FileNode);
+        $rootNode = $this->getRootNode($node);
+        if ($rootNode instanceof Enum_) {
+            return false;
+        }
+
+        $namespace = $this->getNamespace($node);
+        if ($this->isInNamespaces($namespace, self::ALLOWED_NAMESPACES)) {
+            return false;
+        }
+
+        return true;
+    }
 
     protected function validate(Node $node): array
     {
         assert($node instanceof \PHPStan\Node\FileNode);
-        $errors = [];
         $rootNode = $this->getRootNode($node);
         if ($rootNode === null) {
             return [];
         }
 
+        $errors = [];
         $nodeFinder = new NodeFinder;
         $methods = $this->getMethodNodes($rootNode);
 
         foreach ($methods as $method) {
             $calls = $nodeFinder->findInstanceOf($method->stmts ?? [], Node\Expr::class);
             foreach ($calls as $call) {
-                // Check if we're making an Eloquent query builder call
-                if (! $this->isEloquentQueryBuilderCall($call, $rootNode)) {
+                if (! $this->isEloquentCall($call, $rootNode)) {
                     continue;
                 }
 
-                $namespace = $rootNode->namespacedName?->toString() ?? 'Unknown';
-
-                // If we're in a trait, check if it's in an allowed namespace
-                // Check if trait is in any of the allowed namespaces
-                if ($rootNode instanceof Trait_ &&
-                    $this->isInNamespaces(
-                        $namespace,
-                        [self::REPOSITORIES_NAMESPACE])) {
-                    continue;
-                }
-
-                $methodName = 'unknown';
-                if (property_exists($call, 'name') && $call->name !== null) {
-                    $methodName = $call->name instanceof Identifier ?
-                        $call->name->toString() : 'unknown';
-                }
-
-                $error = sprintf(
-                    'Eloquent calls are only allowed within ' .
-                    'Repositories: Found "%s" call in "%s".',
+                $methodName = $this->callMethodName($call);
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    self::ERROR_TEMPLATE,
                     $methodName,
-                    $namespace
-                );
-
-                $errors[] = RuleErrorBuilder::message($error)
+                    $rootNode->namespacedName?->toString() ?? 'Unknown'
+                ))
                     ->line($call->getLine())
                     ->identifier('ddd.repositories.eloquentRestriction')
                     ->build();
@@ -80,93 +97,122 @@ class EloquentRestrictionRule extends DomainRule
         return $errors;
     }
 
-    /**
-     * Check if the node represents an Eloquent query builder call
-     */
-    private function isEloquentQueryBuilderCall(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
+    private function isEloquentCall(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
     {
-        if ($this->isStaticEloquentCall($node)) {
+        if ($this->isDirectModelStaticCall($node)) {
             return true;
         }
 
-        if ($this->isDirectModelClassCall($node)) {
+        if ($this->isSelfStaticCallInModel($node, $rootNode)) {
             return true;
         }
 
-        return $this->isThisMethodCall($node, $rootNode);
+        return $this->isThisCallInModel($node, $rootNode);
     }
 
     /**
-     * Check for static calls on self:: or static::
+     * Static call on an Eloquent Model FQCN — flagged regardless of the
+     * enclosing class (e.g., `User::find($id)` from a Controller).
      */
-    private function isStaticEloquentCall(Node $node): bool
+    private function isDirectModelStaticCall(Node $node): bool
     {
-        if (! ($node instanceof StaticCall && $node->class instanceof Name)) {
+        if (! $node instanceof StaticCall || ! $node->class instanceof Name) {
             return false;
         }
 
         $className = $node->class->toString();
-        if (! in_array($className, ['self', 'static', 'parent'])) {
+        if (in_array($className, ['self', 'static', 'parent'], true)) {
             return false;
         }
 
-        $methodName = $node->name instanceof Identifier ?
-            $node->name->toString() : null;
+        if (! $this->isEloquentModelClassName($className)) {
+            return false;
+        }
 
-        return $methodName &&
-            in_array($methodName, $this->getEloquentMethods());
+        $methodName = $node->name instanceof Identifier ? $node->name->toString() : null;
+
+        return $methodName !== null && in_array($methodName, $this->getEloquentMethods(), true);
     }
 
     /**
-     * Check for direct model class calls
+     * `self::method()` / `static::method()` / `parent::method()` — only
+     * flagged when the enclosing class is itself an Eloquent Model.
      */
-    private function isDirectModelClassCall(Node $node): bool
+    private function isSelfStaticCallInModel(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
     {
-        if (! ($node instanceof StaticCall && $node->class instanceof Name)) {
+        if (! $node instanceof StaticCall || ! $node->class instanceof Name) {
             return false;
         }
 
-        $className = $node->class->toString();
-        if (! $this->isEloquentModel($className)) {
+        if (! in_array($node->class->toString(), ['self', 'static', 'parent'], true)) {
             return false;
         }
 
-        $methodName = $node->name instanceof Node\Identifier ?
-            $node->name->toString() : null;
+        $methodName = $node->name instanceof Identifier ? $node->name->toString() : null;
+        if ($methodName === null || ! in_array($methodName, $this->getEloquentMethods(), true)) {
+            return false;
+        }
 
-        return $methodName &&
-            in_array($methodName, $this->getEloquentMethods());
+        return $this->isEnclosingClassAModel($rootNode);
     }
 
     /**
-     * Check for method calls on $this
+     * `$this->method(...)` — only flagged when the enclosing class is
+     * itself an Eloquent Model.
      */
-    private function isThisMethodCall(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
+    private function isThisCallInModel(Node $node, Class_|Trait_|Enum_|null $rootNode): bool
     {
-        if (! ($node instanceof MethodCall &&
-            ($node->var instanceof Node\Expr\Variable &&
-            $node->var->name === 'this'))) {
+        if (! $node instanceof MethodCall) {
             return false;
         }
 
-        $methodName = $node->name instanceof Node\Identifier ?
-            $node->name->toString() : null;
-        if (! $methodName ||
-            ! in_array($methodName, $this->getEloquentMethods())) {
+        if (! $node->var instanceof Node\Expr\Variable || $node->var->name !== 'this') {
             return false;
         }
 
-        if ($rootNode instanceof Class_ && $rootNode->namespacedName) {
-            $namespace = $rootNode->namespacedName->toString();
-
-            return $this->isEloquentModel($namespace);
+        $methodName = $node->name instanceof Identifier ? $node->name->toString() : null;
+        if ($methodName === null || ! in_array($methodName, $this->getEloquentMethods(), true)) {
+            return false;
         }
 
-        return false;
+        return $this->isEnclosingClassAModel($rootNode);
+    }
+
+    private function isEnclosingClassAModel(Class_|Trait_|Enum_|null $rootNode): bool
+    {
+        if (! $rootNode instanceof Class_ || ! $rootNode->namespacedName instanceof Name) {
+            return false;
+        }
+
+        return $this->isEloquentModelClassName($rootNode->namespacedName->toString());
+    }
+
+    private function isEloquentModelClassName(string $className): bool
+    {
+        if (! $this->reflectionProvider->hasClass($className)) {
+            return false;
+        }
+
+        $reflection = $this->reflectionProvider->getClass($className);
+
+        if ($reflection->getName() === \Illuminate\Database\Eloquent\Model::class) {
+            return true;
+        }
+
+        return $reflection->isSubclassOf(\Illuminate\Database\Eloquent\Model::class);
+    }
+
+    private function callMethodName(Node $call): string
+    {
+        if (property_exists($call, 'name') && $call->name instanceof Identifier) {
+            return $call->name->toString();
+        }
+
+        return 'unknown';
     }
 
     /**
-     * Get the list of Eloquent methods
+     * @return array<int, string>
      */
     private function getEloquentMethods(): array
     {
@@ -209,7 +255,7 @@ class EloquentRestrictionRule extends DomainRule
 
             // Soft deletes
             'withTrashed', 'onlyTrashed', 'withoutTrashed',
-            'trashed', 'restore', 'forceDelete',
+            'trashed',
 
             // Relationship methods
             'with', 'withCount', 'withSum', 'withAvg', 'withMin', 'withMax',
@@ -265,8 +311,7 @@ class EloquentRestrictionRule extends DomainRule
             'lockForUpdate', 'sharedLock',
 
             // Raw expressions
-            'whereRaw', 'orWhereRaw', 'havingRaw', 'orHavingRaw',
-            'orderByRaw', 'groupByRaw', 'selectRaw', 'fromRaw',
+            'orWhereRaw', 'orHavingRaw',
         ];
     }
 }
