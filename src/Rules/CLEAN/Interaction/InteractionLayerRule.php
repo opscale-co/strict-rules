@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\CLEAN\Interaction;
 
 use Opscale\Rules\CLEAN\CleanRule;
@@ -32,6 +34,7 @@ class InteractionLayerRule extends CleanRule
                 'Cookie',
                 'Gate',
                 'Lang',
+                'Log',
                 'Password',
                 'Process',
                 'RateLimiter',
@@ -45,7 +48,13 @@ class InteractionLayerRule extends CleanRule
                 'View',
                 'Vite',
             ],
-            [] // Allowed external imports
+            [ // Allowed external imports
+                'Inertia\\',
+                'Laravel\\Nova\\',
+                'Laravel\\Sanctum\\',
+                'Mcp\\',
+                'PhpMcp\\',
+            ]
         );
     }
 }
