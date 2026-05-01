@@ -51,9 +51,9 @@ This example shows how an observer detects a domain change (an order becomes pai
 
 | Type      | Allowed Namespaces                                                                 |
 |-----------|--------------------------------------------------------------------------------------|
-| Project   | `App\Events\`, `App\Observers\`, `App\Models\`                                |
-| Framework | `Illuminate\Foundation\Events`, `Illuminate\Queue`, `Illuminate\Broadcasting`, `Illuminate\Contracts` |
-| Facades   | `Broadcast`, `Event`                                                                |
+| Project   | Any class under `\Observers\` or any class in lower layers (`\Models\`). The root namespace is package-agnostic — `Opscale\Observers\Foo`, `App\Observers\Foo`, and `Vendor\Package\Observers\Foo` all detect as layer 2. |
+| Framework | `Illuminate\Contracts\Broadcasting\`, `Illuminate\Database\Eloquent\` (for Model type hints), `Illuminate\Events\` |
+| Facades   | `Broadcast`, `Event`, `Log`                                                          |
 
 The Communication layer can depend only on the **Representation layer**. It should never call Services, Jobs, or HTTP controllers.
 
