@@ -25,6 +25,7 @@
       "Opscale\\Tests\\": "tests"
     },
     "classmap": [
+      "tests/fixtures/Classes/MultiClassWithHelpers.php",
       "tests/fixtures/Domain/MultiClassFile.php",
       "tests/fixtures/Jobs/MultiClassDummyCatch.php",
       "tests/fixtures/Models/MultiClassConditionalOverride.php",
