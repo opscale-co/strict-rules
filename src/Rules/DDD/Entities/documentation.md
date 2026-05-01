@@ -63,11 +63,12 @@ This exposes database internals to the domain and limits flexibility in distribu
 ### 📌 `EnforceUlidsRule`
 
 - **Purpose:** Ensure that all domain entities use ULIDs for identity.
-- **Description:** Flags any class that extends `Model` (or subclasses thereof) that does not use the `UseUlids` trait.
-- **Justification:** Enforces domain identity consistency and avoids reliance on auto-incrementing primary keys.
+- **Description:** Flags any Eloquent model class under `\Models\*` that does not declare `Illuminate\Database\Eloquent\Concerns\HasUlids` either directly (in any of its `use ...;` statements) or transitively through any ancestor in its inheritance chain. When the trait is present, the rule additionally rejects classes that neutralise it by declaring `public $incrementing = true;` or `protected $keyType` set to a value other than `'string'`.
+- **Justification:** Enforces domain identity consistency and avoids reliance on auto-incrementing primary keys. Detecting neutralisation prevents the silent regression of having the trait on paper but auto-increment integers in practice.
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `EnforceUlidsRule` |
-| Scope        | Class-level        |
-| Condition    | Must use `UseUlids` trait if extending `Model` or its descendants |
+| Identifier   | `ddd.entities.enforceUlids` |
+| Scope        | Class-level (Eloquent models under `\Models\*`) |
+| Condition    | The class itself or any ancestor MUST declare `Illuminate\Database\Eloquent\Concerns\HasUlids` in any `TraitUse` statement. The class MUST NOT override `$incrementing = true` nor set `$keyType` to anything other than `'string'`, since both neutralise the trait. |
