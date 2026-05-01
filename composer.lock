@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "01e98504adf2ee936be4f872cd03b711",
+    "content-hash": "22decb5e056ec6e86f503eafa0c99c04",
     "packages": [
         {
             "name": "brick/math",
@@ -7243,6 +7243,43 @@
                 }
             ],
             "time": "2025-01-30T13:51:11+00:00"
+        },
+        {
+            "name": "opscale-co/validations",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opscale-co/validations.git",
+                "reference": "542cbd1a13cae4b962efbc5aee341598fa3f3ba7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opscale-co/validations/zipball/542cbd1a13cae4b962efbc5aee341598fa3f3ba7",
+                "reference": "542cbd1a13cae4b962efbc5aee341598fa3f3ba7",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^5.0|^6.20.26|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0"
+            },
+            "require-dev": {
+                "tightenco/duster": "^3.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Opscale\\Validations\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Model validation for Laravel application.",
+            "support": {
+                "issues": "https://github.com/opscale-co/validations/issues",
+                "source": "https://github.com/opscale-co/validations/tree/v1.0.0"
+            },
+            "time": "2026-04-08T18:41:29+00:00"
         },
         {
             "name": "orchestra/sidekick",
