@@ -26,6 +26,7 @@
     },
     "classmap": [
       "tests/fixtures/Domain/MultiClassFile.php",
+      "tests/fixtures/Models/MultiModelWithMutator.php",
       "tests/fixtures/Models/ValueObjects/MultiVOFile.php"
     ]
   },
