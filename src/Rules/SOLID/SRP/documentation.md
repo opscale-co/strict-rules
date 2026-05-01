@@ -48,13 +48,16 @@ If your class description contains “and” more than once, it likely has too m
 ### 📌 `MaxLinesRule`
 
 - **Purpose:** Enforces SRP by restricting class length.
-- **Description:** Flags any class file exceeding **500 lines**.
-- **Justification:** Classes with multiple responsibilities tend to grow uncontrollably. Keeping them short helps ensure separation of concerns.
+- **Description:** For every `Class_`, `Trait_`, or `Enum_` declaration in a file, measures the lines from the declaration line to its closing brace and flags those that exceed the threshold. The measurement is class-level — file-level imports, license headers, and other classlikes in the same file do not affect the count. Multi-class files are fully covered: every classlike that exceeds the threshold gets its own error.
+- **Justification:** Classes with multiple responsibilities grow. Keeping each class small forces decomposition. Class-level measurement avoids the false positive where a small class is wrongly flagged because its file has many imports.
 
 ### 🔧 Rule Summary
 
 | Property     | Value              |
 |--------------|--------------------|
 | Rule Name    | `MaxLinesRule`     |
-| Scope        | File-level         |
-| Threshold    | 500 lines          |
+| Identifier   | `solid.srp.maxLines` |
+| Scope        | Per `Class_` / `Trait_` / `Enum_` declaration. Walks every classlike in the file. |
+| Threshold    | 500 lines (default; configurable via constructor argument) |
+| Counted      | Lines from the classlike's declaration to its closing brace, inclusive |
+| Not counted  | File header, namespace declaration, `use` imports, other classlikes in the same file |
