@@ -1,3 +1,22 @@
+## [1.3.0](https://github.com/opscale-co/strict-rules/compare/v1.2.0...v1.3.0) (2026-05-01)
+
+### ⚠ BREAKING CHANGES
+
+* **rules:** `EloquentRestrictionRule` no longer reports relationship
+declarations, collection iteration, model-state accessors, timestamp
+utilities, events, mass-assignment configuration or serialization
+helpers. Consumers whose baselines pinned messages for these calls
+should regenerate; baselines keyed on the diagnostic identifier survive.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **rules:** narrow EloquentRestrictionRule to CRUD operations ([f1f5b74](https://github.com/opscale-co/strict-rules/commit/f1f5b7414dc991fb8cc28191c0b249329d044282))
+
+
+Generating notes for version 1.3.0
+
 ## [1.2.0](https://github.com/opscale-co/strict-rules/compare/v1.1.3...v1.2.0) (2026-05-01)
 
 ### ⚠ BREAKING CHANGES
