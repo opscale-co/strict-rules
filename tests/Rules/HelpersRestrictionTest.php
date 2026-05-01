@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\Smells\HelpersRestrictionRule;
@@ -15,20 +17,20 @@ class HelpersRestrictionTest extends RuleTestCase
     public function detects_helper_function_usage(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Classes/ClassWithHelpers.php',
+            __DIR__.'/../fixtures/Classes/ClassWithHelpers.php',
         ], [
             [
-                'Helper function "auth()->user()" usage detected in "Opscale\Classes\ClassWithHelpers". ' .
+                'Helper function "auth()->user()" usage detected in "Opscale\Classes\ClassWithHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 9,
             ],
             [
-                'Helper function "cache()->get()" usage detected in "Opscale\Classes\ClassWithHelpers". ' .
+                'Helper function "cache()->get()" usage detected in "Opscale\Classes\ClassWithHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 10,
             ],
             [
-                'Helper function "config()" usage detected in "Opscale\Classes\ClassWithHelpers". ' .
+                'Helper function "config()" usage detected in "Opscale\Classes\ClassWithHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 11,
             ],
@@ -39,7 +41,7 @@ class HelpersRestrictionTest extends RuleTestCase
     public function allows_classes_without_helper_usage(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Classes/ClassWithoutHelpers.php',
+            __DIR__.'/../fixtures/Classes/ClassWithoutHelpers.php',
         ], []);
     }
 
@@ -47,20 +49,20 @@ class HelpersRestrictionTest extends RuleTestCase
     public function detects_various_helper_functions(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Classes/ClassWithCustomHelpers.php',
+            __DIR__.'/../fixtures/Classes/ClassWithCustomHelpers.php',
         ], [
             [
-                'Helper function "request()->all()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". ' .
+                'Helper function "request()->all()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 9,
             ],
             [
-                'Helper function "session()->get()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". ' .
+                'Helper function "session()->get()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 10,
             ],
             [
-                'Helper function "url()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". ' .
+                'Helper function "url()" usage detected in "Opscale\Classes\ClassWithCustomHelpers". '.
                 'Consider injecting the service directly instead of using helper functions.',
                 11,
             ],
@@ -71,7 +73,7 @@ class HelpersRestrictionTest extends RuleTestCase
     public function allows_static_method_calls_and_facades(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Classes/ClassWithStaticMethods.php',
+            __DIR__.'/../fixtures/Classes/ClassWithStaticMethods.php',
         ], []);
     }
 

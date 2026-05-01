@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\Subdomains\EntityCountRule;
@@ -17,8 +19,8 @@ class EntityCountTest extends RuleTestCase
     public function allows_non_entities_in_subdomain(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/NonModelClass.php',
-            __DIR__ . '/../fixtures/Models/EmptyClass.php',
+            __DIR__.'/../fixtures/Models/NonModelClass.php',
+            __DIR__.'/../fixtures/Models/EmptyClass.php',
         ], []);
     }
 
@@ -32,8 +34,8 @@ class EntityCountTest extends RuleTestCase
     public function allows_interfaces_and_abstract_classes(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Contracts/TestInterface.php',
-            __DIR__ . '/../fixtures/Models/AbstractModel.php',
+            __DIR__.'/../fixtures/Contracts/TestInterface.php',
+            __DIR__.'/../fixtures/Models/AbstractModel.php',
         ], []);
     }
 

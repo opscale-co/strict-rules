@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\ValueObjects\NoAccesorMutatorRule;
@@ -15,21 +17,21 @@ class NoAccesorMutatorTest extends RuleTestCase
     public function detects_accessors_and_mutators(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/Product.php',
+            __DIR__.'/../fixtures/Models/Product.php',
         ],
             [
                 [
-                    'Model "Opscale\Models\Product" is defining "getIdAttribute" and it should not contain Eloquent mutators or accessors. ' .
+                    'Model "Opscale\Models\Product" is defining "getIdAttribute" and it should not contain Eloquent mutators or accessors. '.
                     'Custom attribute logic should be defined as a ValueObject.',
                     22,
                 ],
                 [
-                    'Model "Opscale\Models\Product" is defining "setIdAttribute" and it should not contain Eloquent mutators or accessors. ' .
+                    'Model "Opscale\Models\Product" is defining "setIdAttribute" and it should not contain Eloquent mutators or accessors. '.
                     'Custom attribute logic should be defined as a ValueObject.',
                     27,
                 ],
                 [
-                    'Model "Opscale\Models\Product" is defining "stock" and it should not contain Eloquent mutators or accessors. ' .
+                    'Model "Opscale\Models\Product" is defining "stock" and it should not contain Eloquent mutators or accessors. '.
                     'Custom attribute logic should be defined as a ValueObject.',
                     32,
                 ],
@@ -39,7 +41,7 @@ class NoAccesorMutatorTest extends RuleTestCase
     #[Test]
     public function allows_model_without_accessors_or_mutators(): void
     {
-        $this->analyse([__DIR__ . '/../fixtures/Models/ValidUlidUser.php'], []);
+        $this->analyse([__DIR__.'/../fixtures/Models/ValidUlidUser.php'], []);
     }
 
     protected function getRule(): Rule

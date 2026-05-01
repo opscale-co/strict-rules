@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\SOLID\SRP\MaxLinesRule;
@@ -15,10 +17,10 @@ class MaxLinesTest extends RuleTestCase
     public function class_exceeds_max_lines_limit(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/User.php',
+            __DIR__.'/../fixtures/Models/User.php',
         ], [
             [
-                'Class "Opscale\Models\User" has 59 lines, which exceeds the maximum allowed 50 lines. ' .
+                'Class "Opscale\Models\User" has 59 lines, which exceeds the maximum allowed 50 lines. '.
                 'Consider breaking this class into smaller classes to follow the Single Responsibility Principle.',
                 61,
             ],
@@ -29,7 +31,7 @@ class MaxLinesTest extends RuleTestCase
     public function class_within_max_lines_limit(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
         ], []);
     }
 
@@ -37,10 +39,10 @@ class MaxLinesTest extends RuleTestCase
     public function class_significantly_exceeds_max_lines_limit(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/LargeUser.php',
+            __DIR__.'/../fixtures/Models/LargeUser.php',
         ], [
             [
-                'Class "Opscale\Models\LargeUser" has 221 lines, which exceeds the maximum allowed 50 lines. ' .
+                'Class "Opscale\Models\LargeUser" has 221 lines, which exceeds the maximum allowed 50 lines. '.
                 'Consider breaking this class into smaller classes to follow the Single Responsibility Principle.',
                 223,
             ],
@@ -53,7 +55,7 @@ class MaxLinesTest extends RuleTestCase
         new MaxLinesRule($this->createReflectionProvider(), 25);
 
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
         ], []);
     }
 

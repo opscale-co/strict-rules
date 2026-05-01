@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\CLEAN\Transformation\TransformationLayerRule;
@@ -15,15 +17,15 @@ class TransformationLayerTest extends RuleTestCase
     public function detects_layer_violations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/ExternalAPIService.php',
+            __DIR__.'/../fixtures/Services/ExternalAPIService.php',
         ], [
             [
-                'Clean Architecture violation: Class "Opscale\Services\ExternalAPIService" from layer 3 cannot depend on "Illuminate\Support\Facades\Response". ' .
+                'Clean Architecture violation: Class "Opscale\Services\ExternalAPIService" from layer 3 cannot depend on "Illuminate\Support\Facades\Response". '.
                 'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 8,
             ],
             [
-                'Clean Architecture violation: Class "Opscale\Services\ExternalAPIService" from layer 3 cannot depend on "Opscale\Jobs\CleanOldProducts" from layer 4. ' .
+                'Clean Architecture violation: Class "Opscale\Services\ExternalAPIService" from layer 3 cannot depend on "Opscale\Jobs\CleanOldProducts" from layer 4. '.
                 'Layers can only use equal or lower layers and communicate via events upwards.',
                 9,
             ],
@@ -35,7 +37,7 @@ class TransformationLayerTest extends RuleTestCase
     {
         // Response facade should now be allowed as framework import for Transformation layer
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/ValidService.php',
+            __DIR__.'/../fixtures/Services/ValidService.php',
         ], []);
     }
 
@@ -44,7 +46,7 @@ class TransformationLayerTest extends RuleTestCase
     {
         // Services (layer 3) should be able to use Models (layer 1)
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/ServiceUsingModels.php',
+            __DIR__.'/../fixtures/Services/ServiceUsingModels.php',
         ], []);
     }
 

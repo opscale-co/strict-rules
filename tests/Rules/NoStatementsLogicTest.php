@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\Domain\NoStatementsLogicRule;
@@ -14,9 +16,9 @@ class NoStatementsLogicTest extends RuleTestCase
     #[Test]
     public function detects_logic_statements_in_domain_models(): void
     {
-        $this->analyse([__DIR__ . '/../fixtures/Models/User.php'], [
+        $this->analyse([__DIR__.'/../fixtures/Models/User.php'], [
             [
-                'Method "' . \Opscale\Models\User::class . '::getEmail" contains a "if" ' .
+                'Method "'.\Opscale\Models\User::class.'::getEmail" contains a "if" '.
                 'statement which is not allowed in domain model classes.',
                 53,
             ],
@@ -27,7 +29,7 @@ class NoStatementsLogicTest extends RuleTestCase
     public function allows_models_without_logic_statements(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidUlidUser.php',
+            __DIR__.'/../fixtures/Models/ValidUlidUser.php',
         ], []);
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\Aggregates\ParentChildTransactionRule;
@@ -15,11 +17,11 @@ class ParentChildTransactionTest extends RuleTestCase
     public function rule(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/Repositories/ProductRepository.php',
+            __DIR__.'/../fixtures/Models/Repositories/ProductRepository.php',
         ],
             [
                 [
-                    'Direct save() on model "Opscale\Models\Product" is not allowed. ' .
+                    'Direct save() on model "Opscale\Models\Product" is not allowed. '.
                     'Models with parent relationships (belongsTo) should only be saved through their parent aggregates.',
                     12,
                 ],

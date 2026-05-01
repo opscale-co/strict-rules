@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\CLEAN\Interaction\InteractionLayerRule;
@@ -15,10 +17,10 @@ class InteractionLayerTest extends RuleTestCase
     public function detects_layer_violations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Http/Controllers\ProductController.php',
+            __DIR__.'/../fixtures/Http/Controllers\ProductController.php',
         ], [
             [
-                'Clean Architecture violation: Class "Opscale\Http\Controllers\ProductController" from layer 5 cannot depend on "Illuminate\Support\Facades\DB". ' .
+                'Clean Architecture violation: Class "Opscale\Http\Controllers\ProductController" from layer 5 cannot depend on "Illuminate\Support\Facades\DB". '.
                 'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 7,
             ],

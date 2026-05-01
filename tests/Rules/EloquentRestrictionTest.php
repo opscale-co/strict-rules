@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\Repositories\EloquentRestrictionRule;
@@ -15,22 +17,22 @@ class EloquentRestrictionTest extends RuleTestCase
     public function detects_eloquent_calls_outside_repositories(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/Repositories/UserRepository.php',
-            __DIR__ . '/../fixtures/Models/Product.php',
+            __DIR__.'/../fixtures/Models/Repositories/UserRepository.php',
+            __DIR__.'/../fixtures/Models/Product.php',
         ],
             [
                 [
-                    'Eloquent calls are only allowed within ' .
+                    'Eloquent calls are only allowed within '.
                     'Repositories: Found "where" call in "Opscale\Models\Product".',
                     14,
                 ],
                 [
-                    'Eloquent calls are only allowed within ' .
+                    'Eloquent calls are only allowed within '.
                     'Repositories: Found "where" call in "Opscale\Models\Product".',
                     19,
                 ],
                 [
-                    'Eloquent calls are only allowed within ' .
+                    'Eloquent calls are only allowed within '.
                     'Repositories: Found "belongsTo" call in "Opscale\Models\Product".',
                     41,
                 ],
@@ -40,7 +42,7 @@ class EloquentRestrictionTest extends RuleTestCase
     #[Test]
     public function allows_eloquent_calls_within_repositories(): void
     {
-        $this->analyse([__DIR__ . '/../fixtures/Models/Repositories/ProductRepository.php'], []);
+        $this->analyse([__DIR__.'/../fixtures/Models/Repositories/ProductRepository.php'], []);
     }
 
     protected function getRule(): Rule

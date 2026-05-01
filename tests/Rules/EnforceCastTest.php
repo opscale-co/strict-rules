@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\ValueObjects\EnforceCastRule;
@@ -15,11 +17,11 @@ class EnforceCastTest extends RuleTestCase
     public function detects_value_object_without_casts_attributes_interface(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValueObjects/Address.php',
+            __DIR__.'/../fixtures/Models/ValueObjects/Address.php',
         ],
             [
                 [
-                    'ValueObject class "Opscale\Models\ValueObjects\Address" must implement "Illuminate\Contracts\Database\Eloquent\CastsAttributes" interface. ' .
+                    'ValueObject class "Opscale\Models\ValueObjects\Address" must implement "Illuminate\Contracts\Database\Eloquent\CastsAttributes" interface. '.
                     'This interface is required for classes that will be used as Value Objects.',
                     9,
                 ],
@@ -30,7 +32,7 @@ class EnforceCastTest extends RuleTestCase
     public function allows_value_object_with_casts_attributes_interface(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValueObjects/ValidAddress.php',
+            __DIR__.'/../fixtures/Models/ValueObjects/ValidAddress.php',
         ], []);
     }
 
@@ -38,7 +40,7 @@ class EnforceCastTest extends RuleTestCase
     public function ignores_non_value_object_classes(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/DTOs/NonValueObject.php',
+            __DIR__.'/../fixtures/Models/DTOs/NonValueObject.php',
         ], []);
     }
 
@@ -46,11 +48,11 @@ class EnforceCastTest extends RuleTestCase
     public function detects_multiple_value_objects_in_different_files(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValueObjects/Address.php',
-            __DIR__ . '/../fixtures/Models/ValueObjects/ValidAddress.php',
+            __DIR__.'/../fixtures/Models/ValueObjects/Address.php',
+            __DIR__.'/../fixtures/Models/ValueObjects/ValidAddress.php',
         ], [
             [
-                'ValueObject class "Opscale\Models\ValueObjects\Address" must implement "Illuminate\Contracts\Database\Eloquent\CastsAttributes" interface. ' .
+                'ValueObject class "Opscale\Models\ValueObjects\Address" must implement "Illuminate\Contracts\Database\Eloquent\CastsAttributes" interface. '.
                 'This interface is required for classes that will be used as Value Objects.',
                 9,
             ],
@@ -61,8 +63,8 @@ class EnforceCastTest extends RuleTestCase
     public function ignores_classes_outside_value_objects_namespace(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/User.php',
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/User.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
         ], []);
     }
 

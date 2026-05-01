@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\DDD\DomainServices\ComplexLogicRule;
@@ -16,11 +18,11 @@ class ComplexLogicTest extends RuleTestCase
     {
         $this->analyse(
             [
-                __DIR__ . '/../fixtures/Models/Repositories/UserRepository.php',
-                __DIR__ . '/../fixtures/Services/BatchingService.php',
+                __DIR__.'/../fixtures/Models/Repositories/UserRepository.php',
+                __DIR__.'/../fixtures/Services/BatchingService.php',
             ], [
                 [
-                    'Class "Opscale\Models\Repositories\UserRepository" is importing 2 Eloquent models, and it should not import more than 1. ' .
+                    'Class "Opscale\Models\Repositories\UserRepository" is importing 2 Eloquent models, and it should not import more than 1. '.
                     'Consider moving complex logic involving multiple models to a Service class in the Services namespace.',
                     8,
                 ],

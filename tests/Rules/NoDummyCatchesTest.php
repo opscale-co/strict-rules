@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\Smells\NoDummyCatchesRule;
@@ -15,11 +17,11 @@ class NoDummyCatchesTest extends RuleTestCase
     public function detects_empty_catch_block(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
+            __DIR__.'/../fixtures/Jobs/CleanOldProducts.php',
         ],
             [
                 [
-                    'Empty catch block for exception type(s) "Exception". ' .
+                    'Empty catch block for exception type(s) "Exception". '.
                     'Either handle the exception properly or remove the try-catch block.',
                     25,
                 ],
@@ -30,7 +32,7 @@ class NoDummyCatchesTest extends RuleTestCase
     public function allows_valid_exception_handling(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/ValidExceptionHandling.php',
+            __DIR__.'/../fixtures/Jobs/ValidExceptionHandling.php',
         ], []);
     }
 
@@ -38,20 +40,20 @@ class NoDummyCatchesTest extends RuleTestCase
     public function detects_multiple_dummy_catches(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/MultipleDummyCatches.php',
+            __DIR__.'/../fixtures/Jobs/MultipleDummyCatches.php',
         ], [
             [
-                'Empty catch block for exception type(s) "Exception". ' .
+                'Empty catch block for exception type(s) "Exception". '.
                 'Either handle the exception properly or remove the try-catch block.',
                 20,
             ],
             [
-                'Empty catch block for exception type(s) "InvalidArgumentException". ' .
+                'Empty catch block for exception type(s) "InvalidArgumentException". '.
                 'Either handle the exception properly or remove the try-catch block.',
                 26,
             ],
             [
-                'Empty catch block for exception type(s) "RuntimeException". ' .
+                'Empty catch block for exception type(s) "RuntimeException". '.
                 'Either handle the exception properly or remove the try-catch block.',
                 28,
             ],
@@ -62,7 +64,7 @@ class NoDummyCatchesTest extends RuleTestCase
     public function ignores_file_without_try_catch_blocks(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
         ], []);
     }
 

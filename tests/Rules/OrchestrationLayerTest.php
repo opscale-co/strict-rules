@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\CLEAN\Orchestration\OrchestrationLayerRule;
@@ -15,15 +17,15 @@ class OrchestrationLayerTest extends RuleTestCase
     public function detects_layer_violations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
+            __DIR__.'/../fixtures/Jobs/CleanOldProducts.php',
         ], [
             [
-                'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Opscale\Http\Controllers\ProductsController" from layer 5. ' .
+                'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Opscale\Http\Controllers\ProductsController" from layer 5. '.
                 'Layers can only use equal or lower layers and communicate via events upwards.',
                 10,
             ],
             [
-                'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Illuminate\Support\Facades\Http". ' .
+                'Clean Architecture violation: Class "Opscale\Jobs\CleanOldProducts" from layer 4 cannot depend on "Illuminate\Support\Facades\Http". '.
                 'This import is not allowed in this layer according to facade, framework, project, or external import rules.',
                 11,
             ],

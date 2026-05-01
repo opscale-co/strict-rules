@@ -38,13 +38,20 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require-dev": {
+    "driftingly/rector-laravel": "^2.0",
     "laravel/laravel": "^11",
-    "phpunit/phpunit": "^11.5",
-    "phpstan/phpstan-phpunit": "^2.0",
-    "lorisleiva/laravel-actions": "^2.9",
     "laravel/nova": "^5.7",
-    "tightenco/duster": "^3.2",
+    "lorisleiva/laravel-actions": "^2.9",
+    "pestphp/pest": "^3.8",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.0",
-    "driftingly/rector-laravel": "^2.0"
+    "tightenco/duster": "^3.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

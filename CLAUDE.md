@@ -111,3 +111,8 @@ When fixing test failures:
 - Laravel 11 and PHP 8.2+ are required
 - Rules are designed to be pragmatic, not dogmatic
 - Tests may have XDebug config warnings (can be ignored)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\SOLID\DIP\DisallowInstantiationRule;
@@ -15,11 +17,11 @@ class DisallowInstantiationTest extends RuleTestCase
     public function detects_direct_instantiation(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/ExternalAPIService.php',
+            __DIR__.'/../fixtures/Services/ExternalAPIService.php',
         ], [
             [
-                'Class "Opscale\Services\ExternalAPIService" violates Dependency Inversion Principle ' .
-                'by directly instantiating "Opscale\Services\BatchingService" in method "canBatch()". ' .
+                'Class "Opscale\Services\ExternalAPIService" violates Dependency Inversion Principle '.
+                'by directly instantiating "Opscale\Services\BatchingService" in method "canBatch()". '.
                 'Consider injecting the dependency through constructor or method parameters.',
                 24,
             ],
@@ -30,7 +32,7 @@ class DisallowInstantiationTest extends RuleTestCase
     public function allows_proper_dependency_injection(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/ValidDependencyInjection.php',
+            __DIR__.'/../fixtures/Services/ValidDependencyInjection.php',
         ], []);
     }
 
@@ -38,29 +40,29 @@ class DisallowInstantiationTest extends RuleTestCase
     public function detects_multiple_instantiation_violations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/MultipleViolations.php',
+            __DIR__.'/../fixtures/Services/MultipleViolations.php',
         ], [
             [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle ' .
-                'by directly instantiating "Opscale\Services\BatchingService" in method "processData()". ' .
+                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
+                'by directly instantiating "Opscale\Services\BatchingService" in method "processData()". '.
                 'Consider injecting the dependency through constructor or method parameters.',
                 13,
             ],
             [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle ' .
-                'by directly instantiating "Opscale\Models\User" in method "processData()". ' .
+                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
+                'by directly instantiating "Opscale\Models\User" in method "processData()". '.
                 'Consider injecting the dependency through constructor or method parameters.',
                 14,
             ],
             [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle ' .
-                'by directly instantiating "Opscale\Services\BatchingService" in method "anotherMethod()". ' .
+                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
+                'by directly instantiating "Opscale\Services\BatchingService" in method "anotherMethod()". '.
                 'Consider injecting the dependency through constructor or method parameters.',
                 27,
             ],
             [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle ' .
-                'by directly instantiating "Opscale\Models\User" in method "createUserInstance()". ' .
+                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
+                'by directly instantiating "Opscale\Models\User" in method "createUserInstance()". '.
                 'Consider injecting the dependency through constructor or method parameters.',
                 33,
             ],
@@ -71,7 +73,7 @@ class DisallowInstantiationTest extends RuleTestCase
     public function ignores_files_without_instantiations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
         ], []);
     }
 
@@ -79,7 +81,7 @@ class DisallowInstantiationTest extends RuleTestCase
     public function allows_built_in_class_instantiations(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/ValidExceptionHandling.php',
+            __DIR__.'/../fixtures/Jobs/ValidExceptionHandling.php',
         ], []);
     }
 

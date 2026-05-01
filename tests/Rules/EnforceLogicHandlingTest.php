@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Tests\Rules;
 
 use Opscale\Rules\Smells\EnforceLogicHandlingRule;
@@ -15,11 +17,11 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function detects_exception_handling_in_jobs(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/CleanOldProducts.php',
+            __DIR__.'/../fixtures/Jobs/CleanOldProducts.php',
         ],
             [
                 [
-                    '"Opscale\Jobs\CleanOldProducts" class contains try-catch block, exception handling is only allowed in logic. ' .
+                    '"Opscale\Jobs\CleanOldProducts" class contains try-catch block, exception handling is only allowed in logic. '.
                     'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                     25,
                 ],
@@ -30,7 +32,7 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function allows_exception_handling_in_services(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Services/LogicService.php',
+            __DIR__.'/../fixtures/Services/LogicService.php',
         ], []);
     }
 
@@ -38,7 +40,7 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function allows_controllers_without_exception_handling(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Http/Controllers/ValidController.php',
+            __DIR__.'/../fixtures/Http/Controllers/ValidController.php',
         ], []);
     }
 
@@ -46,7 +48,7 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function allows_exception_handling_in_observers(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Observers/UserObserver.php',
+            __DIR__.'/../fixtures/Observers/UserObserver.php',
         ], []);
     }
 
@@ -54,15 +56,15 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function detects_exception_imports_in_jobs(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/JobWithExceptionImport.php',
+            __DIR__.'/../fixtures/Jobs/JobWithExceptionImport.php',
         ], [
             [
-                '"Opscale\Jobs\JobWithExceptionImport" class imports exception "Exception", exception imports are only allowed in logic layers. ' .
+                '"Opscale\Jobs\JobWithExceptionImport" class imports exception "Exception", exception imports are only allowed in logic layers. '.
                 'Consider managing exceptions in Services, Models, or Observers only.',
                 5,
             ],
             [
-                '"Opscale\Jobs\JobWithExceptionImport" class imports exception "InvalidArgumentException", exception imports are only allowed in logic layers. ' .
+                '"Opscale\Jobs\JobWithExceptionImport" class imports exception "InvalidArgumentException", exception imports are only allowed in logic layers. '.
                 'Consider managing exceptions in Services, Models, or Observers only.',
                 6,
             ],
@@ -73,10 +75,10 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function detects_exception_imports_in_controllers(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Http/Controllers/ControllerWithExceptionImport.php',
+            __DIR__.'/../fixtures/Http/Controllers/ControllerWithExceptionImport.php',
         ], [
             [
-                '"Opscale\Http\Controllers\ControllerWithExceptionImport" class imports exception "RuntimeException", exception imports are only allowed in logic layers. ' .
+                '"Opscale\Http\Controllers\ControllerWithExceptionImport" class imports exception "RuntimeException", exception imports are only allowed in logic layers. '.
                 'Consider managing exceptions in Services, Models, or Observers only.',
                 5,
             ],
@@ -87,20 +89,20 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function detects_exception_handling_in_jobs_with_multiple_catches(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/ValidExceptionHandling.php',
+            __DIR__.'/../fixtures/Jobs/ValidExceptionHandling.php',
         ], [
             [
-                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 25,
             ],
             [
-                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 36,
             ],
             [
-                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\ValidExceptionHandling" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 40,
             ],
@@ -111,8 +113,8 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function ignores_classes_without_try_catch_blocks(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Models/ValidSmallUser.php',
-            __DIR__ . '/../fixtures/Models/NonModelClass.php',
+            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
+            __DIR__.'/../fixtures/Models/NonModelClass.php',
         ], []);
     }
 
@@ -120,20 +122,20 @@ class EnforceLogicHandlingTest extends RuleTestCase
     public function detects_multiple_exception_handlers_in_same_file(): void
     {
         $this->analyse([
-            __DIR__ . '/../fixtures/Jobs/MultipleDummyCatches.php',
+            __DIR__.'/../fixtures/Jobs/MultipleDummyCatches.php',
         ], [
             [
-                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 20,
             ],
             [
-                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 26,
             ],
             [
-                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. ' .
+                '"Opscale\Jobs\MultipleDummyCatches" class contains try-catch block, exception handling is only allowed in logic. '.
                 'Consider managing exceptions in Services, Models, or Observers and manage expected values anywhere else.',
                 28,
             ],
