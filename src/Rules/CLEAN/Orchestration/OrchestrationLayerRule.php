@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\CLEAN\Orchestration;
 
 use Opscale\Rules\CLEAN\CleanRule;
@@ -19,6 +21,7 @@ class OrchestrationLayerRule extends CleanRule
             [ // Allowed framework imports
                 'Illuminate\\Bus\\',
                 'Illuminate\\Contracts\\Queue\\',
+                'Illuminate\\Database\\Eloquent\\',
                 'Illuminate\\Foundation\\Bus\\',
                 'Illuminate\\Mail\\',
                 'Illuminate\\Notifications\\',
@@ -27,6 +30,7 @@ class OrchestrationLayerRule extends CleanRule
             [ // Allowed facades
                 'Bus',
                 'Concurrency',
+                'Log',
                 'Mail',
                 'Notification',
                 'Pipeline',
