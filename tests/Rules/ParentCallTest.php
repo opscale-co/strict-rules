@@ -13,61 +13,87 @@ use PHPUnit\Framework\Attributes\Test;
 #[CoversClass(ParentCallRule::class)]
 class ParentCallTest extends RuleTestCase
 {
+    private const ERROR_MESSAGE_TEMPLATE = 'Method "%s::%s()" overrides a parent method but does not call parent::. '.
+        'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.';
+
+    /**
+     * Caso positivo — `BatchingService.canBatch()` sobrescribe un método
+     * concreto del padre `ExternalAPIService` sin llamar `parent::`. La
+     * regla debe reportarlo.
+     */
     #[Test]
-    public function detects_override_methods_without_parent_call(): void
+    public function caso_positivo_override_sin_parent_call(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Services/BatchingService.php',
-        ], [
+        $this->analyse(
+            [__DIR__.'/../fixtures/Services/BatchingService.php'],
             [
-                'Method "'.\Opscale\Services\BatchingService::class.'::canBatch()" overrides a parent method but does not call parent::. '.
-                'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                26,
-            ],
-        ]);
+                [
+                    sprintf(self::ERROR_MESSAGE_TEMPLATE, 'Opscale\Services\BatchingService', 'canBatch'),
+                    26,
+                ],
+            ]
+        );
     }
 
+    /**
+     * Caso negativo — `ProperOverrider` extiende `AbstractParentModel`
+     * y todos sus overrides de métodos concretos invocan `parent::`. El
+     * único método sin parent es `getName`, que implementa un método
+     * abstracto y por tanto está exento.
+     */
     #[Test]
-    public function detects_methods_without_parent_calls(): void
+    public function caso_negativo_override_con_parent_call(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Models/ValidUlidUser.php',
-        ], [
+        $this->analyse(
             [
-                'Method "'.\Opscale\Models\ValidUlidUser::class.'::casts()" overrides a parent method but does not call parent::. '.
-                'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                25,
+                __DIR__.'/../fixtures/Models/AbstractParentModel.php',
+                __DIR__.'/../fixtures/Models/ProperOverrider.php',
             ],
-        ]);
+            []
+        );
     }
 
+    /**
+     * Falso positivo a evitar — `AbstractImplementer` extiende
+     * `AbstractParentModel` e implementa `getName()` (método abstracto
+     * en el padre). No hay cuerpo padre que invocar; la regla debe
+     * exentar a las implementaciones de métodos abstractos.
+     */
     #[Test]
-    public function skips_static_methods(): void
+    public function falso_positivo_implementacion_de_metodo_abstracto(): void
     {
-        $this->analyse([__DIR__.'/../fixtures/Models/StaticMethodsModel.php'], [
-            // Only the instance method without parent:: call should trigger
+        $this->analyse(
             [
-                'Method "'.\Opscale\Models\StaticMethodsModel::class.'::save()" overrides a parent method but does not call parent::. '.
-                'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                17,
+                __DIR__.'/../fixtures/Models/AbstractParentModel.php',
+                __DIR__.'/../fixtures/Models/AbstractImplementer.php',
             ],
-        ]);
+            []
+        );
     }
 
+    /**
+     * Falso negativo a evitar — `MultiClassParentCall.php` declara dos
+     * clases. La primera (`FirstProperOverrider`) llama `parent::`. La
+     * segunda (`SecondImproperOverrider`) sobrescribe sin `parent::`.
+     * La implementación previa miraba solo `getRootNode` (la primera) y
+     * no reportaba nada; la regla actual recorre ambas y reporta la
+     * segunda.
+     */
     #[Test]
-    public function skips_abstract_method_implementations(): void
+    public function falso_negativo_segunda_clase_con_override_sin_parent_en_archivo_multi_clase(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Models/AbstractParentModel.php',
-            __DIR__.'/../fixtures/Models/ConcreteChildModel.php',
-        ], [
-            // Only the concrete method override without parent:: call should trigger
+        $this->analyse(
             [
-                'Method "'.\Opscale\Models\ConcreteChildModel::class.'::getDescription()" overrides a parent method but does not call parent::. '.
-                'Methods that override parent behavior should call parent:: to maintain the Liskov Substitution Principle.',
-                14,
+                __DIR__.'/../fixtures/Models/AbstractParentModel.php',
+                __DIR__.'/../fixtures/Models/MultiClassParentCall.php',
             ],
-        ]);
+            [
+                [
+                    sprintf(self::ERROR_MESSAGE_TEMPLATE, 'Opscale\Models\SecondImproperOverrider', 'getDescription'),
+                    25,
+                ],
+            ]
+        );
     }
 
     protected function getRule(): Rule
