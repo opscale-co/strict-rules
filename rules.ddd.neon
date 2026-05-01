@@ -35,7 +35,12 @@ services:
         tags:
             - phpstan.rules.rule
             
-    - 
+    -
+        class: Opscale\Rules\DDD\Domain\Helpers\EntityCountCollector
+        tags:
+            - phpstan.collector
+
+    -
         class: Opscale\Rules\DDD\Subdomains\EntityCountRule
         tags:
             - phpstan.rules.rule

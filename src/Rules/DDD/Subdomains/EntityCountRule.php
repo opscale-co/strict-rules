@@ -1,54 +1,76 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\DDD\Subdomains;
 
-use Opscale\Rules\DDD\DomainRule;
+use Opscale\Rules\DDD\Domain\Helpers\EntityCountCollector;
 use PhpParser\Node;
-use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Analyser\Scope;
+use PHPStan\Node\CollectedDataNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that limits the number of classes in a subdomain
+ * Rule that limits the number of concrete Eloquent entities per
+ * subdomain (= per file-level namespace).
+ *
+ * Implemented as a `Rule<CollectedDataNode>` paired with
+ * `EntityCountCollector`. The collector records every concrete
+ * Eloquent model in any analysed file; the rule groups those records
+ * by namespace, deduplicates by FQCN, and emits one error per
+ * subdomain whose unique-fqcn count exceeds `maxClasses`.
+ *
+ * @implements Rule<CollectedDataNode>
  */
-class EntityCountRule extends DomainRule
+class EntityCountRule implements Rule
 {
-    private static int $processedModels = 0;
+    public const DEFAULT_MAX_CLASSES = 25;
 
-    /**
-     * Default maximum number of classes in a subdomain
-     */
-    private const DEFAULT_MAX_CLASSES = 10;
+    public function __construct(private readonly int $maxClasses = self::DEFAULT_MAX_CLASSES) {}
 
-    private int $maxClasses;
-
-    public function __construct(
-        ReflectionProvider $reflectionProvider,
-        int $maxClasses = self::DEFAULT_MAX_CLASSES
-    ) {
-        parent::__construct($reflectionProvider);
-        $this->maxClasses = $maxClasses;
+    public function getNodeType(): string
+    {
+        return CollectedDataNode::class;
     }
 
-    protected function validate(Node $node): array
+    public function processNode(Node $node, Scope $scope): array
     {
-        assert($node instanceof \PHPStan\Node\FileNode);
-        if (! $this->isEloquentModel($node)) {
-            return []; // Skip if not a model class
+        /** @var array<string, list<list<array{namespace: string, fqcn: string, file: string}>>> $perFile */
+        $perFile = $node->get(EntityCountCollector::class);
+
+        $fqcnsBySubdomain = [];
+        $filesBySubdomain = [];
+        foreach ($perFile as $batches) {
+            foreach ($batches as $records) {
+                foreach ($records as $record) {
+                    $namespace = $record['namespace'];
+                    $fqcnsBySubdomain[$namespace][] = $record['fqcn'];
+                    $filesBySubdomain[$namespace][] = $record['file'];
+                }
+            }
         }
 
-        // Check if the count exceeds the limit
         $errors = [];
-        if (self::$processedModels > $this->maxClasses) {
+        foreach ($fqcnsBySubdomain as $namespace => $fqcns) {
+            $unique = array_values(array_unique($fqcns));
+            $count = count($unique);
+            if ($count <= $this->maxClasses) {
+                continue;
+            }
+
             $error = sprintf(
-                'Subdomain has %d entities, which exceeds the maximum of %d entities. ' .
+                'Subdomain "%s" has %d entities, which exceeds the maximum of %d entities. '.
                 'Consider splitting this subdomain into smaller, more focused subdomains.',
-                self::$processedModels,
+                $namespace,
+                $count,
                 $this->maxClasses
             );
 
-            $namespaceNode = $this->getNamespaceNode($node);
+            $firstFile = $filesBySubdomain[$namespace][0];
             $errors[] = RuleErrorBuilder::message($error)
-                ->line($namespaceNode instanceof \PhpParser\Node\Stmt\Namespace_ ? $namespaceNode->getLine() : 1)
+                ->file($firstFile)
+                ->line(1)
                 ->identifier('ddd.subdomains.entityCount')
                 ->build();
         }

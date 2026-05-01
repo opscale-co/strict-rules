@@ -83,12 +83,17 @@ This leads to high coupling and lack of clear boundaries between domain concepts
 
 ### 📌 `EntityCountRule`
 
-- **Purpose:** Limit the number of classes in a single subdomain to avoid bloat.
-- **Description:** Flags subdomains that exceed a predefined number of classes.
-- **Justification:** Encourages decomposition and clarity within subdomain scopes.
+- **Purpose:** Limit the number of concrete Eloquent entities per subdomain to avoid bloat and encourage decomposition.
+- **Description:** Implemented as a PHPStan two-phase rule. `EntityCountCollector` records every concrete Eloquent model declared in any analysed file. `EntityCountRule` consumes the collected data via `Rule<CollectedDataNode>`, groups records by file-level namespace, deduplicates by FQCN, and emits one error per subdomain whose entity count exceeds `maxClasses` (default `25`). Each `\Models` namespace is its own subdomain — the rule never lumps multiple subdomains together. Non-concrete classes (interfaces, traits, enums, abstract classes, anonymous, plain helpers) never count.
+- **Justification:** A subdomain that grows past ~25 concrete entities is a strong signal it should be split. Using a collector ensures correctness across multi-class files and project-wide aggregation that a per-file rule cannot achieve.
 
 | Property     | Value               |
 |--------------|---------------------|
 | Rule Name    | `EntityCountRule`   |
-| Scope        | Package-level       |
-| Condition    | Subdomain should not exceed configured entity limit |
+| Identifier   | `ddd.subdomains.entityCount` |
+| Default      | `maxClasses = 25` (override via NEON `arguments`) |
+| Scope        | Project-wide aggregation, grouped by file-level namespace |
+| Counted      | Concrete classes that subclass `Illuminate\Database\Eloquent\Model` |
+| Not counted  | Abstract classes, interfaces, traits, enums, anonymous classes, plain (non-Eloquent) classes |
+| Threshold    | `count(unique fqcns) > maxClasses` (strictly greater) |
+| Pairs with   | `Opscale\Rules\DDD\Domain\Helpers\EntityCountCollector` (registered with `phpstan.collector` tag in `rules.ddd.neon`) |
