@@ -30,7 +30,8 @@
       "tests/fixtures/Models/MultiClassFatClasses.php",
       "tests/fixtures/Models/MultiClassParentCall.php",
       "tests/fixtures/Models/MultiModelWithMutator.php",
-      "tests/fixtures/Models/ValueObjects/MultiVOFile.php"
+      "tests/fixtures/Models/ValueObjects/MultiVOFile.php",
+      "tests/fixtures/Services/MultiInstantiationServices.php"
     ]
   },
   "extra": {

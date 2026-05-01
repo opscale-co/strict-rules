@@ -96,12 +96,19 @@ This couples your services directly and makes swapping or testing implementation
 
 ### 📌 `DisallowInstantiationRule`
 
-- **Purpose:** Enforce DIP by disallowing direct instantiation of classes inside business logic.
-- **Description:** Flags the use of `new ClassName()` in high-level modules.
-- **Justification:** Promotes inversion of dependencies and enables flexible and testable code.
+- **Purpose:** Enforce DIP by disallowing direct instantiation of services inside business logic. Dependencies should be injected, not constructed.
+- **Description:** Walks every classlike (`Class_`, `Trait_`, `Enum_`) declared in the file. For each non-constructor method, recursively finds every `new ClassName(...)` expression and checks the instantiated FQCN against several allow paths:
+  1. PHP built-in classes (`\Exception`, `\RuntimeException`, ...).
+  2. A fixed list of canonical Laravel / Carbon classes (`Illuminate\Support\Collection`, `Carbon\Carbon`, ...).
+  3. **Subclasses** of: `Illuminate\Database\Eloquent\Model`, `Illuminate\Mail\Mailable`, `Illuminate\Notifications\Notification`, `Illuminate\Http\Resources\Json\JsonResource`. Any project Model, Mailable, Notification or API Resource is recognised by reflection.
+  4. Heuristic name suffixes: `DTO`, `ValueObject`, `Value`, `Data`, `Request`, `Response`, `Event`.
+  5. `self`, `parent`, `static`.
+- **Justification:** Promotes inversion of dependencies for service classes while leaving alone the canonical Laravel patterns where `new` is the right choice (creating a domain entity, sending a Mailable, dispatching a Notification, formatting an API Resource).
 
 | Property     | Value                      |
 |--------------|----------------------------|
 | Rule Name    | `DisallowInstantiationRule`|
-| Scope        | Constructor/method-level   |
-| Condition    | Disallow `new ClassName()` |
+| Identifier   | `solid.dip.disallowInstantiation` |
+| Scope        | Per non-constructor method, walking every classlike in the file. |
+| Skipped      | `__construct`, PHP built-ins, the named-class allow list, subclasses of Model / Mailable / Notification / JsonResource, the suffix list, `self`/`parent`/`static`. |
+| Condition    | Disallow `new ClassName()` for everything else. |

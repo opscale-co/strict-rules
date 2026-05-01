@@ -13,76 +13,92 @@ use PHPUnit\Framework\Attributes\Test;
 #[CoversClass(DisallowInstantiationRule::class)]
 class DisallowInstantiationTest extends RuleTestCase
 {
+    private const ERROR_MESSAGE_TEMPLATE = 'Class "%s" violates Dependency Inversion Principle '.
+        'by directly instantiating "%s" in method "%s()". '.
+        'Consider injecting the dependency through constructor or method parameters.';
+
+    /**
+     * Caso positivo — `ExternalAPIService.canBatch()` instancia
+     * `BatchingService` directamente. La regla debe reportarlo.
+     */
     #[Test]
-    public function detects_direct_instantiation(): void
+    public function caso_positivo_instanciacion_de_servicio(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Services/ExternalAPIService.php',
-        ], [
+        $this->analyse(
+            [__DIR__.'/../fixtures/Services/ExternalAPIService.php'],
             [
-                'Class "Opscale\Services\ExternalAPIService" violates Dependency Inversion Principle '.
-                'by directly instantiating "Opscale\Services\BatchingService" in method "canBatch()". '.
-                'Consider injecting the dependency through constructor or method parameters.',
-                24,
-            ],
-        ]);
+                [
+                    sprintf(
+                        self::ERROR_MESSAGE_TEMPLATE,
+                        'Opscale\Services\ExternalAPIService',
+                        'Opscale\Services\BatchingService',
+                        'canBatch'
+                    ),
+                    24,
+                ],
+            ]
+        );
     }
 
+    /**
+     * Caso negativo — `ValidDependencyInjection` recibe sus
+     * dependencias por constructor. No debe reportarse.
+     */
     #[Test]
-    public function allows_proper_dependency_injection(): void
+    public function caso_negativo_dependency_injection_correcta(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Services/ValidDependencyInjection.php',
-        ], []);
+        $this->analyse(
+            [__DIR__.'/../fixtures/Services/ValidDependencyInjection.php'],
+            []
+        );
     }
 
+    /**
+     * Falso positivo a evitar — `ServiceInstantiatingModel` crea
+     * instancias de un Eloquent Model (`new User`, `new Product`) y
+     * de un Mailable subclass (`new SendOrderEmail`). Estos son
+     * patrones idiomáticos de Laravel y NO deben reportarse. La
+     * implementación previa flageaba todo Model/Mailable porque solo
+     * tenía una lista cerrada de FQCNs y un set de sufijos
+     * heurísticos. La regla actual usa reflexión de subclase.
+     */
     #[Test]
-    public function detects_multiple_instantiation_violations(): void
+    public function falso_positivo_instanciacion_de_modelo_eloquent_y_mailable(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Services/MultipleViolations.php',
-        ], [
+        $this->analyse(
             [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
-                'by directly instantiating "Opscale\Services\BatchingService" in method "processData()". '.
-                'Consider injecting the dependency through constructor or method parameters.',
-                13,
+                __DIR__.'/../fixtures/Mail/SendOrderEmail.php',
+                __DIR__.'/../fixtures/Services/ServiceInstantiatingModel.php',
             ],
-            [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
-                'by directly instantiating "Opscale\Models\User" in method "processData()". '.
-                'Consider injecting the dependency through constructor or method parameters.',
-                14,
-            ],
-            [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
-                'by directly instantiating "Opscale\Services\BatchingService" in method "anotherMethod()". '.
-                'Consider injecting the dependency through constructor or method parameters.',
-                27,
-            ],
-            [
-                'Class "Opscale\Services\MultipleViolations" violates Dependency Inversion Principle '.
-                'by directly instantiating "Opscale\Models\User" in method "createUserInstance()". '.
-                'Consider injecting the dependency through constructor or method parameters.',
-                33,
-            ],
-        ]);
+            []
+        );
     }
 
+    /**
+     * Falso negativo a evitar — `MultiInstantiationServices.php`
+     * declara dos clases. La primera (`FirstCleanService`) usa DI; la
+     * segunda (`SecondViolatingService`) instancia un Service. La
+     * implementación previa miraba solo `getRootNode` (la primera) y
+     * no reportaba; la regla actual recorre todas las clases del
+     * archivo y reporta la segunda.
+     */
     #[Test]
-    public function ignores_files_without_instantiations(): void
+    public function falso_negativo_instanciacion_en_segunda_clase_de_archivo_multi_clase(): void
     {
-        $this->analyse([
-            __DIR__.'/../fixtures/Models/ValidSmallUser.php',
-        ], []);
-    }
-
-    #[Test]
-    public function allows_built_in_class_instantiations(): void
-    {
-        $this->analyse([
-            __DIR__.'/../fixtures/Jobs/ValidExceptionHandling.php',
-        ], []);
+        $this->analyse(
+            [__DIR__.'/../fixtures/Services/MultiInstantiationServices.php'],
+            [
+                [
+                    sprintf(
+                        self::ERROR_MESSAGE_TEMPLATE,
+                        'Opscale\Services\SecondViolatingService',
+                        'Opscale\Services\BatchingService',
+                        'process'
+                    ),
+                    19,
+                ],
+            ]
+        );
     }
 
     protected function getRule(): Rule

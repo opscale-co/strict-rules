@@ -1,26 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Opscale\Rules\SOLID\DIP;
 
 use Exception;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Mail\Mailable;
+use Illuminate\Notifications\Notification;
 use Opscale\Rules\BaseRule;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Trait_;
+use PHPStan\Node\FileNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Rule that prevents direct instantiation of classes to enforce Dependency Inversion Principle
+ * Rule that prevents direct instantiation of classes to enforce DIP.
+ *
+ * Walks every classlike (Class_, Trait_, Enum_) declared in the file.
+ *
+ * Allowed instantiations are computed in three layers:
+ *  1. PHP built-in classes (no namespace).
+ *  2. A fixed list of canonical Laravel / Carbon classes.
+ *  3. Any class whose reflection is a subclass of one of the canonical
+ *     base classes for legitimately-instantiable Laravel patterns:
+ *     Eloquent\Model, Mail\Mailable, Notifications\Notification,
+ *     Http\Resources\Json\JsonResource.
+ *  4. A heuristic suffix list (DTO, ValueObject, Value, Data, Request,
+ *     Response, Event).
+ *  5. self / parent / static.
+ *
+ * The rule still skips constructors entirely (initialisation is the
+ * one place where `new` is acceptable for fields that the class owns).
  */
 class DisallowInstantiationRule extends BaseRule
 {
-    /**
-     * Classes that are allowed to be instantiated directly
-     */
     private const ALLOWED_INSTANTIATIONS = [
-        // Laravel/Illuminate classes commonly instantiated
         'Illuminate\\Support\\Collection',
         'Illuminate\\Http\\Request',
         'Illuminate\\Http\\Response',
@@ -30,10 +54,25 @@ class DisallowInstantiationRule extends BaseRule
         'Illuminate\\Database\\Eloquent\\Collection',
         'Illuminate\\Pagination\\LengthAwarePaginator',
         'Illuminate\\Pagination\\Paginator',
-
-        // Common data transfer objects and value objects patterns
         'Carbon\\Carbon',
         'Carbon\\CarbonImmutable',
+    ];
+
+    private const ALLOWED_BASE_CLASSES = [
+        Model::class,
+        Mailable::class,
+        Notification::class,
+        JsonResource::class,
+    ];
+
+    private const VALUE_OBJECT_SUFFIXES = [
+        'DTO',
+        'ValueObject',
+        'Value',
+        'Data',
+        'Request',
+        'Response',
+        'Event',
     ];
 
     /**
@@ -51,171 +90,123 @@ class DisallowInstantiationRule extends BaseRule
 
     protected function validate(Node $node): array
     {
-        assert($node instanceof \PHPStan\Node\FileNode);
+        assert($node instanceof FileNode);
         $errors = [];
-        $rootNode = $this->getRootNode($node);
 
-        if ($rootNode === null) {
-            return [];
-        }
-
-        // Check all methods in the class
-        foreach ($this->getMethodNodes($rootNode) as $classMethod) {
-            $methodErrors = $this->checkMethodForInstantiations($classMethod, $node);
-            $errors = array_merge($errors, $methodErrors);
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Check a method for direct class instantiations
-     *
-     * @return RuleError[]
-     */
-    private function checkMethodForInstantiations(ClassMethod $classMethod, Node $fileNode): array
-    {
-        $errors = [];
-        assert($fileNode instanceof \PHPStan\Node\FileNode);
-        $classReflection = $this->getClassReflection($fileNode);
-
-        if (! $classReflection instanceof \PHPStan\Reflection\ClassReflection) {
-            return [];
-        }
-
-        // Skip constructor method as it's expected to have instantiations for initialization
-        if ($classMethod->name->toString() === '__construct') {
-            return [];
-        }
-
-        // Recursively find all 'new' expressions in the method
-        $newExpressions = $this->findNewExpressions($classMethod);
-
-        foreach ($newExpressions as $newExpression) {
-            if (! $newExpression->class instanceof Node\Name) {
+        foreach ($this->getClassLikeNodes($node) as $classNode) {
+            if (! $classNode->namespacedName instanceof Name) {
                 continue;
             }
 
-            $instantiatedClass = $newExpression->class->toString();
+            foreach ($this->getMethodNodes($classNode) as $method) {
+                if ($method->name->toString() === '__construct') {
+                    continue;
+                }
 
-            // Resolve the full class name considering use statements
-            $resolvedClassName = $this->resolveClassName($instantiatedClass, $fileNode);
-
-            // Skip if it's an allowed instantiation
-            if ($this->isAllowedInstantiation($resolvedClassName)) {
-                continue;
-            }
-
-            // Skip if it's a self or parent instantiation
-            if ($this->isSelfOrParentInstantiation($instantiatedClass)) {
-                continue;
-            }
-
-            $error = sprintf(
-                'Class "%s" violates Dependency Inversion Principle by directly instantiating "%s" in method "%s()". ' .
-                'Consider injecting the dependency through constructor or method parameters.',
-                $classReflection->getName(),
-                $resolvedClassName,
-                $classMethod->name->toString()
-            );
-
-            $errors[] = RuleErrorBuilder::message($error)
-                ->line($newExpression->getLine())
-                ->identifier('solid.dip.disallowInstantiation')
-                ->build();
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Recursively find all 'new' expressions in a node
-     *
-     * @return New_[]
-     */
-    private function findNewExpressions(Node $node): array
-    {
-        $newExpressions = [];
-
-        if ($node instanceof New_) {
-            $newExpressions[] = $node;
-        }
-
-        foreach ($node->getSubNodeNames() as $subNodeName) {
-            $subNode = $node->$subNodeName;
-
-            if ($subNode instanceof Node) {
-                $newExpressions = array_merge($newExpressions, $this->findNewExpressions($subNode));
-            } elseif (is_array($subNode)) {
-                foreach ($subNode as $arrayItem) {
-                    if ($arrayItem instanceof Node) {
-                        $newExpressions = array_merge($newExpressions, $this->findNewExpressions($arrayItem));
+                foreach ($this->findNewExpressions($method) as $new) {
+                    $error = $this->checkInstantiation($new, $method, $classNode, $node);
+                    if ($error !== null) {
+                        $errors[] = $error;
                     }
                 }
             }
         }
 
-        return $newExpressions;
+        return $errors;
+    }
+
+    private function checkInstantiation(
+        New_ $new,
+        ClassMethod $method,
+        Class_|Trait_|Enum_ $classNode,
+        FileNode $fileNode
+    ): ?IdentifierRuleError {
+        if (! $new->class instanceof Name) {
+            return null;
+        }
+
+        $rawClassName = $new->class->toString();
+        if ($this->isSelfOrParentInstantiation($rawClassName)) {
+            return null;
+        }
+
+        $resolvedClassName = $this->resolveClassName($rawClassName, $fileNode);
+
+        if ($this->isAllowedInstantiation($resolvedClassName)) {
+            return null;
+        }
+
+        return RuleErrorBuilder::message(sprintf(
+            'Class "%s" violates Dependency Inversion Principle by directly instantiating "%s" in method "%s()". '.
+            'Consider injecting the dependency through constructor or method parameters.',
+            $classNode->namespacedName?->toString() ?? 'Unknown',
+            $resolvedClassName,
+            $method->name->toString()
+        ))
+            ->line($new->getLine())
+            ->identifier('solid.dip.disallowInstantiation')
+            ->build();
     }
 
     /**
-     * Resolve a class name considering use statements
+     * @return list<New_>
      */
-    private function resolveClassName(string $className, Node $fileNode): string
+    private function findNewExpressions(Node $node): array
     {
-        // If it's already a fully qualified name, return as is
-        if (str_starts_with($className, '\\')) {
-            return ltrim($className, '\\');
+        $found = [];
+        if ($node instanceof New_) {
+            $found[] = $node;
         }
 
-        // Check if it's imported via use statement
-        assert($fileNode instanceof \PHPStan\Node\FileNode);
-        $useStatements = $this->getUseStatements($fileNode);
-        foreach ($useStatements as $useStatement) {
-            $useName = $useStatement->name->toString();
-
-            if ($className === $useName) {
-                return $useName;
+        foreach ($node->getSubNodeNames() as $subName) {
+            $sub = $node->$subName;
+            if ($sub instanceof Node) {
+                $found = array_merge($found, $this->findNewExpressions($sub));
+            } elseif (is_array($sub)) {
+                foreach ($sub as $item) {
+                    if ($item instanceof Node) {
+                        $found = array_merge($found, $this->findNewExpressions($item));
+                    }
+                }
             }
         }
 
-        // If not found in use statements, prepend current namespace
-        $namespace = $this->getNamespace($fileNode);
-        if ($namespace !== '' && $namespace !== '0') {
-            return $namespace . '\\' . $className;
-        }
-
-        return $className;
+        return $found;
     }
 
-    /**
-     * Check if a class instantiation is allowed
-     */
+    private function resolveClassName(string $className, FileNode $fileNode): string
+    {
+        // PHPStan's NameResolver pre-resolves the Name node to its FQCN, so
+        // `$new->class->toString()` already returns the fully-qualified name.
+        // We only strip a stray leading backslash for fully-qualified writes
+        // like `new \Foo\Bar()`.
+        return ltrim($className, '\\');
+    }
+
     private function isAllowedInstantiation(string $className): bool
     {
-        // Allow all PHP built-in classes (those without namespace)
         if ($this->isPhpBuiltInClass($className)) {
             return true;
         }
 
-        // Check against default allowed classes
-        foreach (self::ALLOWED_INSTANTIATIONS as $allowedClass) {
-            if ($className === $allowedClass || str_ends_with($className, '\\' . $allowedClass)) {
+        foreach (self::ALLOWED_INSTANTIATIONS as $allowed) {
+            if ($className === $allowed || str_ends_with($className, '\\'.$allowed)) {
                 return true;
             }
         }
 
-        // Check against additional allowed classes from config
-        foreach ($this->additionalAllowedClasses as $additionalAllowedClass) {
-            if ($className === $additionalAllowedClass || str_ends_with($className, '\\' . $additionalAllowedClass)) {
+        foreach ($this->additionalAllowedClasses as $additional) {
+            if ($className === $additional || str_ends_with($className, '\\'.$additional)) {
                 return true;
             }
         }
 
-        // Allow instantiation of classes that end with common value object suffixes
-        $valueObjectSuffixes = ['DTO', 'ValueObject', 'Value', 'Data', 'Request', 'Response', 'Event'];
-        foreach ($valueObjectSuffixes as $valueObjectSuffix) {
-            if (str_ends_with($className, $valueObjectSuffix)) {
+        if ($this->isSubclassOfAllowedBase($className)) {
+            return true;
+        }
+
+        foreach (self::VALUE_OBJECT_SUFFIXES as $suffix) {
+            if (str_ends_with($className, $suffix)) {
                 return true;
             }
         }
@@ -223,36 +214,69 @@ class DisallowInstantiationRule extends BaseRule
         return false;
     }
 
-    /**
-     * Check if a class is a PHP built-in class
-     */
-    private function isPhpBuiltInClass(string $className): bool
+    private function isSubclassOfAllowedBase(string $className): bool
     {
-        // PHP built-in classes don't have namespaces
-        if (strpos($className, '\\') !== false) {
+        if (! $this->reflectionProvider->hasClass($className)) {
             return false;
         }
 
-        // Check if it's a built-in class using PHPStan reflection
+        $reflection = $this->reflectionProvider->getClass($className);
+
+        foreach (self::ALLOWED_BASE_CLASSES as $base) {
+            if ($reflection->getName() === $base) {
+                return true;
+            }
+            if ($reflection->isSubclassOf($base)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isPhpBuiltInClass(string $className): bool
+    {
+        if (str_contains($className, '\\')) {
+            return false;
+        }
+
         try {
             if ($this->reflectionProvider->hasClass($className)) {
                 $reflection = $this->reflectionProvider->getClass($className);
 
                 return $reflection->isBuiltin();
             }
-        } catch (Exception $exception) {
-            // If we can't reflect on it, assume it's not built-in
+        } catch (Exception) {
             return false;
         }
 
         return false;
     }
 
-    /**
-     * Check if the instantiation is of self or parent class
-     */
     private function isSelfOrParentInstantiation(string $className): bool
     {
         return in_array(strtolower($className), ['self', 'parent', 'static'], true);
+    }
+
+    /**
+     * @return list<Class_|Trait_|Enum_>
+     */
+    private function getClassLikeNodes(FileNode $fileNode): array
+    {
+        $nodes = [];
+        foreach ($fileNode->getNodes() as $stmt) {
+            if (! $stmt instanceof Namespace_) {
+                continue;
+            }
+            foreach ($stmt->stmts as $inner) {
+                if ($inner instanceof Class_ ||
+                    $inner instanceof Trait_ ||
+                    $inner instanceof Enum_) {
+                    $nodes[] = $inner;
+                }
+            }
+        }
+
+        return $nodes;
     }
 }
