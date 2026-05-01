@@ -89,11 +89,12 @@ This bypasses the rules and leads to inconsistent domain states.
 ### 📌 `ParentChildTransactionRule`
 
 - **Purpose:** Enforce that child entities are not saved directly.
-- **Description:** Flags usage of `save()` or `create()` on child models that have a `belongsTo` relationship.
+- **Description:** Flags `save()` calls in `\Models\Repositories` or `\Services` on Eloquent models whose own class — or any ancestor in their inheritance chain — declares a method with a `BelongsTo` (or `MorphTo`) return type. Such entities must be persisted through their aggregate root.
 - **Justification:** Child entities must be persisted through their parent aggregate to preserve domain consistency.
 
 | Property     | Value                     |
 |--------------|---------------------------|
 | Rule Name    | `ParentChildTransactionRule` |
-| Scope        | Method-level              |
-| Condition    | Disallow save/create on child with `belongsTo()` relationship |
+| Identifier   | `ddd.aggregates.parentChildTransaction` |
+| Scope        | Method-level inside `\Models\Repositories` and `\Services` |
+| Condition    | Disallow `save()` on a parameter whose declared type (or any ancestor) declares a method returning `BelongsTo` or `MorphTo`. Recognition is **return-type only** — the textual presence of a `belongsTo()` call inside a method body is **not** a relationship signal, so domain helpers that use `belongsTo` as a verb are no longer mis-flagged. |
