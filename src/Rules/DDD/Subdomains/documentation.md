@@ -68,15 +68,16 @@ This leads to high coupling and lack of clear boundaries between domain concepts
 
 ### 📌 `BaseNamespaceRule`
 
-- **Purpose:** Ensure subdomain classes live in their appropriate package or namespace.
-- **Description:** Flags any Eloquent model not located in a subdomain-aligned namespace.
-- **Justification:** Reinforces modular boundaries and bounded context clarity.
+- **Purpose:** Ensure Eloquent domain entities live directly under a `\Models` namespace segment, with no subfolders.
+- **Description:** Walks every `Class_` declaration in the file and flags any class that extends `Illuminate\Database\Eloquent\Model` (directly or transitively) when the file's namespace does not end with `\Models`. Multi-class files are fully covered: a non-Eloquent helper followed by an Eloquent class no longer hides the second class from the rule.
+- **Justification:** Subdomain decomposition relies on a consistent home for entities. A flat layout under `\Models` keeps the boundary obvious and prevents per-aggregate subfolders from drifting into a parallel hierarchy.
 
 | Property     | Value               |
 |--------------|---------------------|
 | Rule Name    | `BaseNamespaceRule` |
-| Scope        | Class-level         |
-| Condition    | Model must be under a package-aligned namespace |
+| Identifier   | `ddd.subdomains.baseNamespace` |
+| Scope        | Class-level. The rule walks every `Class_` declared in the file. |
+| Condition    | The file's namespace MUST end with `\Models`. Eloquent models nested in subfolders under `\Models` (e.g. `\Models\Aggregate\Order`) are flagged. Non-Eloquent classes are never flagged regardless of namespace. |
 
 ---
 
