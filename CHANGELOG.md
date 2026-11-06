@@ -1,3 +1,18 @@
+## [1.4.0](https://github.com/opscale-co/strict-rules/compare/v1.3.0...v1.4.0) (2026-11-06)
+
+### ⚠ BREAKING CHANGES
+
+* **laravel:** requires PHP 8.3+ and the Laravel 13 toolchain.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **laravel:** require Laravel 13, drop Laravel 11/12 ([5fa594b](https://github.com/opscale-co/strict-rules/commit/5fa594b0e476b5dfa96585a864ee08757f056805))
+
+
+Generating notes for version 1.4.0
+
 ## [1.3.0](https://github.com/opscale-co/strict-rules/compare/v1.2.0...v1.3.0) (2026-05-01)
 
 ### ⚠ BREAKING CHANGES
