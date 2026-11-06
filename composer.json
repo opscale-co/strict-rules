@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "larastan/larastan": "^3.4"
   },
   "license": "MIT",
@@ -50,15 +50,15 @@
   "prefer-stable": true,
   "require-dev": {
     "driftingly/rector-laravel": "^2.0",
-    "laravel/laravel": "^11",
-    "laravel/nova": "^5.7",
+    "laravel/laravel": "^13.0",
+    "laravel/nova": "^5.10",
     "lorisleiva/laravel-actions": "^2.9",
-    "opscale-co/validations": "^1.0",
-    "pestphp/pest": "^3.8",
+    "opscale-co/validations": "^2.0",
+    "pestphp/pest": "^4.0",
     "phpstan/phpstan-phpunit": "^2.0",
-    "phpunit/phpunit": "^11.5",
+    "phpunit/phpunit": "^12.0",
     "rector/rector": "^2.0",
-    "tightenco/duster": "^3.2"
+    "tightenco/duster": "^3.0"
   },
   "config": {
     "allow-plugins": {
